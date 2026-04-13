@@ -13,22 +13,22 @@
 		// Handle things that are part of this interface but not removing/replacing a given item.
 		if("pockets")
 			visible_message(span_danger("\The [user] is trying to empty \the [src]'s pockets!"))
-			if(do_after(user,HUMAN_STRIP_DELAY,src))
+			if(do_after(user, HUMAN_STRIP_DELAY, target = src))
 				empty_pockets(user)
 			return
 		if("splints")
 			visible_message(span_danger("\The [user] is trying to remove \the [src]'s splints!"))
-			if(do_after(user,HUMAN_STRIP_DELAY,src))
+			if(do_after(user, HUMAN_STRIP_DELAY, target = src))
 				remove_splints(user)
 			return
 		if("sensors")
 			visible_message(span_danger("\The [user] is trying to set \the [src]'s sensors!"))
-			if(do_after(user,HUMAN_STRIP_DELAY,src))
+			if(do_after(user, HUMAN_STRIP_DELAY, target = src))
 				toggle_sensors(user)
 			return
 		if("internals")
 			visible_message(span_danger("\The [user] is trying to set \the [src]'s internals!"))
-			if(do_after(user,HUMAN_STRIP_DELAY,src))
+			if(do_after(user, HUMAN_STRIP_DELAY, target = src))
 				toggle_internals(user)
 			return
 		if("tie")
@@ -40,7 +40,7 @@
 				return
 			visible_message(span_danger("\The [user] is trying to remove \the [src]'s [A.name]!"))
 
-			if(!do_after(user,HUMAN_STRIP_DELAY,src))
+			if(!do_after(user, HUMAN_STRIP_DELAY, target = src))
 				return
 
 			if(!A || suit.loc != src || !(A in suit.accessories))
@@ -54,7 +54,7 @@
 			update_inv_w_uniform()
 			return
 		if("underwear")
-			var/datum/category_group/underwear/UWC = tgui_input_list(user, "Choose underwear. (Do not do this without OOC permission from the other player)", "Show/hide underwear", global_underwear.categories)
+			var/datum/category_group/underwear/UWC = tgui_input_list(user, "Choose underwear. (Do not do this without OOC permission from the other player)", "Show/hide underwear", GLOB.global_underwear.categories)
 			if(!UWC) return
 			var/datum/category_item/underwear/UWI = all_underwear[UWC.name]
 			if(!UWI || UWI.name == "None")
@@ -72,7 +72,7 @@
 		stripping = TRUE
 		if(is_robot_module(held) && istype(held, /obj/item/gripper))
 			var/obj/item/gripper/G = held
-			var/obj/item/wrapped = G.get_current_pocket()
+			var/obj/item/wrapped = G.get_wrapped_item()
 			if(istype(wrapped))
 				stripping = FALSE
 	else
@@ -87,7 +87,7 @@
 	if(stripping)
 		if(!istype(target_slot))  // They aren't holding anything valid and there's nothing to remove, why are we even here?
 			return
-		if(!target_slot.canremove)
+		if(!target_slot.canremove || (target_slot.item_flags & NOSTRIP))
 			to_chat(user, span_warning("You cannot remove \the [src]'s [target_slot.name]."))
 			return
 		visible_message(span_danger("\The [user] is trying to remove \the [src]'s [target_slot.name]!"))
@@ -98,13 +98,13 @@
 			visible_message(span_danger("\The [user] is trying to put \a [held] on \the [src]!"))
 	else
 		var/obj/item/gripper/G = held
-		var/obj/item/wrapped = G.get_current_pocket()
+		var/obj/item/wrapped = G.get_wrapped_item()
 		if(slot_to_strip == slot_wear_mask && istype(wrapped, /obj/item/grenade))
 			visible_message(span_danger("\The [user] is trying to put \a [wrapped] in \the [src]'s mouth!"))
 		else
 			visible_message(span_danger("\The [user] is trying to put \a [wrapped] on \the [src]!"))
 
-	if(!do_after(user,HUMAN_STRIP_DELAY,src))
+	if(!do_after(user, HUMAN_STRIP_DELAY, target = src, max_interact_count = 15))
 		return
 
 	if(!stripping)
@@ -120,12 +120,12 @@
 		unEquip(target_slot)
 	else if(is_robot_module(held) && istype(held, /obj/item/gripper))
 		var/obj/item/gripper/G = held
-		var/obj/item/wrapped = G.get_current_pocket()
+		var/obj/item/wrapped = G.get_wrapped_item()
 		if(istype(wrapped))
 			if(equip_to_slot_if_possible(wrapped, text2num(slot_to_strip), 0, 1, 1))
-				wrapped = null
-				G.generate_icons()
-				G.current_pocket = pick(G.pockets)
+				if(wrapped.loc != src)
+					return
+				G.clear_and_select_item()
 	else if(user.unEquip(held))
 		equip_to_slot_if_possible(held, text2num(slot_to_strip), 0, 1, 1)
 		if(held.loc != src)

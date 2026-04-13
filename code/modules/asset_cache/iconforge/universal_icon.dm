@@ -435,7 +435,7 @@
 			layers[current] = current_layer; \
 		}
 
-	var/datum/universal_icon/flat = uni_icon('icons/blanks/32x32.dmi', "nothing")
+	var/datum/universal_icon/flat = uni_icon('icons/system/blank_32x32.dmi', "nothing")
 
 	if(!appearance || appearance.alpha <= 0)
 		return flat
@@ -487,7 +487,7 @@
 					var/dir_count = state_data["dirs"]
 					if(dir_count == 1)
 						base_icon_dir = SOUTH
-			else if(!length(icon_states(icon(curicon, curstate, NORTH))))
+			else if(!length(icon_states_fast(icon(curicon, curstate, NORTH))))
 				base_icon_dir = SOUTH
 
 		var/list/icon_dimensions = get_icon_dimensions(curicon)

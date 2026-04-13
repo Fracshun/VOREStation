@@ -1,4 +1,5 @@
-var/warrant_uid = 0
+GLOBAL_VAR_INIT(warrant_uid, 0)
+
 /datum/datacore
 	var/list/warrants = list()
 
@@ -7,7 +8,7 @@ var/warrant_uid = 0
 
 /datum/data/record/warrant/New()
 	..()
-	warrant_id = warrant_uid++
+	warrant_id = GLOB.warrant_uid++
 
 /datum/computer_file/program/digitalwarrant
 	filename = "digitalwarrant"
@@ -19,7 +20,7 @@ var/warrant_uid = 0
 	program_menu_icon = "star"
 	requires_ntnet = TRUE
 	available_on_ntnet = TRUE
-	required_access = access_security
+	required_access = ACCESS_SECURITY
 	usage_flags = PROGRAM_ALL
 	tgui_id = "NtosDigitalWarrant"
 	category = PROG_SEC
@@ -73,7 +74,7 @@ var/warrant_uid = 0
 	// which also use RFID scanning to allow or disallow access to some functions. Anyone can view warrants, editing requires ID. This also prevents situations where you show a tablet
 	// to someone who is to be arrested, which allows them to change the stuff there.
 	var/obj/item/card/id/I = ui.user.GetIdCard()
-	if(!istype(I) || !I.registered_name || !(access_security in I.GetAccess()))
+	if(!istype(I) || !I.registered_name || !(ACCESS_SECURITY in I.GetAccess()))
 		to_chat(ui.user, "Authentication error: Unable to locate ID with appropriate access to allow this operation.")
 		return
 
@@ -136,7 +137,7 @@ var/warrant_uid = 0
 
 		if("editwarrantauth")
 			. = TRUE
-			if(!(access_hos in I.GetAccess())) // VOREStation edit begin
+			if(!(ACCESS_HOS in I.GetAccess())) // VOREStation edit begin
 				to_chat(ui.user, span_warning("You don't have the access to do this!"))
 				return // VOREStation edit end
 			activewarrant.fields["auth"] = "[I.registered_name] - [I.assignment ? I.assignment : "(Unknown)"]"

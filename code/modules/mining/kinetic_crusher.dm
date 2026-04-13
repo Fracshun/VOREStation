@@ -5,7 +5,7 @@
 
 /*********************Mining Hammer****************/
 /obj/item/kinetic_crusher
-	icon = 'icons/obj/mining_vr.dmi'
+	icon = 'icons/obj/mining.dmi'
 	icon_state = "crusher"
 	item_state = "crusher0"
 	item_icons = list(
@@ -136,13 +136,13 @@
 		else
 			L.apply_damage(detonation_damage + thrown_bonus, BRUTE, blocked = def_check)
 
-/obj/item/kinetic_crusher/throw_impact(atom/hit_atom, speed)
+/obj/item/kinetic_crusher/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatumd)
 	. = ..()
 	if(!isliving(hit_atom))
 		return
 	var/mob/living/L = hit_atom
 	if(L.has_modifier_of_type(/datum/modifier/crusher_mark))
-		detonate(L, thrower, TRUE)
+		detonate(L, throwingdatumd?.get_thrower(), TRUE)
 
 /obj/item/kinetic_crusher/proc/Recharge()
 	if(!charged)
@@ -184,7 +184,6 @@
 	w_class = ITEMSIZE_NORMAL
 	requires_wield = FALSE
 
-
 /obj/item/kinetic_crusher/machete
 	// general purpose. cleaves though
 	name = "proto-kinetic machete"
@@ -208,9 +207,6 @@
 	thrown_bonus = 20 // 160
 	update_item_state = FALSE
 	slot_flags = SLOT_BELT
-
-
-
 
 /obj/item/kinetic_crusher/machete/gauntlets
 	// did someone say single target damage
@@ -246,6 +242,9 @@
 	STOP_PROCESSING(SSprocessing, src)
 
 /obj/item/kinetic_crusher/machete/gauntlets/attack_self(mob/user)
+	. = ..(user)
+	if(.)
+		return TRUE
 	ready_toggle()
 
 /obj/item/kinetic_crusher/machete/gauntlets/process()

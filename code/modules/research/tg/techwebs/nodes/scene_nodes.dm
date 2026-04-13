@@ -4,7 +4,9 @@
 	display_name = "Potential Recreational Applications"
 	description = "Devices made for rest and recreation purposes."
 	design_ids = list(
-		// TODO: Leash & Collar
+		"holocollar",
+		"leash",
+		"vr_sleeper",
 		// Compliance
 		// Mouse Ray
 	)
@@ -40,3 +42,4 @@
 		"bodysnatcher",
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
+	announce_channels = list(CHANNEL_SCIENCE)

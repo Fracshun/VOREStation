@@ -79,7 +79,7 @@
 	EXTRAPOLATOR_ACT_ADD_DISEASES(., base_disease)
 	// Still no idea why extrapolator == src, but I'll leave this for later if I find out.
 	// if(!dry_run && !EXTRAPOLATOR_ACT_CHECK(., EXTRAPOLATOR_ACT_PRIORITY_SPECIAL) && extrapolator.create_culture(user, base_disease))
-	if(do_after(user, 2 SECONDS))
+	if(do_after(user, 2 SECONDS, target = src))
 		user.visible_message(span_danger("[user] stabs [src] with [extrapolator], sucking it up!"), \
 			span_danger("You stab [src] with [extrapolator]'s probe, destroying it!"))
 		death()
@@ -148,7 +148,7 @@
 	fancy_vore = TRUE
 	contamination_color = "green"
 	vore_verb = "absorb"
-	escapable = TRUE
+	escapable = B_ESCAPABLE_DEFAULT
 	escapechance = 20
 	desc = "In an attempt to get away from the giant virus, it's oversized envelope proteins dragged you right past it's matrix, encapsulating you deep inside it's capsid... The strange walls kneading and keeping you tight along within it's nucleoprotein."
 	belly_fullscreen = "VBO_gematically_angular"

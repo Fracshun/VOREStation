@@ -13,17 +13,6 @@
 
 	owner = S
 
-	if(!admin_laws)
-		admin_laws = new()
-		player_laws = new()
-
-		init_subtypes(/datum/ai_laws, admin_laws)
-		admin_laws = dd_sortedObjectList(admin_laws)
-
-		for(var/datum/ai_laws/laws in admin_laws)
-			if(laws.selectable)
-				player_laws += laws
-
 /datum/tgui_module/law_manager/tgui_act(action, list/params, datum/tgui/ui, datum/tgui_state/state)
 	if(..())
 		return TRUE
@@ -113,27 +102,25 @@
 			return TRUE
 
 		if("state_law_set")
-			var/datum/ai_laws/ALs = locate(params["state_law_set"]) in (is_admin(ui.user) ? admin_laws : player_laws)
+			var/datum/ai_laws/ALs = locate(params["state_law_set"]) in (is_admin(ui.user) ? GLOB.admin_laws : GLOB.player_laws)
 			if(ALs)
 				owner.statelaws(ALs)
 			return TRUE
 
 		if("transfer_laws")
 			if(is_malf(ui.user))
-				var/datum/ai_laws/ALs = locate(params["transfer_laws"]) in (is_admin(ui.user) ? admin_laws : player_laws)
+				var/datum/ai_laws/ALs = locate(params["transfer_laws"]) in (is_admin(ui.user) ? GLOB.admin_laws : GLOB.player_laws)
 				if(ALs)
 					log_and_message_admins("has transfered the [ALs.name] laws to [owner].")
 					ALs.sync(owner, 0)
 			return TRUE
 
 		if("notify_laws")
-			to_chat(owner, span_danger("Law Notice"))
-			owner.laws.show_laws(owner)
+			to_chat(owner, span_danger("Law Notice\n") + owner.laws.get_formatted_laws())
 			if(isAI(owner))
 				var/mob/living/silicon/ai/AI = owner
 				for(var/mob/living/silicon/robot/R in AI.connected_robots)
-					to_chat(R, span_danger("Law Notice"))
-					R.laws.show_laws(R)
+					to_chat(R, span_danger("Law Notice\n") + R.laws.get_formatted_laws())
 			if(ui.user != owner)
 				to_chat(ui.user, span_notice("Laws displayed."))
 			return TRUE
@@ -167,7 +154,7 @@
 		channels[++channels.len] = list("channel" = ch_name)
 	data["channel"] = owner.lawchannel
 	data["channels"] = channels
-	data["law_sets"] = package_multiple_laws(data["isAdmin"] ? admin_laws : player_laws)
+	data["law_sets"] = package_multiple_laws(data["isAdmin"] ? GLOB.admin_laws : GLOB.player_laws)
 
 	return data
 
@@ -219,3 +206,8 @@
 /datum/tgui_module/law_manager/admin
 /datum/tgui_module/law_manager/admin/tgui_state(mob/user)
 	return ADMIN_STATE(R_ADMIN|R_EVENT|R_DEBUG)
+
+/datum/tgui_module/law_manager/admin/tgui_close(mob/user)
+	. = ..()
+	if(!QDELETED(src))
+		qdel(src)

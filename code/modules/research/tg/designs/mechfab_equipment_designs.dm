@@ -1,4 +1,5 @@
 /datum/design_techweb/mechfab/equipment
+	desc = "Heavy-duty equipment installed on an exosuit or fighter craft. The vehicle must have the correct hardpoints to mount this equipment."
 	category = list(
 		RND_CATEGORY_MECHFAB_EQUIPMENT
 	)
@@ -20,7 +21,7 @@
 	category = list(
 		RND_CATEGORY_MECHFAB_EQUIPMENT + RND_SUBCATEGORY_MECHFAB_EQUIPMENT_MINING
 	)
-	departmental_flags = DEPARTMENT_BITFLAG_CARGO
+	departmental_flags = DEPARTMENT_BITFLAG_CARGO | DEPARTMENT_BITFLAG_SCIENCE
 
 /datum/design_techweb/mechfab/equipment/drill
 	name = "Drill"
@@ -29,7 +30,7 @@
 	category = list(
 		RND_CATEGORY_MECHFAB_EQUIPMENT + RND_SUBCATEGORY_MECHFAB_EQUIPMENT_MINING
 	)
-	departmental_flags = DEPARTMENT_BITFLAG_CARGO
+	departmental_flags = DEPARTMENT_BITFLAG_CARGO | DEPARTMENT_BITFLAG_SCIENCE
 
 /datum/design_techweb/mechfab/equipment/extinguisher
 	name = "Extinguisher"
@@ -56,7 +57,7 @@
 	category = list(
 		RND_CATEGORY_MECHFAB_EQUIPMENT + RND_SUBCATEGORY_MECHFAB_EQUIPMENT_MEDICAL
 	)
-	departmental_flags = DEPARTMENT_BITFLAG_MEDICAL
+	departmental_flags = DEPARTMENT_BITFLAG_MEDICAL | DEPARTMENT_BITFLAG_SCIENCE
 
 /datum/design_techweb/mechfab/equipment/passenger
 	name = "Passenger Compartment"
@@ -77,7 +78,7 @@
 	category = list(
 		RND_CATEGORY_MECHFAB_EQUIPMENT + RND_SUBCATEGORY_MECHFAB_EQUIPMENT_MODULES
 	)
-	departmental_flags = DEPARTMENT_BITFLAG_SECURITY
+	departmental_flags = DEPARTMENT_BITFLAG_SECURITY | DEPARTMENT_BITFLAG_SCIENCE
 
 /// I guess this isn't STRICTLY a weapon...
 /datum/design_techweb/mechfab/equipment/syringe_gun
@@ -88,7 +89,7 @@
 	category = list(
 		RND_CATEGORY_MECHFAB_EQUIPMENT + RND_SUBCATEGORY_MECHFAB_EQUIPMENT_MEDICAL
 	)
-	departmental_flags = DEPARTMENT_BITFLAG_MEDICAL
+	departmental_flags = DEPARTMENT_BITFLAG_MEDICAL | DEPARTMENT_BITFLAG_SCIENCE
 
 //You escape the weapon designation as well.
 /datum/design_techweb/mechfab/equipment/medigun
@@ -101,7 +102,7 @@
 	category = list(
 		RND_CATEGORY_MECHFAB_EQUIPMENT + RND_SUBCATEGORY_MECHFAB_EQUIPMENT_MEDICAL
 	)
-	departmental_flags = DEPARTMENT_BITFLAG_MEDICAL
+	departmental_flags = DEPARTMENT_BITFLAG_MEDICAL | DEPARTMENT_BITFLAG_SCIENCE
 
 // *** Weapon modules
 /datum/design_techweb/mechfab/equipment/weapon
@@ -110,7 +111,7 @@
 	category = list(
 		RND_CATEGORY_MECHFAB_EQUIPMENT + RND_SUBCATEGORY_MECHFAB_EQUIPMENT_WEAPONS
 	)
-	departmental_flags = DEPARTMENT_BITFLAG_SECURITY
+	departmental_flags = DEPARTMENT_BITFLAG_SECURITY | DEPARTMENT_BITFLAG_SCIENCE
 
 
 /datum/design_techweb/mechfab/equipment/weapon/taser
@@ -324,7 +325,7 @@
 	category = list(
 		RND_CATEGORY_MECHFAB_EQUIPMENT + RND_SUBCATEGORY_MECHFAB_EQUIPMENT_MISC
 	)
-	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING
+	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SCIENCE
 
 /datum/design_techweb/mechfab/equipment/gravcatapult
 	name = "Gravitational Catapult"
@@ -381,7 +382,7 @@
 	category = list(
 		RND_CATEGORY_MECHFAB_EQUIPMENT + RND_SUBCATEGORY_MECHFAB_EQUIPMENT_MEDICAL
 	)
-	departmental_flags = DEPARTMENT_BITFLAG_MEDICAL
+	departmental_flags = DEPARTMENT_BITFLAG_MEDICAL | DEPARTMENT_BITFLAG_SCIENCE
 
 /datum/design_techweb/mechfab/equipment/rad_drone
 	name = "Hazmat Drone"
@@ -393,7 +394,7 @@
 	category = list(
 		RND_CATEGORY_MECHFAB_EQUIPMENT + RND_SUBCATEGORY_MECHFAB_EQUIPMENT_MEDICAL
 	)
-	departmental_flags = DEPARTMENT_BITFLAG_MEDICAL
+	departmental_flags = DEPARTMENT_BITFLAG_MEDICAL | DEPARTMENT_BITFLAG_SCIENCE
 
 /datum/design_techweb/mechfab/equipment/medanalyzer
 	name = "Mounted Body Scanner"
@@ -405,7 +406,7 @@
 	category = list(
 		RND_CATEGORY_MECHFAB_EQUIPMENT + RND_SUBCATEGORY_MECHFAB_EQUIPMENT_MEDICAL
 	)
-	departmental_flags = DEPARTMENT_BITFLAG_MEDICAL
+	departmental_flags = DEPARTMENT_BITFLAG_MEDICAL | DEPARTMENT_BITFLAG_SCIENCE
 
 /datum/design_techweb/mechfab/equipment/jetpack
 	name = "Ion Jetpack"
@@ -449,7 +450,7 @@
 	category = list(
 		RND_CATEGORY_MECHFAB_EQUIPMENT + RND_SUBCATEGORY_MECHFAB_EQUIPMENT_MODULES
 	)
-	departmental_flags = DEPARTMENT_BITFLAG_SECURITY
+	departmental_flags = DEPARTMENT_BITFLAG_SECURITY | DEPARTMENT_BITFLAG_SCIENCE
 
 /datum/design_techweb/mechfab/equipment/proj_armor
 	name = "Ranged Armor Booster"
@@ -461,7 +462,7 @@
 	category = list(
 		RND_CATEGORY_MECHFAB_EQUIPMENT + RND_SUBCATEGORY_MECHFAB_EQUIPMENT_MODULES
 	)
-	departmental_flags = DEPARTMENT_BITFLAG_SECURITY
+	departmental_flags = DEPARTMENT_BITFLAG_SECURITY | DEPARTMENT_BITFLAG_SCIENCE
 
 /datum/design_techweb/mechfab/equipment/diamond_drill
 	name = "Diamond Drill"
@@ -473,7 +474,7 @@
 	category = list(
 		RND_CATEGORY_MECHFAB_EQUIPMENT + RND_SUBCATEGORY_MECHFAB_EQUIPMENT_MINING
 	)
-	departmental_flags = DEPARTMENT_BITFLAG_CARGO
+	departmental_flags = DEPARTMENT_BITFLAG_CARGO | DEPARTMENT_BITFLAG_SCIENCE
 
 /datum/design_techweb/mechfab/equipment/ground_drill
 	name = "Surface Bore"
@@ -485,7 +486,7 @@
 	category = list(
 		RND_CATEGORY_MECHFAB_EQUIPMENT + RND_SUBCATEGORY_MECHFAB_EQUIPMENT_MINING
 	)
-	departmental_flags = DEPARTMENT_BITFLAG_CARGO
+	departmental_flags = DEPARTMENT_BITFLAG_CARGO | DEPARTMENT_BITFLAG_SCIENCE
 
 /datum/design_techweb/mechfab/equipment/orescanner
 	name = "Ore Scanner"
@@ -497,7 +498,7 @@
 	category = list(
 		RND_CATEGORY_MECHFAB_EQUIPMENT + RND_SUBCATEGORY_MECHFAB_EQUIPMENT_MINING
 	)
-	departmental_flags = DEPARTMENT_BITFLAG_CARGO
+	departmental_flags = DEPARTMENT_BITFLAG_CARGO | DEPARTMENT_BITFLAG_SCIENCE
 
 /datum/design_techweb/mechfab/equipment/advorescanner
 	name = "Advanced Ore Scanner"
@@ -509,7 +510,7 @@
 	category = list(
 		RND_CATEGORY_MECHFAB_EQUIPMENT + RND_SUBCATEGORY_MECHFAB_EQUIPMENT_MINING
 	)
-	departmental_flags = DEPARTMENT_BITFLAG_CARGO
+	departmental_flags = DEPARTMENT_BITFLAG_CARGO | DEPARTMENT_BITFLAG_SCIENCE
 
 /datum/design_techweb/mechfab/equipment/runningboard
 	name = "Powered Exosuit Running Board"
@@ -532,7 +533,7 @@
 	category = list(
 		RND_CATEGORY_MECHFAB_EQUIPMENT + RND_SUBCATEGORY_MECHFAB_EQUIPMENT_MISC
 	)
-	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING
+	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SCIENCE
 
 /datum/design_techweb/mechfab/equipment/powercrowbar
 	name = "hydraulic prybar"
@@ -544,7 +545,7 @@
 	category = list(
 		RND_CATEGORY_MECHFAB_EQUIPMENT + RND_SUBCATEGORY_MECHFAB_EQUIPMENT_MISC
 	)
-	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING
+	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SCIENCE
 
 /datum/design_techweb/mechfab/equipment/powercutters
 	name = "hydraulic cable cutter"
@@ -556,7 +557,7 @@
 	category = list(
 		RND_CATEGORY_MECHFAB_EQUIPMENT + RND_SUBCATEGORY_MECHFAB_EQUIPMENT_MISC
 	)
-	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING
+	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SCIENCE
 
 /datum/design_techweb/mechfab/equipment/powerscrewdriver
 	name = "hydraulic screwdriver"
@@ -568,7 +569,7 @@
 	category = list(
 		RND_CATEGORY_MECHFAB_EQUIPMENT + RND_SUBCATEGORY_MECHFAB_EQUIPMENT_MISC
 	)
-	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING
+	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SCIENCE
 
 /datum/design_techweb/mechfab/equipment/powerwelder
 	name = "welding laser"
@@ -580,7 +581,7 @@
 	category = list(
 		RND_CATEGORY_MECHFAB_EQUIPMENT + RND_SUBCATEGORY_MECHFAB_EQUIPMENT_MISC
 	)
-	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING
+	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SCIENCE
 
 /datum/design_techweb/mechfab/equipment/inflatables
 	name = "inflatables deployer"
@@ -592,7 +593,7 @@
 	category = list(
 		RND_CATEGORY_MECHFAB_EQUIPMENT + RND_SUBCATEGORY_MECHFAB_EQUIPMENT_MISC
 	)
-	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING
+	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SCIENCE
 
 /datum/design_techweb/mechfab/equipment/hardpoint_clamp
 	name = "hardpoint actuator"

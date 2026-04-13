@@ -6,7 +6,7 @@
 	icon_keyboard = "id_key"
 	icon_screen = "id"
 	light_color = "#0099ff"
-	req_access = list(access_change_ids)
+	req_access = list(ACCESS_CHANGE_IDS)
 	circuit = /obj/item/circuitboard/card
 	var/obj/item/card/id/scan = null
 	var/obj/item/card/id/modify = null
@@ -59,7 +59,7 @@
 	if(!istype(id_card))
 		return ..()
 
-	if(!scan && (access_change_ids in id_card.GetAccess()) && (user.unEquip(id_card) || (id_card.loc == user && istype(user,/mob/living/silicon/robot)))) //Grippers. Again. ~Mechoid
+	if(!scan && (ACCESS_CHANGE_IDS in id_card.GetAccess()) && (user.unEquip(id_card) || (id_card.loc == user && istype(user,/mob/living/silicon/robot)))) //Grippers. Again. ~Mechoid
 		user.drop_item()
 		id_card.forceMove(src)
 		scan = id_card
@@ -125,23 +125,23 @@
 	var/list/all_centcom_access = list()
 	var/list/regions = list()
 	if(modify && is_centcom())
-		for(var/access in get_all_centcom_access())
+		for(var/access in SSaccess.get_all_centcom_access())
 			all_centcom_access.Add(list(list(
-				"desc" = replacetext(get_centcom_access_desc(access), " ", "&nbsp;"),
+				"desc" = replacetext(SSaccess.get_centcom_access_desc(access), " ", "&nbsp;"),
 				"ref" = access,
 				"allowed" = (access in modify.GetAccess()) ? 1 : 0)))
 	else if(modify)
 		for(var/i in ACCESS_REGION_SECURITY to ACCESS_REGION_SUPPLY)
 			var/list/accesses = list()
-			for(var/access in get_region_accesses(i))
-				if (get_access_desc(access))
+			for(var/access in SSaccess.get_region_accesses(i))
+				if (SSaccess.get_access_desc(access))
 					accesses.Add(list(list(
-						"desc" = replacetext(get_access_desc(access), " ", "&nbsp;"),
+						"desc" = replacetext(SSaccess.get_access_desc(access), " ", "&nbsp;"),
 						"ref" = access,
 						"allowed" = (access in modify.GetAccess()) ? 1 : 0)))
 
 			regions.Add(list(list(
-				"name" = get_region_accesses_name(i),
+				"name" = SSaccess.get_region_accesses_name(i),
 				"accesses" = accesses)))
 
 	data["regions"] = regions
@@ -195,7 +195,7 @@
 			if(is_authenticated())
 				var/access_type = text2num(params["access_target"])
 				var/access_allowed = text2num(params["allowed"])
-				if(access_type in (is_centcom() ? get_all_centcom_access() : get_all_station_access()))
+				if(access_type in (is_centcom() ? SSaccess.get_all_centcom_access() : SSaccess.get_all_station_access()))
 					modify.access -= access_type
 					if(!access_allowed)
 						modify.access += access_type
@@ -212,7 +212,7 @@
 				else
 					var/list/access = list()
 					if(is_centcom())
-						access = get_centcom_access(t1)
+						access = SSaccess.get_centcom_access(t1)
 					else
 						var/datum/job/jobdatum = SSjob.get_job(t1)
 						if(!jobdatum)
@@ -224,7 +224,7 @@
 					modify.assignment = t1
 					modify.rank = t1
 
-				callHook("reassign_employee", list(modify))
+				SEND_GLOBAL_SIGNAL(COMSIG_GLOB_REASSIGN_EMPLOYEE_IDCARD, modify)
 			. = TRUE
 
 		if("reg")
@@ -273,15 +273,14 @@
 						"}
 
 						for(var/A in modify.access)
-							P.info += "  [get_access_desc(A)]"
+							P.info += "  [SSaccess.get_access_desc(A)]"
 				. = TRUE
 
 		if("terminate")
 			if(is_authenticated())
 				modify.assignment = "Dismissed"	//VOREStation Edit: setting adjustment
 				modify.access = list()
-
-				callHook("terminate_employee", list(modify))
+				SEND_GLOBAL_SIGNAL(COMSIG_GLOB_TERMINATE_EMPLOYEE_IDCARD, modify)
 
 			. = TRUE
 
@@ -291,7 +290,7 @@
 /obj/machinery/computer/card/centcom
 	name = "\improper CentCom ID card modification console"
 	circuit = /obj/item/circuitboard/card/centcom
-	req_access = list(access_cent_captain)
+	req_access = list(ACCESS_CENT_CAPTAIN)
 
 
 /obj/machinery/computer/card/centcom/is_centcom()

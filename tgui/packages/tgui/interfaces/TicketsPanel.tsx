@@ -56,7 +56,7 @@ const StateColor = {
 type Data = {
   tickets: Ticket[];
 
-  selected_ticket: Ticket;
+  selected_ticket?: Ticket;
   is_admin: BooleanLike;
 };
 
@@ -108,25 +108,20 @@ export const TicketsPanel = (props) => {
   const [ticketChat, setTicketChat] = useState('');
 
   const messagesEndRef: RefObject<HTMLDivElement | null> = useRef(null);
+  const inputRef: RefObject<HTMLInputElement | null> = useRef(null);
 
   useEffect(() => {
     const scroll = messagesEndRef.current;
-    if (scroll) {
+    if (!scroll) return;
+
+    const isAtBottom =
+      Math.abs(scroll.scrollHeight - scroll.scrollTop - scroll.offsetHeight) <
+      24;
+
+    if (isAtBottom) {
       scroll.scrollTop = scroll.scrollHeight;
     }
-  }, []);
-
-  useEffect(() => {
-    const scroll = messagesEndRef.current;
-    if (scroll) {
-      const height = scroll.scrollHeight;
-      const bottom = scroll.scrollTop + scroll.offsetHeight;
-      const scrollTracking = Math.abs(height - bottom) < 24;
-      if (scrollTracking) {
-        scroll.scrollTop = scroll.scrollHeight;
-      }
-    }
-  });
+  }, [selected_ticket?.log]);
 
   const availableLevel = is_admin ? AdminLevel : MentorLevel;
 
@@ -182,15 +177,8 @@ export const TicketsPanel = (props) => {
                           <Stack.Item>
                             <Stack align="center">
                               <Stack.Item>
-                                {ticket.ishandled ? (
-                                  <Box
-                                    textColor="white"
-                                    className="TicketPanel__Label"
-                                    backgroundColor={LevelColor[ticket.level]}
-                                  >
-                                    {availableLevel[ticket.level]}
-                                  </Box>
-                                ) : (
+                                {!ticket.ishandled &&
+                                ticket.state === State.open ? (
                                   <Blink>
                                     <Box
                                       textColor="white"
@@ -200,6 +188,14 @@ export const TicketsPanel = (props) => {
                                       {availableLevel[ticket.level]}
                                     </Box>
                                   </Blink>
+                                ) : (
+                                  <Box
+                                    textColor="white"
+                                    className="TicketPanel__Label"
+                                    backgroundColor={LevelColor[ticket.level]}
+                                  >
+                                    {availableLevel[ticket.level]}
+                                  </Box>
                                 )}
                               </Stack.Item>
                               <Stack.Item>{ticket.name}</Stack.Item>
@@ -358,6 +354,7 @@ export const TicketsPanel = (props) => {
                           autoFocus
                           autoSelect
                           fluid
+                          ref={inputRef}
                           placeholder="Enter a message..."
                           value={ticketChat}
                           onChange={(value: string) => setTicketChat(value)}
@@ -365,6 +362,9 @@ export const TicketsPanel = (props) => {
                             if (KEY.Enter === e.key) {
                               act('send_msg', { msg: ticketChat });
                               setTicketChat('');
+                              requestAnimationFrame(() =>
+                                inputRef.current?.focus(),
+                              );
                             }
                           }}
                         />
@@ -374,6 +374,9 @@ export const TicketsPanel = (props) => {
                           onClick={() => {
                             act('send_msg', { msg: ticketChat });
                             setTicketChat('');
+                            requestAnimationFrame(() =>
+                              inputRef.current?.focus(),
+                            );
                           }}
                         >
                           Send

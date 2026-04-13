@@ -23,6 +23,7 @@
 
 	// There's basically always going to be wall connections, making this lazy doesn't seem like it'd help much unless you wanted to make it bitflags instead.
 	var/list/wall_connections = list("0", "0", "0", "0")
+	rad_insulation = RAD_MEDIUM_INSULATION
 
 // Walls always hide the stuff below them.
 /turf/simulated/wall/levelupdate()
@@ -96,13 +97,20 @@
 	take_damage(damage)
 	return
 
-/turf/simulated/wall/hitby(AM as mob|obj, var/speed=THROWFORCE_SPEED_DIVISOR)
+/turf/simulated/wall/hitby(atom/movable/source, datum/thrownthing/throwingdatum)
 	..()
-	if(ismob(AM))
+	if(ismob(source))
 		return
-
-	var/tforce = AM:throwforce * (speed/THROWFORCE_SPEED_DIVISOR)
-	if (tforce < 15)
+	var/tforce = 0
+	if(isobj(source))
+		var/obj/object = source
+		var/speed = throwingdatum?.speed || THROWFORCE_SPEED_DIVISOR
+		if(isitem(object))
+			var/obj/item/our_item = object
+			tforce = our_item.throwforce * (speed/THROWFORCE_SPEED_DIVISOR)
+		else
+			tforce = object.w_class * (speed/THROWFORCE_SPEED_DIVISOR)
+	if(tforce < 15)
 		return
 
 	take_damage(tforce)
@@ -290,11 +298,19 @@
 	return
 
 /turf/simulated/wall/proc/radiate()
+	SIGNAL_HANDLER
 	var/total_radiation = material.radioactivity + (reinf_material ? reinf_material.radioactivity / 2 : 0) + (girder_material ? girder_material.radioactivity / 2 : 0)
 	if(!total_radiation)
 		return
 
-	SSradiation.radiate(src, total_radiation)
+	radiation_pulse(
+		src,
+		max_range = 5,
+		threshold = RAD_MEDIUM_INSULATION,
+		chance = total_radiation,
+		minimum_exposure_time = URANIUM_RADIATION_MINIMUM_EXPOSURE_TIME,
+		strength = total_radiation
+	)
 	return total_radiation
 
 /turf/simulated/wall/proc/burn(temperature)
@@ -339,7 +355,7 @@
 	ChangeTurf(/turf/simulated/wall/cult, preserve_outdoors = TRUE)
 	return TRUE
 
-/turf/simulated/wall/AltClick(mob/user)
+/turf/simulated/wall/click_alt(mob/user)
 	if(isliving(user))
 		var/mob/living/livingUser = user
 		if(try_graffiti(livingUser, livingUser.get_active_hand()))

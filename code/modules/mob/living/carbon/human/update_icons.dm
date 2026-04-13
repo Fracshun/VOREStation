@@ -345,7 +345,7 @@ GLOBAL_LIST_EMPTY(damage_icon_parts) //see UpdateDamageIcon()
 				base_icon.MapColors(rgb(tone[1],0,0),rgb(0,tone[2],0),rgb(0,0,tone[3]))
 
 		//Handle husk overlay.
-		if(husk && ("overlay_husk" in cached_icon_states(species.icobase)))
+		if(husk && icon_exists(species.icobase, "overlay_husk"))
 			var/icon/mask = new(base_icon)
 			var/icon/husk_over = new(species.icobase,"overlay_husk")
 			mask.MapColors(0,0,0,1, 0,0,0,1, 0,0,0,1, 0,0,0,1, 0,0,0,0)
@@ -399,7 +399,7 @@ GLOBAL_LIST_EMPTY(damage_icon_parts) //see UpdateDamageIcon()
 	var/image/both = image(icon = 'icons/effects/effects.dmi', icon_state = "nothing", layer = BODY_LAYER+BLOOD_LAYER)
 
 	//Bloody hands
-	if(bloody_mess)
+	if(LAZYLEN(bloody_mess))
 		var/image/bloodsies	= image(icon = species.get_blood_mask(src), icon_state = "bloodyhands", layer = BODY_LAYER+BLOOD_LAYER)
 		bloodsies.color = hand_blood_color
 		both.add_overlay(bloodsies)
@@ -549,10 +549,11 @@ GLOBAL_LIST_EMPTY(damage_icon_parts) //see UpdateDamageIcon()
 		return
 
 	var/icon/eyes_icon = new/icon(head_organ.eye_icon_location, head_organ.eye_icon)
-	if(eyes)
-		eyes_icon.Blend(rgb(eyes.eye_colour[1], eyes.eye_colour[2], eyes.eye_colour[3]), ICON_ADD)
-	else
-		eyes_icon.Blend(rgb(128,0,0), ICON_ADD)
+	if(!findtext(head_organ.eye_icon, regex("-colored")))
+		if(eyes)
+			eyes_icon.Blend(rgb(eyes.eye_colour[1], eyes.eye_colour[2], eyes.eye_colour[3]), ICON_ADD)
+		else
+			eyes_icon.Blend(rgb(128,0,0), ICON_ADD)
 
 	// Convert to emissive at some point
 	if (head_organ.transparent)
@@ -577,7 +578,7 @@ GLOBAL_LIST_EMPTY(damage_icon_parts) //see UpdateDamageIcon()
 	var/image/standing	= image(icon = 'icons/effects/genetics.dmi', layer = BODY_LAYER+MUTATIONS_LAYER)
 
 	for(var/mut in mutations)
-		if(mut == LASER)
+		if(mut == LASER_EYES)
 			standing.overlays += "lasereyes_s" // Leaving this as overlays +=
 
 	overlays_standing[MUTATIONS_LAYER]	= standing
@@ -950,7 +951,7 @@ GLOBAL_LIST_EMPTY(damage_icon_parts) //see UpdateDamageIcon()
 	if(!legcuffed)
 		return //Not legcuffed, why bother.
 
-	throw_alert("legcuffed", /obj/screen/alert/restrained/legcuffed, new_master = legcuffed)
+	throw_alert("legcuffed", /atom/movable/screen/alert/restrained/legcuffed, new_master = legcuffed)
 
 	overlays_standing[LEGCUFF_LAYER] = legcuffed.make_worn_icon(body_type = species.get_bodytype(src), slot_name = slot_legcuffed_str, default_icon = INV_LCUFF_DEF_ICON, default_layer = LEGCUFF_LAYER)
 
@@ -1006,6 +1007,8 @@ GLOBAL_LIST_EMPTY(damage_icon_parts) //see UpdateDamageIcon()
 		tail_layer = TAIL_UPPER_LAYER		// Use default, let clip mask handle everything
 	if(tail_layer == TAIL_UPPER_LAYER)
 		tail_layer = tail_layering
+
+	update_vore_tail_sprite()
 
 	var/obj/item/organ/external/chest = organs_by_name[BP_TORSO]
 
@@ -1191,6 +1194,10 @@ GLOBAL_LIST_EMPTY(damage_icon_parts) //see UpdateDamageIcon()
 	var/atom/A = loc // We'd better be swimming and on a turf
 	var/image/I = image(icon = 'icons/mob/submerged.dmi', icon_state = "human_swimming_[depth]", layer = BODY_LAYER+MOB_WATER_LAYER) //TODO: Improve
 	I.color = A.color
+	if(istype(A, /turf/simulated/floor/water))
+		var/turf/simulated/floor/water/underwater = A
+		if(underwater.watercolor)
+			I.color = underwater.watercolor
 	overlays_standing[MOB_WATER_LAYER] = I
 
 	apply_layer(MOB_WATER_LAYER)
@@ -1428,11 +1435,11 @@ GLOBAL_LIST_EMPTY(damage_icon_parts) //see UpdateDamageIcon()
 	apply_layer(VORE_TAIL_LAYER)
 
 /mob/living/carbon/human/proc/get_vore_tail_image()
-	if(tail_style && istaurtail(tail_style) && tail_style:vore_tail_sprite_variant)
+	if(tail_style && istaurtail(tail_style) && tail_style.vore_tail_sprite_variant)
 		var/vs_fullness = vore_fullness_ex["taur belly"]
-		var/loaf_alt = lying && tail_style:belly_variant_when_loaf
+		var/loaf_alt = lying && tail_style.belly_variant_when_loaf
 		var/fullness_icons = min(tail_style.fullness_icons, vs_fullness)
-		var/icon/vorebelly_s = new/icon(icon = tail_style.bellies_icon_path, icon_state = "Taur[tail_style:vore_tail_sprite_variant]-Belly-[fullness_icons][loaf_alt ? " loaf" : (struggle_anim_taur ? "" : " idle")]")
+		var/icon/vorebelly_s = new/icon(icon = tail_style.bellies_icon_path, icon_state = "Taur[tail_style.vore_tail_sprite_variant]-Belly-[fullness_icons][loaf_alt ? " loaf" : (struggle_anim_taur ? "" : " idle")]")
 		vorebelly_s.Blend(vore_sprite_color["taur belly"], vore_sprite_multiply["taur belly"] ? ICON_MULTIPLY : ICON_ADD)
 		var/image/working = image(vorebelly_s)
 		working.pixel_x = -16

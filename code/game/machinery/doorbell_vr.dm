@@ -8,6 +8,7 @@
 	idle_power_usage = 10
 	active_power_usage = 200
 	anchored = TRUE
+	flags = WALL_ITEM
 	var/id_tag = null
 	var/chime_sound = 'sound/machines/doorbell.ogg'
 
@@ -89,6 +90,7 @@
 	icon = 'icons/obj/machines/doorbell_vr.dmi'
 	icon_state = "doorbell-standby"
 	use_power = USE_POWER_OFF
+	flags = WALL_ITEM
 
 /obj/machinery/button/doorbell/Initialize(mapload, var/dir, var/building = FALSE)
 	. = ..()
@@ -139,7 +141,7 @@
 	else if(W.has_tool_quality(TOOL_WRENCH))
 		to_chat(user, span_notice("You start to unwrench \the [src]."))
 		playsound(src, 'sound/items/Ratchet.ogg', 50, 1)
-		if(do_after(user, 15) && !QDELETED(src))
+		if(do_after(user, 15, target = src) && !QDELETED(src))
 			to_chat(user, span_notice("You unwrench \the [src]."))
 			new /obj/item/frame/doorbell(src.loc)
 			qdel(src)

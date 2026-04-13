@@ -8,7 +8,6 @@
 	anchored = TRUE
 	var/power_failing = FALSE // Turns to TRUE when the grid check event is fired by the Game Master, or perhaps a cheeky antag.
 	// Wire stuff below.
-	var/datum/wires/grid_checker/wires
 	var/wire_locked_out = FALSE
 	var/wire_allow_manual_1 = FALSE
 	var/wire_allow_manual_2 = FALSE
@@ -19,7 +18,7 @@
 	. = ..()
 	connect_to_network()
 	update_icon()
-	wires = new(src)
+	set_wires(new /datum/wires/grid_checker(src))
 	default_apply_parts()
 
 /obj/machinery/power/grid_checker/Destroy()
@@ -63,7 +62,7 @@
 
 /obj/machinery/power/grid_checker/proc/power_failure(var/announce = TRUE)
 	if(announce)
-		command_announcement.Announce("Abnormal activity detected in [station_name()]'s powernet. As a precautionary measure, \
+		GLOB.command_announcement.Announce("Abnormal activity detected in [station_name()]'s powernet. As a precautionary measure, \
 		the colony's power will be shut off for an indeterminate duration while the powernet monitor restarts automatically, or \
 		when Engineering can manually resolve the issue.",
 		"Critical Power Failure",
@@ -89,7 +88,7 @@
 
 /obj/machinery/power/grid_checker/proc/end_power_failure(var/announce = TRUE)
 	if(announce)
-		command_announcement.Announce("Power has been restored to [station_name()]. We apologize for the inconvenience.",
+		GLOB.command_announcement.Announce("Power has been restored to [station_name()]. We apologize for the inconvenience.",
 		"Power Systems Nominal",
 		new_sound = 'sound/AI/poweron.ogg')
 	power_failing = FALSE

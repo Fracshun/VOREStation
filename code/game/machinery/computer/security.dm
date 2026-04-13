@@ -10,7 +10,7 @@
 	icon_keyboard = "security_key"
 	icon_screen = "security"
 	light_color = "#a91515"
-	req_one_access = list(access_security, access_forensics_lockers, access_lawyer)
+	req_one_access = list(ACCESS_SECURITY, ACCESS_FORENSICS_LOCKERS, ACCESS_LAWYER)
 	circuit = /obj/item/circuitboard/secure_data
 	var/obj/item/card/id/scan = null
 	var/authenticated = null
@@ -403,7 +403,7 @@
 						answer = text2num(answer)
 
 					if(field == "rank")
-						if(answer in GLOB.joblist)
+						if(answer in SSjob.occupations_by_name)
 							active1.fields["real_rank"] = answer
 
 					if(field == "criminal")
@@ -489,9 +489,9 @@
 		if (selection)
 			return selection.img
 
-/obj/machinery/computer/secure_data/emp_act(severity)
-	if(stat & (BROKEN|NOPOWER))
-		..(severity)
+/obj/machinery/computer/secure_data/emp_act(severity, recursive)
+	. = ..()
+	if (. & EMP_PROTECT_SELF ||stat & (BROKEN|NOPOWER))
 		return
 
 	for(var/datum/data/record/R in GLOB.data_core.security)
@@ -516,8 +516,6 @@
 		else if(prob(1))
 			qdel(R)
 			continue
-
-	..(severity)
 
 /obj/machinery/computer/secure_data/detective_computer
 	icon_state = "forensic"

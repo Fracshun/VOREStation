@@ -5,7 +5,7 @@
 /// Food.
 ////////////////////////////////////////////////////////////////////////////////
 /obj/item/reagent_containers/food
-	possible_transfer_amounts = null
+	max_transfer_amount = null
 	volume = 50 //Sets the default container amount for all food items.
 	description_info = "Food can use the Rename Food verb in the Object Tab to rename it."
 	var/filling_color = "#FFFFFF" //Used by sandwiches and custom food.
@@ -14,6 +14,7 @@
 
 	var/food_can_insert_micro = FALSE
 	var/list/food_inserted_micros
+	resistance_flags = FLAMMABLE
 
 /obj/item/reagent_containers/food/verb/change_name()
 	set name = "Rename Food"
@@ -62,7 +63,10 @@
 /obj/item/reagent_containers/food/container_resist(mob/living/M)
 	if(food_inserted_micros)
 		food_inserted_micros -= M
-	M.forceMove(get_turf(src))
+	if(isdisposalpacket(loc))
+		M.forceMove(loc)
+	else
+		M.forceMove(get_turf(src))
 	to_chat(M, span_warning("You climb out of \the [src]."))
 
 #undef CELLS

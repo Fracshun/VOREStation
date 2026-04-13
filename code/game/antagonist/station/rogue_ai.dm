@@ -1,4 +1,4 @@
-var/datum/antagonist/rogue_ai/malf
+GLOBAL_DATUM(malf, /datum/antagonist/rogue_ai)
 
 /datum/antagonist/rogue_ai
 	id = MODE_MALFUNCTION
@@ -20,7 +20,7 @@ var/datum/antagonist/rogue_ai/malf
 
 /datum/antagonist/rogue_ai/New()
 	..()
-	malf = src
+	GLOB.malf = src
 
 
 /datum/antagonist/rogue_ai/get_candidates()
@@ -52,8 +52,8 @@ var/datum/antagonist/rogue_ai/malf
 
 		var/mob/living/silicon/ai/A = player.current
 		if(!istype(A))
-			error("Non-AI mob designated malf AI! Report this.")
-			to_world(span_filter_system("##ERROR: Non-AI mob designated malf AI! Report this."))
+			log_world("## ERROR Non-AI mob designated malf AI! Report this.")
+			to_chat(world, span_filter_system("##ERROR: Non-AI mob designated malf AI! Report this."))
 			return
 
 		A.setup_for_malf()
@@ -89,7 +89,7 @@ var/datum/antagonist/rogue_ai/malf
 		player.current = new mob_path(get_turf(player.current), null, null, 1)
 		player.transfer_to(player.current)
 		if(holder) qdel(holder)
-	player.original = player.current
+	player.original_character = WEAKREF(player.current)
 	return player.current
 
 /datum/antagonist/rogue_ai/set_antag_name(var/mob/living/silicon/player)

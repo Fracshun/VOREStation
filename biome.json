@@ -1,5 +1,5 @@
 {
-	"$schema": "https://biomejs.dev/schemas/2.1.2/schema.json",
+	"$schema": "https://biomejs.dev/schemas/2.4.10/schema.json",
 	"assist": {
 		"actions": {
 			"source": {
@@ -20,7 +20,9 @@
 			"!**/node_modules",
 			"!tgui/public",
 			"tgui/public/tgui.html",
-			"!tgui/packages/tgui-setup/helpers.js"
+			"!tgui/packages/tgfont/dist",
+			"!tgui/packages/tgui-setup/helpers.js",
+			"!**/bun.lock"
 		]
 	},
 	"formatter": {
@@ -39,8 +41,11 @@
 		"rules": {
 			"recommended": true,
 			"a11y": "off",
+			"complexity": {
+				"useArrowFunction": "error"
+			},
 			"correctness": {
-				"noUnusedImports": "warn",
+				"noUnusedImports": "error",
 				"noUnusedVariables": "off",
 				"useExhaustiveDependencies": "off",
 				"noUnusedFunctionParameters": "off",
@@ -57,7 +62,7 @@
 				"noArrayIndexKey": "off",
 				"noExplicitAny": "off",
 				"noImplicitAnyLet": "off",
-				"noAssignInExpressions": "warn"
+				"noVar": "error"
 			}
 		}
 	},

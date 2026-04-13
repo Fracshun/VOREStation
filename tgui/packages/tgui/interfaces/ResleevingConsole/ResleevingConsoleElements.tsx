@@ -1,6 +1,12 @@
 import { useBackend } from 'tgui/backend';
-import { Stack } from 'tgui-core/components';
-import { Box, Button, NoticeBox, Section, Tabs } from 'tgui-core/components';
+import {
+  Box,
+  Button,
+  NoticeBox,
+  Section,
+  Stack,
+  Tabs,
+} from 'tgui-core/components';
 
 import { MENU_BODY, MENU_MAIN, MENU_MIND } from './constants';
 import { ResleevingConsolePodGrowers } from './ResleevingConsolePodGrowers';
@@ -80,7 +86,7 @@ export const ResleevingConsoleNavigation = (props) => {
 export const ResleevingConsoleTemp = (props) => {
   const { act, data } = useBackend<Data>();
   const { temp } = data;
-  if (!temp || !temp.text || temp.text.length <= 0) {
+  if (!temp?.text || temp.text.length <= 0) {
     return;
   }
 

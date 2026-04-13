@@ -37,7 +37,7 @@
 	var/area/A = isarea(X) ? X : get_area(X)
 	if(!A)
 		return null
-	return format_text ? format_text(A.name) : A.name
+	return format_text ? strip_improper(A.name) : A.name
 
 /** Checks if any living humans are in a given area. */
 /proc/area_is_occupied(var/area/myarea)
@@ -157,8 +157,6 @@
 	return turfs
 
 
-
-//var/debug_mob = 0
 
 // Will recursively loop through an atom's contents and check for mobs, then it will loop through every atom in that atom's contents.
 // It will keep doing this until it checks every content possible. This will fix any problems with mobs, that are inside objects,
@@ -464,7 +462,7 @@
 	return candidates
 
 /proc/ScreenText(obj/O, maptext="", screen_loc="CENTER-7,CENTER-7", maptext_height=480, maptext_width=480)
-	if(!isobj(O))	O = new /obj/screen/text()
+	if(!isobj(O))	O = new /atom/movable/screen/text()
 	O.maptext = maptext
 	O.maptext_height = maptext_height
 	O.maptext_width = maptext_width
@@ -641,12 +639,6 @@
 		temps[direction] = rstats
 	return temps
 
-/proc/MinutesToTicks(var/minutes)
-	return SecondsToTicks(60 * minutes)
-
-/proc/SecondsToTicks(var/seconds)
-	return seconds * 10
-
 ///Flash the window of a player
 /proc/window_flash(client/flashed_client, ignorepref = FALSE)
 	if(ismob(flashed_client))
@@ -684,7 +676,6 @@
 
 /proc/recursive_mob_check(var/atom/O,  var/list/L = list(), var/recursion_limit = 3, var/client_check = 1, var/sight_check = 1, var/include_radio = 1)
 
-	//GLOB.debug_mob += O.contents.len
 	if(!recursion_limit)
 		return L
 	for(var/atom/A in O.contents)

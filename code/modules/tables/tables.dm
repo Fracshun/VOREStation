@@ -1,4 +1,4 @@
-var/list/table_icon_cache = list()
+GLOBAL_LIST_EMPTY(table_icon_cache)
 
 /obj/structure/table
 	name = "table frame"
@@ -9,7 +9,7 @@ var/list/table_icon_cache = list()
 	anchored = TRUE
 	layer = TABLE_LAYER
 	throwpass = 1
-	surgery_odds = 50 //VOREStation Edit
+	surgery_cleanliness = 50
 	var/flipped = 0
 	var/maxhealth = 10
 	var/health = 10
@@ -148,7 +148,7 @@ var/list/table_icon_cache = list()
 		if(F.welding)
 			to_chat(user, span_notice("You begin reparing damage to \the [src]."))
 			playsound(src, F.usesound, 50, 1)
-			if(!do_after(user, 20 * F.toolspeed) || !F.remove_fuel(1, user))
+			if(!do_after(user, 2 SECONDS * F.toolspeed, target = src) || !F.remove_fuel(1, user))
 				return
 			user.visible_message(span_infoplain(span_bold("\The [user]") + " repairs some damage to \the [src]."),
 									span_notice("You repair some damage to \the [src]."))
@@ -238,7 +238,7 @@ var/list/table_icon_cache = list()
 	if(manipulating) return M
 	manipulating = 1
 	to_chat(user, span_notice("You begin [verb]ing \the [src] with [M.display_name]."))
-	if(!do_after(user, 20) || !S.use(1))
+	if(!do_after(user, 2 SECONDS, target = src) || !S.use(1))
 		manipulating = 0
 		return null
 	user.visible_message(span_notice("\The [user] [verb]es \the [src] with [M.display_name]."), span_notice("You finish [verb]ing \the [src]."))
@@ -257,7 +257,7 @@ var/list/table_icon_cache = list()
 								span_notice("You begin removing the [type_holding] holding \the [src]'s [M.display_name] [what] in place."))
 	if(sound)
 		playsound(src, sound, 50, 1)
-	if(!do_after(user, delay))
+	if(!do_after(user, delay, target = src))
 		manipulating = 0
 		return M
 	user.visible_message(span_infoplain(span_bold("\The [user]") + " removes the [M.display_name] [what] from \the [src]."),
@@ -278,7 +278,7 @@ var/list/table_icon_cache = list()
 	user.visible_message(span_infoplain(span_bold("\The [user]") + " begins dismantling \the [src]."),
 							span_notice("You begin dismantling \the [src]."))
 	playsound(src, W.usesound, 50, 1)
-	if(!do_after(user, 20 * W.toolspeed))
+	if(!do_after(user, 2 SECONDS * W.toolspeed, target = src))
 		manipulating = 0
 		return
 	user.visible_message(span_infoplain(span_bold("\The [user]") + " dismantles \the [src]."),
@@ -336,14 +336,14 @@ var/list/table_icon_cache = list()
 
 /proc/get_table_image(var/icon/ticon,var/ticonstate,var/tdir,var/tcolor,var/talpha)
 	var/icon_cache_key = "\ref[ticon]-[ticonstate]-[tdir]-[tcolor]-[talpha]"
-	var/image/I = table_icon_cache[icon_cache_key]
+	var/image/I = GLOB.table_icon_cache[icon_cache_key]
 	if(!I)
 		I = image(icon = ticon, icon_state = ticonstate, dir = tdir)
 		if(tcolor)
 			I.color = tcolor
 		if(talpha)
 			I.alpha = talpha
-		table_icon_cache[icon_cache_key] = I
+		GLOB.table_icon_cache[icon_cache_key] = I
 
 	return I
 

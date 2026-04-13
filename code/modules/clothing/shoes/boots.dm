@@ -132,6 +132,7 @@
 	max_heat_protection_temperature = SHOE_MAX_HEAT_PROTECTION_TEMPERATURE
 	snow_speed = -1
 	step_volume_mod = 0.8
+	resistance_flags = FIRE_PROOF
 
 /obj/item/clothing/shoes/boots/winter/security
 	name = "security winter boots"
@@ -266,3 +267,8 @@
 	name = "half moon boots"
 	desc = "Flexible and tight, these boots ensure the wearer will be leaving a solid impression without sacrificing mobility."
 	icon_state = "half_moon"
+
+/obj/item/clothing/shoes/boots/hoof
+	name = "hoofboots"
+	desc = "A pair of high-heeled boots with hooves on the front of the soles, for use with a hobby horse or to disguise your footprints."
+	icon_state = "hoofboots"

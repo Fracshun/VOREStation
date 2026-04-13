@@ -12,6 +12,7 @@
 	var/datum/material/material
 	var/set_temperature = T0C + 30	//K
 	var/heating_power = 80000
+	resistance_flags = FIRE_PROOF
 
 /obj/structure/bonfire/Initialize(mapload, material_name)
 	. = ..()
@@ -19,6 +20,7 @@
 		material_name = MAT_WOOD
 	material = get_material_by_name("[material_name]")
 	if(!material)
+		stack_trace("Material of type: [material_name] does not exist.")
 		return INITIALIZE_HINT_QDEL
 	color = material.icon_colour
 
@@ -76,7 +78,7 @@
 /obj/structure/bonfire/proc/dismantle(mob/user)
 	if(!burning)
 		user.visible_message("[user] starts dismantling \the [src].", "You start dismantling \the [src].")
-		if(do_after(user, 5 SECONDS))
+		if(do_after(user, 5 SECONDS, target = src))
 			for(var/i = 1 to 5)
 				material.place_dismantled_product(get_turf(src))
 			user.visible_message("[user] dismantles down \the [src].", "You dismantle \the [src].")
@@ -154,7 +156,8 @@
 	return TRUE
 
 
-/obj/structure/bonfire/proc/extinguish()
+/obj/structure/bonfire/extinguish()
+	. = ..()
 	if(burning)
 		burning = FALSE
 		update_icon()
@@ -168,7 +171,7 @@
 		START_PROCESSING(SSobj, src)
 		visible_message(span_warning("\The [src] starts burning!"))
 
-/obj/structure/bonfire/proc/burn()
+/obj/structure/bonfire/proc/burn_bonfire()
 	var/turf/current_location = get_turf(src)
 	current_location.hotspot_expose(1000, 500)
 	for(var/A in current_location)
@@ -181,7 +184,7 @@
 			var/mob/living/L = A
 			if(!(L.is_incorporeal()))
 				L.adjust_fire_stacks(get_fuel_amount() / 4)
-				L.IgniteMob()
+				L.ignite_mob()
 
 /obj/structure/bonfire/update_icon()
 	cut_overlays()
@@ -223,7 +226,7 @@
 			extinguish()
 			return
 	if(!grill)
-		burn()
+		burn_bonfire()
 
 	if(burning)
 		var/W = get_fuel_amount()
@@ -277,6 +280,7 @@
 	var/next_fuel_consumption = 0
 	var/set_temperature = T0C + 20	//K
 	var/heating_power = 40000
+	resistance_flags = FIRE_PROOF
 
 /obj/structure/fireplace/attackby(obj/item/W, mob/user)
 	if(istype(W, /obj/item/stack/material/wood) || istype(W, /obj/item/stack/material/log) )
@@ -348,7 +352,8 @@
 		return FALSE
 	return TRUE
 
-/obj/structure/fireplace/proc/extinguish()
+/obj/structure/fireplace/extinguish()
+	. = ..()
 	if(burning)
 		burning = FALSE
 		update_icon()
@@ -362,7 +367,7 @@
 		START_PROCESSING(SSobj, src)
 		visible_message(span_warning("\The [src] starts burning!"))
 
-/obj/structure/fireplace/proc/burn()
+/obj/structure/fireplace/proc/burn_bonfire()
 	var/turf/current_location = get_turf(src)
 	current_location.hotspot_expose(1000, 500)
 	for(var/A in current_location)

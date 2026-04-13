@@ -18,7 +18,7 @@
 	var/minrate = 0
 	var/maxrate = 10 * ONE_ATMOSPHERE
 
-	var/list/scrubbing_gas = list(GAS_PHORON, GAS_CO2, GAS_N2O, GAS_VOLATILE_FUEL)
+	var/list/scrubbing_gas = list(GAS_PHORON, GAS_CO2, GAS_N2O, GAS_VOLATILE_FUEL, GAS_CH4)
 
 /obj/machinery/portable_atmospherics/powered/scrubber/Initialize(mapload, skip_cell)
 	. = ..()
@@ -26,16 +26,14 @@
 		cell = new/obj/item/cell/apc(src)
 	AddElement(/datum/element/climbable)
 
-/obj/machinery/portable_atmospherics/powered/scrubber/emp_act(severity)
-	if(stat & (BROKEN|NOPOWER))
-		..(severity)
+/obj/machinery/portable_atmospherics/powered/scrubber/emp_act(severity, recursive)
+	. = ..()
+	if (. & EMP_PROTECT_SELF || stat & (BROKEN|NOPOWER))
 		return
 
 	if(prob(50/severity))
 		on = !on
 		update_icon()
-
-	..(severity)
 
 /obj/machinery/portable_atmospherics/powered/scrubber/update_icon()
 	cut_overlays()
@@ -83,9 +81,6 @@
 		if (!cell.charge)
 			power_change()
 			update_icon()
-
-	//src.update_icon()
-	src.updateDialog()
 
 /obj/machinery/portable_atmospherics/powered/scrubber/return_air()
 	return air_contents

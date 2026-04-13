@@ -124,7 +124,7 @@
 			if(prob(5) && bruteheal)
 				if(H.stat != DEAD)
 					to_chat(H, span_userdanger("You retch, and a splatter of gore escapes your gullet!"))
-					H.vomit(lost_nutrition = 0, blood = TRUE, stun = FALSE)
+					H.do_vomit(lost_nutrition = 0, blood = TRUE, stun = FALSE)
 					// Spitting tumors go here! IF they get up-ported.
 				if(tetsuo)
 					var/list/missing = H.get_missing_limbs()
@@ -261,10 +261,10 @@
 		. += power
 	if(H.ingested.has_reagent(REAGENT_ID_HOLYWATER))
 		H.ingested.remove_reagent(REAGENT_ID_HOLYWATER, 0.5 * absorption_coeff)
-		. += power * 0.75
+		. += power * 1.25
 	else if(H.ingested.has_reagent(REAGENT_ID_WATER))
 		H.ingested.remove_reagent(REAGENT_ID_WATER, 0.5 * absorption_coeff)
-		. += power * 0.5
+		. += power * 0.75
 
 /datum/symptom/heal/water/Heal(mob/living/carbon/human/H, datum/disease/advance/A, actual_power)
 	if(!istype(H))

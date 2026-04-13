@@ -1,5 +1,5 @@
 /mob/living/silicon/robot/updatehealth()
-	if(SEND_SIGNAL(src, COMSIG_UPDATE_HEALTH) & COMSIG_UPDATE_HEALTH_GOD_MODE)
+	if(SEND_SIGNAL(src, COMSIG_LIVING_HEALTH_UPDATE) & COMSIG_LIVING_HEALTH_UPDATE_GOD_MODE)
 		health = getMaxHealth()
 		set_stat(CONSCIOUS)
 		return
@@ -156,8 +156,9 @@
 
 		parts -= picked
 
-/mob/living/silicon/robot/emp_act(severity)
-	if(SEND_SIGNAL(src, COMSIG_ROBOT_EMP_ACT, severity) & COMPONENT_BLOCK_EMP)
-		return // Cancelled by a component
+/mob/living/silicon/robot/emp_act(severity, recursive)
+	. = ..()
+	if (. & EMP_PROTECT_SELF || SEND_SIGNAL(src, COMSIG_ROBOT_EMP_ACT, severity) & COMPONENT_BLOCK_EMP) // Cancelled by a component
+		return
 	uneq_all()
 	..() //Damage is handled at /silicon/ level.

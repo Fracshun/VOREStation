@@ -158,7 +158,7 @@
 	if (!directions)
 		directions = list(SOUTH)
 
-	for (var/icon_state_name in icon_states(I))
+	for (var/icon_state_name in icon_states_fast(I))
 		for (var/direction in directions)
 			var/prefix2 = (directions.len > 1 && prefix_with_dirs) ? "[dir2text(direction)]-" : ""
 			insert_icon("[prefix][prefix2][icon_state_name]", uni_icon(I, icon_state_name, direction))
@@ -193,9 +193,11 @@
 	if(yield || !isnull(job_id))
 		if(isnull(job_id))
 			getting_genned = TRUE
+			SSasset_loading.assets_generating++
 			job_id = rustg_iconforge_generate_async("data/spritesheets/", name, entries_json, do_cache, FALSE, TRUE)
 		UNTIL((data_out = rustg_iconforge_check(job_id)) != RUSTG_JOB_NO_RESULTS_YET)
 		getting_genned = FALSE
+		SSasset_loading.assets_generating--
 	else
 		data_out = rustg_iconforge_generate("data/spritesheets/", name, entries_json, do_cache, FALSE, TRUE)
 	if (data_out == RUSTG_JOB_ERROR)
@@ -237,7 +239,7 @@
 		CRASH("Error during spritesheet generation for [name]: [data["error"]]")
 
 /datum/asset/spritesheet_batched/queued_generation()
-	realize_spritesheets(yield = TRUE)
+	INVOKE_ASYNC(src, PROC_REF(realize_spritesheets), TRUE) // The proc is called inside a subsystem and waits with an UNTIL
 
 /datum/asset/spritesheet_batched/ensure_ready()
 	if(!fully_generated)

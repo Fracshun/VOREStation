@@ -245,7 +245,7 @@ GLOBAL_LIST_INIT(preference_entries_by_key, init_preference_entries_by_key())
 /datum/preference/proc/apply_to_silicon(mob/living/silicon/target, value)
 	SHOULD_NOT_SLEEP(TRUE)
 	SHOULD_CALL_PARENT(FALSE)
-	CRASH("`apply_to_human()` was not implemented for [type]!")
+	CRASH("`apply_to_silicon()` was not implemented for [type]!")
 
 /// Apply this preference onto the given animal.
 /// Must be overriden by subtypes.
@@ -253,7 +253,7 @@ GLOBAL_LIST_INIT(preference_entries_by_key, init_preference_entries_by_key())
 /datum/preference/proc/apply_to_animal(mob/living/simple_mob/target, value)
 	SHOULD_NOT_SLEEP(TRUE)
 	SHOULD_CALL_PARENT(FALSE)
-	CRASH("`apply_to_human()` was not implemented for [type]!")
+	CRASH("`apply_to_animal()` was not implemented for [type]!")
 
 /// Apply this preference onto the given living.
 /// Must be overriden by subtypes.
@@ -261,7 +261,7 @@ GLOBAL_LIST_INIT(preference_entries_by_key, init_preference_entries_by_key())
 /datum/preference/proc/apply_to_living(mob/living/target, value)
 	SHOULD_NOT_SLEEP(TRUE)
 	SHOULD_CALL_PARENT(FALSE)
-	CRASH("`apply_to_human()` was not implemented for [type]!")
+	CRASH("`apply_to_living()` was not implemented for [type]!")
 
 /// Returns which savefile to use for a given savefile identifier
 /datum/preferences/proc/get_save_data_for_savefile_identifier(savefile_identifier)
@@ -318,10 +318,17 @@ GLOBAL_LIST_INIT(preference_entries_by_key, init_preference_entries_by_key())
 
 /// Write a /datum/preference type and return its value directly to the json.
 /// Please use SScharacter_setup.queue_preferences_save(prefs) when you edit multiple at once and set direct_write to WRITE_PREF_MANUAL
-/mob/proc/write_preference_directly(preference_type, preference_value, write_mode = WRITE_PREF_INSTANT)
+/// Additionally, if you want something to be changed IN ROUND and change a pref for THAT CHARACTER'S SAVESLOT, ensure save_to_played_slot = TRUE!
+/mob/proc/write_preference_directly(preference_type, preference_value, write_mode = WRITE_PREF_INSTANT, save_to_played_slot)
+	var/remembered_default
+	if(save_to_played_slot && (mind.loaded_from_slot != client?.prefs?.default_slot))
+		remembered_default = client?.prefs?.default_slot
+		client?.prefs?.load_character(mind.loaded_from_slot)
 	var/success = client?.prefs?.write_preference_by_type(preference_type, preference_value, write_mode)
 	if(success)
 		client?.prefs?.value_cache[preference_type] = preference_value
+	if(remembered_default)
+		client?.prefs?.return_to_character_slot(src, remembered_default)
 	return success
 
 /// Set a /datum/preference entry.

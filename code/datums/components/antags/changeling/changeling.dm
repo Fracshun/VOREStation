@@ -1,9 +1,11 @@
 ///Changeling component.
 ///Stores changeling powers, changeling recharge thingie, changeling absorbed DNA and changeling ID (for changeling hivemind)
 GLOBAL_LIST_INIT(possible_changeling_IDs,list("Alpha","Beta","Chi","Delta","Epsilon","Eta","Gamma","Iota","Kappa","Lambda","Mu","Nu","Omega","Omicron","Phi","Pi","Psi","Rho","Sigma","Tau","Theta","Upsilon","Xi","Zeta")) //ALPHABETICAL ORDER.
+
 //Needs cleanup
-var/list/powers = subtypesof(/datum/power/changeling) //needed for the badmin verb for now
-var/list/datum/power/changeling/powerinstances = list()
+GLOBAL_LIST_INIT(changeling_powers, subtypesof(/datum/power/changeling)) //needed for the badmin verb for now
+GLOBAL_LIST_EMPTY_TYPED(powerinstances, /datum/power/changeling)
+
 /datum/power			//Could be used by other antags too
 	var/name = "Power"
 	var/desc = "Placeholder"
@@ -116,7 +118,7 @@ var/list/datum/power/changeling/powerinstances = list()
 	if(owner)
 		remove_verb(owner,/mob/proc/EvolutionMenu)
 		remove_verb(owner,/mob/proc/changeling_respec)
-	qdel_null(power_panel)
+	QDEL_NULL(power_panel)
 	absorbed_dna.Cut()
 	absorbed_languages.Cut()
 	purchased_powers.Cut()
@@ -159,12 +161,12 @@ var/list/datum/power/changeling/powerinstances = list()
 	mind.antag_holder.changeling = comp
 	var/lesser_form = !ishuman(src)
 
-	if(!powerinstances.len)
-		for(var/P in powers)
-			powerinstances += new P()
+	if(!GLOB.powerinstances.len)
+		for(var/P in GLOB.changeling_powers)
+			GLOB.powerinstances += new P()
 
 	// Code to auto-purchase free powers.
-	for(var/datum/power/changeling/P in powerinstances)
+	for(var/datum/power/changeling/P in GLOB.powerinstances)
 		if(!P.genomecost) // Is it free?
 			if(!(P in comp.purchased_powers)) // Do we not have it already?
 				comp.purchasePower(comp.owner, P.name, 0)// Purchase it. Don't remake our verbs, we're doing it after this.
@@ -177,7 +179,7 @@ var/list/datum/power/changeling/powerinstances = list()
 				add_verb(src, P.verbpath)
 			if(P.make_hud_button)
 				if(!src.ability_master)
-					src.ability_master = new /obj/screen/movable/ability_master(src)
+					src.ability_master = new /atom/movable/screen/movable/ability_master(src)
 				src.ability_master.add_ling_ability(
 					object_given = src,
 					verb_given = P.verbpath,
@@ -215,7 +217,7 @@ var/list/datum/power/changeling/powerinstances = list()
 	for(var/datum/power/changeling/P in comp.purchased_powers)
 		if(P.isVerb)
 			remove_verb(src, P.verbpath)
-			var/obj/screen/ability/verb_based/changeling/C = ability_master.get_ability_by_proc_ref(P.verbpath)
+			var/atom/movable/screen/ability/verb_based/changeling/C = ability_master.get_ability_by_proc_ref(P.verbpath)
 			if(C)
 				ability_master.remove_ability(C)
 
@@ -228,7 +230,7 @@ var/list/datum/power/changeling/powerinstances = list()
 
 	var/datum/component/antag/changeling/comp = is_changeling(src)
 	if(!comp)
-		to_world_log("[src] used a changeling verb but is not a changeling.")
+		log_world("[src] used a changeling verb but is not a changeling.")
 		return
 
 	if(src.stat > max_stat)
@@ -363,9 +365,9 @@ var/list/datum/power/changeling/powerinstances = list()
 	if(!comp)
 		to_chat(src, "You are not a changeling!")
 		return
-	if(!powerinstances.len)
-		for(var/changeling_power in powers)
-			powerinstances += new changeling_power()
+	if(!GLOB.powerinstances.len)
+		for(var/changeling_power in GLOB.changeling_powers)
+			GLOB.powerinstances += new changeling_power()
 	if(!comp.power_panel)
 		comp.power_panel = new()
 		comp.power_panel.comp = comp
@@ -377,7 +379,7 @@ var/list/datum/power/changeling/powerinstances = list()
 
 	var/datum/power/changeling/Thepower = Pname
 
-	for (var/datum/power/changeling/P in powerinstances)
+	for (var/datum/power/changeling/P in GLOB.powerinstances)
 		//to_world("[P] - [Pname] = [P.name == Pname ? "True" : "False"]")
 		if(P.name == Pname)
 			Thepower = P
@@ -406,8 +408,8 @@ var/list/datum/power/changeling/powerinstances = list()
 
 	if(Thepower.make_hud_button && Thepower.isVerb)
 		if(owner.ability_master)
-			qdel_null(owner.ability_master)
-			owner.ability_master = new /obj/screen/movable/ability_master(owner)
+			QDEL_NULL(owner.ability_master)
+			owner.ability_master = new /atom/movable/screen/movable/ability_master(owner)
 		owner.ability_master.add_ling_ability(
 			object_given = owner,
 			verb_given = Thepower.verbpath,
@@ -440,6 +442,9 @@ var/list/datum/power/changeling/powerinstances = list()
 	attack_verb = list("attacked", "slashed", "stabbed", "sliced")
 
 /obj/item/changeling_debug/attack_self(mob/user)
+	. = ..(user)
+	if(.)
+		return TRUE
 	user.make_changeling()
 
 ///Changeling Panel
@@ -468,7 +473,7 @@ var/list/datum/power/changeling/powerinstances = list()
 	var/list/data = list()
 	var/list/power_list = list()
 
-	for(var/datum/power/changeling/P in powerinstances)
+	for(var/datum/power/changeling/P in GLOB.powerinstances)
 		var/list/all_powers = list(
 			"power_name" = P.name,
 			"power_cost" = P.genomecost,

@@ -8,7 +8,6 @@
 	icon_state = "generator0"
 	circuit = /obj/item/circuitboard/shield_generator
 	density = TRUE
-	var/datum/wires/shield_generator/wires = null
 	var/list/field_segments = list()    // List of all shield segments owned by this generator.
 	var/list/damaged_segments = list()  // List of shield segments that have failed and are currently regenerating.
 	var/shield_modes = 0                // Enabled shield mode flags
@@ -52,8 +51,7 @@
 
 /obj/machinery/power/shield_generator/Initialize(mapload)
 	. = ..()
-	if(!wires)
-		wires = new(src)
+	set_wires(new /datum/wires/shield_generator(src))
 	default_apply_parts()
 	connect_to_network()
 
@@ -217,7 +215,7 @@
 
 		for(var/obj/effect/shield/S in startends)
 			var/adjacent = startends[S]
-			log_debug("Processing startend [S] at [S?.x],[S?.y] adjacent=[adjacent]")
+			// to_chat(world, "Processing startend [S] at [S?.x],[S?.y] adjacent=[adjacent]")
 			var/turf/T = get_step(S, adjacent)
 			var/obj/effect/shield/SO = locate() in T
 			S.set_dir(SO.dir)

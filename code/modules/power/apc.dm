@@ -86,7 +86,7 @@ GLOBAL_LIST_EMPTY(apcs)
 	pixel_y = (dir & 3) ? (dir == 1 ? 20 : -20) : 0
 
 /obj/machinery/power/apc/hyper/graveyard
-	req_access = list(access_lost)
+	req_access = list(ACCESS_LOST)
 	alarms_hidden = TRUE
 
 /obj/machinery/power/apc
@@ -99,9 +99,10 @@ GLOBAL_LIST_EMPTY(apcs)
 	unacidable = TRUE
 	use_power = USE_POWER_OFF
 	clicksound = "switch"
-	req_access = list(access_engine_equip)
-	blocks_emissive = FALSE
+	req_access = list(ACCESS_ENGINE_EQUIP)
+	blocks_emissive = EMISSIVE_BLOCK_NONE
 	vis_flags = VIS_HIDE // They have an emissive that looks bad in openspace due to their wall-mounted nature
+	flags = WALL_ITEM
 	var/area/area
 	var/areastring = null
 	var/obj/item/cell/cell
@@ -129,14 +130,13 @@ GLOBAL_LIST_EMPTY(apcs)
 	var/lastused_total = 0
 	var/main_status = APC_EXTERNAL_POWER_NOTCONNECTED
 	var/mob/living/silicon/ai/hacker = null // Malfunction var. If set AI hacked the APC and has full control.
-	var/wiresexposed = 0
+	var/wiresexposed = FALSE
 	powernet = 0		// set so that APCs aren't found as powernet nodes //Hackish, Horrible, was like this before I changed it :(
 	var/debug= 0
 	var/autoflag= 0		// 0 = off, 1= eqp and lights off, 2 = eqp off, 3 = all on.
 	var/has_electronics = APC_HAS_ELECTRONICS_NONE // 0 - none, 1 - plugged in, 2 - secured by screwdriver
 	var/beenhit = 0 // used for counting how many times it has been hit, used for Aliens at the moment
 	var/longtermpower = 10
-	var/datum/wires/apc/wires = null
 	var/emergency_lights = FALSE
 	var/update_state = -1
 	var/update_overlay = -1
@@ -150,11 +150,6 @@ GLOBAL_LIST_EMPTY(apcs)
 	var/nightshift_lights = FALSE
 	var/nightshift_setting = NIGHTSHIFT_AUTO
 	var/last_nightshift_switch = 0
-
-/obj/machinery/power/apc/updateDialog()
-	if(stat & (BROKEN|MAINT))
-		return
-	..()
 
 /obj/machinery/power/apc/connect_to_network()
 	//Override because the APC does not directly connect to the network; it goes through a terminal.
@@ -191,7 +186,7 @@ GLOBAL_LIST_EMPTY(apcs)
 
 /obj/machinery/power/apc/Initialize(mapload, ndir, building)
 	. = ..()
-	wires = new(src)
+	set_wires(new /datum/wires/apc(src))
 	GLOB.apcs += src
 
 	// offset 24 pixels in direction of dir
@@ -474,7 +469,7 @@ GLOBAL_LIST_EMPTY(apcs)
 				return
 			playsound(src, W.usesound, 50, 1)
 			to_chat(user, "You begin to remove the power control board...") //lpeters - fixed grammar issues //Ner - grrrrrr
-			if(do_after(user, 50 * W.toolspeed))
+			if(do_after(user, 5 SECONDS * W.toolspeed, target = src))
 				if(has_electronics == APC_HAS_ELECTRONICS_WIRED)
 					has_electronics = APC_HAS_ELECTRONICS_NONE
 					if((stat & BROKEN))
@@ -492,7 +487,10 @@ GLOBAL_LIST_EMPTY(apcs)
 			opened = 0
 			update_icon()
 	else if(W.has_tool_quality(TOOL_CROWBAR) && !(stat & BROKEN) )
-		if(coverlocked && !(stat & MAINT))
+		var/remaining_power = 0
+		if(cell)
+			remaining_power = cell.percent()
+		if(coverlocked && !(stat & MAINT) && remaining_power > 15) // Cab be popped open by anyone at low power to change battery
 			to_chat(user, span_warning("The cover is locked and cannot be opened."))
 			return
 		else
@@ -558,7 +556,7 @@ GLOBAL_LIST_EMPTY(apcs)
 		user.visible_message(span_warning("[user.name] adds cables to the APC frame."), \
 							"You start adding cables to the APC frame...")
 		playsound(src, 'sound/items/Deconstruct.ogg', 50, 1)
-		if(do_after(user, 20))
+		if(do_after(user, 2 SECONDS, target = src))
 			if(C.get_amount() >= 10 && !terminal && opened && has_electronics != APC_HAS_ELECTRONICS_SECURED)
 				var/obj/structure/cable/N = T.get_cable_node()
 				if(prob(50) && electrocute_mob(user, N, N))
@@ -581,7 +579,7 @@ GLOBAL_LIST_EMPTY(apcs)
 		user.visible_message(span_warning("[user.name] starts dismantling the [src]'s power terminal."), \
 							"You begin to cut the cables...")
 		playsound(src, 'sound/items/Deconstruct.ogg', 50, 1)
-		if(do_after(user, 50 * W.toolspeed))
+		if(do_after(user, 5 SECONDS * W.toolspeed, target = src))
 			if(terminal && opened && has_electronics != APC_HAS_ELECTRONICS_SECURED)
 				if(prob(50) && electrocute_mob(user, terminal.powernet, terminal))
 					var/datum/effect/effect/system/spark_spread/s = new /datum/effect/effect/system/spark_spread
@@ -596,7 +594,7 @@ GLOBAL_LIST_EMPTY(apcs)
 		user.visible_message(span_warning("[user.name] inserts the power control board into [src]."), \
 							"You start to insert the power control board into the frame...")
 		playsound(src, 'sound/items/Deconstruct.ogg', 50, 1)
-		if(do_after(user, 10))
+		if(do_after(user, 1 SECOND, target = src))
 			if(has_electronics == APC_HAS_ELECTRONICS_NONE)
 				has_electronics = APC_HAS_ELECTRONICS_WIRED
 				reboot()
@@ -614,7 +612,7 @@ GLOBAL_LIST_EMPTY(apcs)
 							"You start welding the APC frame...", \
 							"You hear welding.")
 		playsound(src, WT.usesound, 25, 1)
-		if(do_after(user, 50 * WT.toolspeed))
+		if(do_after(user, 5 SECONDS * WT.toolspeed, target = src))
 			if(!src || !WT.remove_fuel(3, user)) return
 			if(emagged || (stat & BROKEN) || opened==2)
 				new /obj/item/stack/material/steel(loc)
@@ -637,7 +635,7 @@ GLOBAL_LIST_EMPTY(apcs)
 				return
 			user.visible_message(span_warning("[user.name] begins replacing the damaged APC cover with a new one."),\
 								"You begin to replace the damaged APC cover...")
-			if(do_after(user, 50))
+			if(do_after(user, 5 SECONDS, target = src))
 				user.visible_message(span_notice("[user.name] has replaced the damaged APC cover with a new one."),\
 					"You replace the damaged APC cover with a new one.")
 				qdel(W)
@@ -652,7 +650,7 @@ GLOBAL_LIST_EMPTY(apcs)
 				return
 			user.visible_message(span_warning("[user.name] connects their [W.name] to the APC and begins resetting it."),\
 								"You begin resetting the APC...")
-			if(do_after(user, 50))
+			if(do_after(user, 5 SECONDS, target = src))
 				user.visible_message(span_notice("[user.name] resets the APC with a beep from their [W.name]."),\
 									"You finish resetting the APC.")
 				playsound(src, 'sound/machines/chime.ogg', 25, 1)
@@ -699,7 +697,7 @@ GLOBAL_LIST_EMPTY(apcs)
 		else
 			to_chat(user, span_warning("Access denied."))
 
-/obj/machinery/power/apc/AltClick(mob/user)
+/obj/machinery/power/apc/click_alt(mob/user)
 	..()
 	togglelock(user)
 
@@ -713,7 +711,7 @@ GLOBAL_LIST_EMPTY(apcs)
 			to_chat(user, "The [src] isn't working.")
 		else
 			flick("apc-spark", src)
-			if(do_after(user,6))
+			if(do_after(user, 6, target = src))
 				emagged = 1
 				locked = 0
 				to_chat(user, span_notice("You emag the APC interface."))
@@ -735,19 +733,20 @@ GLOBAL_LIST_EMPTY(apcs)
 	if(ishuman(user))
 		var/mob/living/carbon/human/H = user
 
-		if(H.species.can_shred(H))
+		if(H.species.can_shred(H, FALSE, 14))
 			user.setClickCooldown(user.get_attack_speed())
 			user.visible_message(span_warning("[user.name] slashes at the [name]!"), span_notice("You slash at the [name]!"))
 			playsound(src, 'sound/weapons/slash.ogg', 100, 1)
+			add_hiddenprint(H)
 
 			var/allcut = wires.is_all_cut()
 
-			if(beenhit >= pick(3, 4) && wiresexposed != 1)
-				wiresexposed = 1
+			if(beenhit >= pick(3, 4) && !wiresexposed)
+				wiresexposed = TRUE
 				update_icon()
 				visible_message(span_warning("The [name]'s cover flies open, exposing the wires!"))
 
-			else if(wiresexposed == 1 && allcut == 0)
+			else if(wiresexposed && allcut == 0)
 				wires.cut_all()
 				update_icon()
 				visible_message(span_warning("The [name]'s wires are shredded!"))
@@ -1048,7 +1047,7 @@ GLOBAL_LIST_EMPTY(apcs)
 		main_status = APC_EXTERNAL_POWER_GOOD
 
 	if(debug)
-		log_debug("Status: [main_status] - Excess: [excess] - Last Equip: [lastused_equip] - Last Light: [lastused_light] - Longterm: [longtermpower]")
+		log_world("[src]: Status: [main_status] - Excess: [excess] - Last Equip: [lastused_equip] - Last Light: [lastused_light] - Longterm: [longtermpower]")
 
 	if(cell && !shorted && !grid_check)
 		// draw power from cell as before to power the area
@@ -1119,7 +1118,7 @@ GLOBAL_LIST_EMPTY(apcs)
 		equipment = autoset(equipment, 0)
 		lighting = autoset(lighting, 0)
 		environ = autoset(environ, 0)
-		power_alarm.triggerAlarm(loc, src, hidden=alarms_hidden)
+		GLOB.power_alarm.triggerAlarm(loc, src, hidden=alarms_hidden)
 		autoflag = 0
 
 	// update icon & area power if anything changed
@@ -1143,27 +1142,27 @@ GLOBAL_LIST_EMPTY(apcs)
 			lighting = autoset(lighting, 1)
 			environ = autoset(environ, 1)
 			autoflag = 3
-			power_alarm.clearAlarm(loc, src)
+			GLOB.power_alarm.clearAlarm(loc, src)
 	else if((cell.percent() <= 30) && (cell.percent() > 15) && longtermpower < 0)                       // <30%, turn off equipment
 		if(autoflag != 2)
 			equipment = autoset(equipment, 2)
 			lighting = autoset(lighting, 1)
 			environ = autoset(environ, 1)
-			power_alarm.triggerAlarm(loc, src, hidden=alarms_hidden)
+			GLOB.power_alarm.triggerAlarm(loc, src, hidden=alarms_hidden)
 			autoflag = 2
 	else if(cell.percent() <= 15)        // <15%, turn off lighting & equipment
 		if((autoflag > 1 && longtermpower < 0) || (autoflag > 1 && longtermpower >= 0))
 			equipment = autoset(equipment, 2)
 			lighting = autoset(lighting, 2)
 			environ = autoset(environ, 1)
-			power_alarm.triggerAlarm(loc, src, hidden=alarms_hidden)
+			GLOB.power_alarm.triggerAlarm(loc, src, hidden=alarms_hidden)
 			autoflag = 1
 	else                                   // zero charge, turn all off
 		if(autoflag != 0)
 			equipment = autoset(equipment, 0)
 			lighting = autoset(lighting, 0)
 			environ = autoset(environ, 0)
-			power_alarm.triggerAlarm(loc, src, hidden=alarms_hidden)
+			GLOB.power_alarm.triggerAlarm(loc, src, hidden=alarms_hidden)
 			autoflag = 0
 
 // val 0=off, 1=off(auto) 2=on 3=on(auto)
@@ -1186,24 +1185,25 @@ GLOBAL_LIST_EMPTY(apcs)
 
 
 // damage and destruction acts
-/obj/machinery/power/apc/emp_act(severity)
+/obj/machinery/power/apc/emp_act(severity, recursive)
+	. = ..()
+	if (. & EMP_PROTECT_SELF)
+		return
 	// Fail for 8-12 minutes (divided by severity)
 	// Division by 2 is required, because machinery ticks are every two seconds. Without it we would fail for 16-24 minutes.
+
 	if(is_critical)
 		// Critical APCs are considered EMP shielded and will be offline only for about half minute. Prevents AIs being one-shot disabled by EMP strike.
 		// Critical APCs are also more resilient to cell corruption/power drain.
 		energy_fail(rand(240, 360) / severity / CRITICAL_APC_EMP_PROTECTION)
-		if(cell)
-			cell.emp_act(severity+2)
+		severity = severity+2 //Anything inside the APC is also shielded.
 	else
 		// Regular APCs fail for normal time.
 		energy_fail(rand(240, 360) / severity)
-		//Cells are partially shielded by the APC frame.
-		if(cell)
-			cell.emp_act(severity+1)
+		//Cells (or anything else within) is partially shielded by the APC frame.
+		severity = severity+1
 
 	update_icon()
-	..()
 
 /obj/machinery/power/apc/ex_act(severity)
 
@@ -1288,7 +1288,7 @@ GLOBAL_LIST_EMPTY(apcs)
 	//start with main breaker off, chargemode in the default state and all channels on auto upon reboot
 	operating = 0
 	chargemode = initial(chargemode)
-	power_alarm.clearAlarm(loc, src)
+	GLOB.power_alarm.clearAlarm(loc, src)
 
 	lighting = POWERCHAN_ON_AUTO
 	equipment = POWERCHAN_ON_AUTO

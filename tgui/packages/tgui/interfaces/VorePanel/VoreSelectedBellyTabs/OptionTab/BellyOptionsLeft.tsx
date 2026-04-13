@@ -1,17 +1,18 @@
 import { LabeledList, Stack } from 'tgui-core/components';
-
+import { capitalize } from 'tgui-core/string';
 import { eatingMessagePrivacy } from '../../constants';
 import { sanitize_color } from '../../functions';
-import type { bellyOptionData } from '../../types';
+import type { BellyOptionData } from '../../types';
 import { VorePanelColorBox } from '../../VorePanelElements/VorePanelCommonElements';
 import { VorePanelEditDropdown } from '../../VorePanelElements/VorePanelEditDropdown';
 import { VorePanelEditNumber } from '../../VorePanelElements/VorePanelEditNumber';
 import { VorePanelEditSwitch } from '../../VorePanelElements/VorePanelEditSwitch';
+import { VorePanelEditText } from '../../VorePanelElements/VorePanelEditText';
 import { VoreSelectedWhitelist } from '../VisualTab/VoreSelecetedWhitelist';
 
 export const BellyOptionsLeft = (props: {
   editMode: boolean;
-  bellyOptionData: bellyOptionData;
+  bellyOptionData: BellyOptionData;
 }) => {
   const { editMode, bellyOptionData } = props;
   const {
@@ -27,6 +28,10 @@ export const BellyOptionsLeft = (props: {
     save_digest_mode,
     eating_privacy_local,
     private_struggle,
+    absorbedrename_enabled,
+    absorbedrename_name,
+    absorbedrename_name_max,
+    absorbedrename_name_min,
     vorespawn_blacklist,
     vorespawn_whitelist,
     vorespawn_absorbed,
@@ -143,7 +148,7 @@ export const BellyOptionsLeft = (props: {
           <VorePanelEditDropdown
             editMode={editMode}
             options={Object.keys(eatingMessagePrivacy)}
-            entry={eating_privacy_local}
+            entry={capitalize(eating_privacy_local)}
             action="set_attribute"
             subAction="b_eating_privacy"
             color={eatingMessagePrivacy[eating_privacy_local]}
@@ -159,10 +164,35 @@ export const BellyOptionsLeft = (props: {
             content={private_struggle ? 'Private' : 'Loud'}
             tooltip={
               (private_struggle ? 'Dis' : 'En') +
-              'ables subtle struggle messages.'
+              'ables private struggle messages.'
             }
           />
         </LabeledList.Item>
+        <LabeledList.Item label="Toggle Absorbed Rename">
+          <VorePanelEditSwitch
+            action="set_attribute"
+            subAction="b_absorbedrename_enabled"
+            editMode={editMode}
+            active={!!absorbedrename_enabled}
+            tooltip={
+              (absorbedrename_enabled ? 'Dis' : 'En') +
+              'ables renaming absorbed prey. Please keep in mind bystander consent when enabling this setting. This is your only warning.'
+            }
+          />
+        </LabeledList.Item>
+        {!!absorbedrename_enabled && (
+          <LabeledList.Item label="Absorbed Prey Name">
+            <VorePanelEditText
+              action="set_attribute"
+              subAction="b_absorbedrename_name"
+              editMode={editMode}
+              limit={absorbedrename_name_max}
+              min={absorbedrename_name_min}
+              entry={absorbedrename_name}
+              tooltip="Name your absorbed prey, works with %pred, %prey and %belly."
+            />
+          </LabeledList.Item>
+        )}
         <LabeledList.Item label="Save Digest Mode">
           <VorePanelEditSwitch
             action="set_attribute"

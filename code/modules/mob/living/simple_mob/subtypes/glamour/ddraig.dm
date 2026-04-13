@@ -1,6 +1,6 @@
 /mob/living/simple_mob/vore/ddraig
 	name = "ddraig"
-	desc = "A massive drake-like creature with dark purple scales and a seemingly exposed skull."
+	desc = "A massive, slender dragon like creature. It's body is covered in slick, vibrant pink scales. Atop its back sits large, thin white wings that are reminiscent of those scene on butterflies."
 	tt_desc = "Draconis glamoris"
 	icon = 'icons/mob/vore96x96.dmi'
 	icon_dead = "ddraig-dead"
@@ -76,6 +76,7 @@
 	vore_default_mode = DM_DIGEST
 	vore_pounce_maxhealth = 125
 	vore_bump_emote = "tries to devour"
+	can_be_drop_prey = FALSE
 
 /mob/living/simple_mob/vore/ddraig/faster
 	special_attack_cooldown = 10 SECONDS
@@ -229,41 +230,20 @@
 		if(!M.allow_spontaneous_tf && !tf_admin_pref_override)
 			return
 	if(M.tf_mob_holder)
-		var/mob/living/ourmob = M.tf_mob_holder
-		if(ourmob.ai_holder)
-			var/datum/ai_holder/our_AI = ourmob.ai_holder
-			our_AI.set_stance(STANCE_IDLE)
-		M.tf_mob_holder = null
-		ourmob.ckey = M.ckey
-		var/turf/get_dat_turf = get_turf(target)
-		ourmob.loc = get_dat_turf
-		ourmob.forceMove(get_dat_turf)
-		ourmob.vore_selected = M.vore_selected
-		M.vore_selected = null
-		ourmob.mob_belly_transfer(M)
-
-		ourmob.Life(1)
-		if(ishuman(M))
-			for(var/obj/item/W in M)
-				if(istype(W, /obj/item/implant/backup) || istype(W, /obj/item/nif))
-					continue
-				M.drop_from_inventory(W)
-
-		qdel(target)
+		M.revert_mob_tf()
 		return
 	else
 		if(M.stat == DEAD)	//We can let it undo the TF, because the person will be dead, but otherwise things get weird.
 			return
 		var/mob/living/new_mob = spawn_mob(M)
-		new_mob.faction = M.faction
 
-		new_mob.mob_tf(M)
+		M.tf_into(new_mob)
 
 		addtimer(CALLBACK(new_mob, TYPE_PROC_REF(/mob/living, revert_mob_tf)), 30 SECONDS, TIMER_DELETE_ME)
 
 /obj/item/projectile/beam/mouselaser/ddraig/spawn_mob(var/mob/living/target)
 	var/list/tf_list = list(/mob/living/simple_mob/animal/passive/mouse,
-		/mob/living/simple_mob/animal/passive/mouse/rat,
+		/mob/living/simple_mob/animal/passive/mouse/rat/strong,
 		/mob/living/simple_mob/vore/alienanimals/dustjumper,
 		/mob/living/simple_mob/vore/woof,
 		/mob/living/simple_mob/animal/passive/dog/corgi,
@@ -448,23 +428,19 @@
 
 
 	var/mob/living/M = src
-	log_debug("polymorph start")
 	if(!istype(M))
-		log_debug("polymorph istype")
 		return
 
 	if(M.stat)	//We can let it undo the TF, because the person will be dead, but otherwise things get weird.
-		log_debug("polymorph stat")
 		to_chat(src, span_warning("You can't do that in your condition."))
 		return
 
 	if(M.health <= 10)	//We can let it undo the TF, because the person will be dead, but otherwise things get weird.
-		log_debug("polymorph injured")
 		to_chat(src, span_warning("You are too injured to transform into a beast."))
 		return
 
 	visible_message("<b>\The [src]</b> begins significantly shifting their form.")
-	if(!do_after(src, 10 SECONDS, src, exclusive = TASK_USER_EXCLUSIVE))
+	if(!do_after(src, 10 SECONDS, target = src))
 		visible_message("<b>\The [src]</b> ceases shifting their form.")
 		return 0
 
@@ -474,70 +450,19 @@
 	spawn(10)
 		src.overlays -= coolanimation
 
-		log_debug("polymorph not dead")
 		var/mob/living/new_mob = spawn_polymorph_mob(beast_options[chosen_beast])
 		new_mob.faction = M.faction
 
 		if(new_mob && isliving(new_mob))
-			log_debug("polymorph new_mob")
-			for(var/obj/belly/B as anything in new_mob.vore_organs)
-				log_debug("polymorph new_mob belly")
-				new_mob.vore_organs -= B
-				qdel(B)
-			new_mob.vore_organs = list()
-			new_mob.name = M.name
-			new_mob.real_name = M.real_name
 			new_mob.verbs |= /mob/living/proc/revert_beast_form
 			new_mob.verbs |= /mob/living/proc/set_size
-			for(var/lang in M.languages)
-				new_mob.languages |= lang
-			M.copy_vore_prefs_to_mob(new_mob)
-			new_mob.vore_selected = M.vore_selected
-			if(ishuman(M))
-				log_debug("polymorph ishuman part2")
-				var/mob/living/carbon/human/H = M
-				if(ishuman(new_mob))
-					log_debug("polymorph ishuman(newmob)")
-					var/mob/living/carbon/human/N = new_mob
-					N.gender = H.gender
-					N.identifying_gender = H.identifying_gender
-				else
-					log_debug("polymorph gender else")
-					new_mob.gender = H.gender
-			else
-				log_debug("polymorph gender else 2")
-				new_mob.gender = M.gender
-				if(ishuman(new_mob))
-					var/mob/living/carbon/human/N = new_mob
-					N.identifying_gender = M.gender
-
-			for(var/obj/belly/B as anything in M.vore_organs)
-				B.loc = new_mob
-				B.forceMove(new_mob)
-				B.owner = new_mob
-				M.vore_organs -= B
-				new_mob.vore_organs += B
-
-			new_mob.ckey = M.ckey
-			if(M.ai_holder && new_mob.ai_holder)
-				var/datum/ai_holder/old_AI = M.ai_holder
-				old_AI.set_stance(STANCE_SLEEP)
-				var/datum/ai_holder/new_AI = new_mob.ai_holder
-				new_AI.hostile = old_AI.hostile
-				new_AI.retaliate = old_AI.retaliate
-			M.loc = new_mob
-			M.forceMove(new_mob)
-			new_mob.tf_mob_holder = M
+			transfer_mob_identity(new_mob)
 			new_mob.visible_message("<b>\The [src]</b> has transformed into \the [chosen_beast]!")
 
 /mob/living/proc/spawn_polymorph_mob(var/chosen_beast)
-	log_debug("polymorph proc spawn mob")
 	var/tf_type = chosen_beast
-	log_debug("polymorph [tf_type]")
 	if(!ispath(tf_type))
-		log_debug("polymorph tf_type fail")
 		return
-	log_debug("polymorph tf_type pass")
 	var/new_mob = new tf_type(get_turf(src))
 	return new_mob
 

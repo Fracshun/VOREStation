@@ -8,7 +8,6 @@ import {
   Section,
   Stack,
 } from 'tgui-core/components';
-import { toFixed } from 'tgui-core/math';
 import type { BooleanLike } from 'tgui-core/react';
 
 type Data = {
@@ -132,7 +131,7 @@ const TelecommsServerSelection = (props: {
   const { act } = useBackend();
   const { network, servers } = props;
 
-  if (!servers || !servers.length) {
+  if (!servers?.length) {
     return (
       <Section title="Detected Telecommunications Servers">
         <Box color="bad">No servers detected.</Box>
@@ -181,13 +180,13 @@ const TelecommsSelectedServer = (props: {
       <LabeledList>
         <LabeledList.Item label="Total Recorded Traffic">
           {server.totalTraffic >= 1024
-            ? `${toFixed(server.totalTraffic / 1024)} Terrabytes`
+            ? `${(server.totalTraffic / 1024).toFixed()} Terrabytes`
             : `${server.totalTraffic} Gigabytes`}
         </LabeledList.Item>
       </LabeledList>
       <Section title="Stored Logs" mt="4px">
         <Stack wrap="wrap">
-          {!server.logs || !server.logs.length
+          {!server.logs?.length
             ? 'No Logs Detected.'
             : server.logs.map((log) => (
                 <Stack.Item m="2px" key={log.id} basis="49%" grow={log.id % 2}>

@@ -55,9 +55,9 @@
 			return
 	..()
 
-/obj/vehicle/bike/CtrlClick(var/mob/user)
+/obj/vehicle/bike/click_ctrl(mob/user)
 	if(Adjacent(user) && anchored)
-		toggle()
+		return toggle_proc(user)
 	else
 		return ..()
 
@@ -65,20 +65,25 @@
 	set name = "Toggle Engine"
 	set category = "Vehicle"
 	set src in view(0)
+	toggle_proc(usr)
 
-	if(!isliving(usr) || ismouse(usr))
-		return
+/obj/vehicle/bike/proc/toggle_proc(mob/user)
+	if(!isliving(user) || HAS_TRAIT(user, TRAIT_AMBIENT_PEST_MOB))
+		return CLICK_ACTION_BLOCKING
 
-	if(usr.incapacitated()) return
+	if(user.incapacitated())
+		return CLICK_ACTION_BLOCKING
 
 	if(!on && cell && cell.charge > charge_use)
 		turn_on()
-		src.visible_message("\The [src] rumbles to life.", "You hear something rumble deeply.")
+		visible_message("\The [src] rumbles to life.", "You hear something rumble deeply.")
+		return CLICK_ACTION_SUCCESS
 	else
 		turn_off()
-		src.visible_message("\The [src] putters before turning off.", "You hear something putter slowly.")
+		visible_message("\The [src] putters before turning off.", "You hear something putter slowly.")
+		return CLICK_ACTION_SUCCESS
 
-/obj/vehicle/bike/AltClick(var/mob/user)
+/obj/vehicle/bike/click_alt(var/mob/user)
 	if(Adjacent(user))
 		kickstand(user)
 	else
@@ -89,7 +94,7 @@
 	set category = "Vehicle"
 	set src in view(0)
 
-	if(!isliving(usr) || ismouse(usr))
+	if(!isliving(usr) || HAS_TRAIT(usr, TRAIT_AMBIENT_PEST_MOB))
 		return
 
 	if(usr.incapacitated()) return
@@ -133,25 +138,25 @@
 		return 1
 	return 0
 
-/obj/vehicle/bike/Move(var/turf/destination)
+/obj/vehicle/bike/Move(atom/newloc, direct = 0, movetime)
 	if(kickstand) return 0
 
 	if(on && (!cell || cell.charge < charge_use))
 		turn_off()
 		visible_message(span_warning("\The [src] whines, before its engines wind down."))
-		return 0
+		return FALSE
 
 	//these things like space, not turf. Dragging shouldn't weigh you down.
 	if(on && cell)
 		cell.use(charge_use)
 
-	if(istype(destination,/turf/space) || istype(destination, /turf/simulated/floor/water) || pulledby)
+	if(is_vehicle_inpassable(newloc) || pulledby)
 		if(!space_speed)
-			return 0
+			return FALSE
 		move_delay = space_speed
 	else
 		if(!land_speed)
-			return 0
+			return FALSE
 		move_delay = land_speed
 	return ..()
 

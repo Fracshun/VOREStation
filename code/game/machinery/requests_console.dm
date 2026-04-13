@@ -29,6 +29,7 @@ GLOBAL_LIST_EMPTY_TYPED(allConsoles, /obj/machinery/requests_console)
 	light_power = 0.25
 	light_color = "#00ff00"
 	vis_flags = VIS_HIDE // They have an emissive that looks bad in openspace due to their wall-mounted nature
+	flags = WALL_ITEM
 	var/department = "Unknown" //The list of all departments on the station (Determined from this variable on each unit) Set this to the same thing if you want several consoles in one department
 	var/list/message_log = list() //List of all messages
 	var/departmentType = 0 		//Bitflag. Zero is reply-only. Map currently uses raw numbers instead of defines.
@@ -259,7 +260,7 @@ GLOBAL_LIST_EMPTY_TYPED(allConsoles, /obj/machinery/requests_console)
 			SStgui.update_uis(src)
 		if(screen == RCS_ANNOUNCE)
 			var/obj/item/card/id/ID = O
-			if(access_RC_announce in ID.GetAccess())
+			if(ACCESS_RC_ANNOUNCE in ID.GetAccess())
 				announceAuth = 1
 				announcement.announcer = ID.assignment ? "[ID.assignment] [ID.registered_name]" : ID.registered_name
 			else

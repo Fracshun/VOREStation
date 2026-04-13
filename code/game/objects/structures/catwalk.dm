@@ -80,7 +80,7 @@
 	if(Adjacent(user))
 		attack_hand(user)
 
-/obj/structure/catwalk/proc/deconstruct(mob/user)
+/obj/structure/catwalk/atom_deconstruct(disassembled = TRUE, mob/user)
 	playsound(src, 'sound/items/Welder.ogg', 100, 1)
 	to_chat(user, span_notice("Slicing \the [src] joints ..."))
 	//Lattice would delete itself, but let's save ourselves a new obj
@@ -97,7 +97,7 @@
 	if(C.has_tool_quality(TOOL_WELDER))
 		var/obj/item/weldingtool/WT = C.get_welder()
 		if(WT.isOn() && WT.remove_fuel(0, user))
-			deconstruct(user)
+			atom_deconstruct(TRUE, user)
 			return
 	if(C.has_tool_quality(TOOL_CROWBAR) && plated_tile)
 		hatch_open = !hatch_open
@@ -113,7 +113,7 @@
 	if(istype(C, /obj/item/stack/tile/floor) && !plated_tile)
 		var/obj/item/stack/tile/floor/ST = C
 		to_chat(user, span_notice("Placing tile..."))
-		if (!do_after(user, 10))
+		if (!do_after(user, 1 SECOND, target = src))
 			return
 		if(!ST.use(1))
 			return
@@ -174,7 +174,7 @@
 	if(activated) return
 
 	if(locate(/obj/structure/catwalk) in loc)
-		warning("Frame Spawner: A catwalk already exists at [loc.x]-[loc.y]-[loc.z]")
+		WARNING("Frame Spawner: A catwalk already exists at [loc.x]-[loc.y]-[loc.z]")
 	else
 		var/obj/structure/catwalk/C = new /obj/structure/catwalk(loc)
 		C.plated_tile = tile

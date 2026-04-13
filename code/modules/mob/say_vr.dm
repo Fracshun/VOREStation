@@ -74,8 +74,16 @@
 		input = message
 
 	if(input)
-		log_subtle(message,src)
+		src.log_message("(SUBTLE) [message]", LOG_EMOTE)
 		message = span_emote_subtle(span_bold("[src]") + " " + span_italics("[input]"))
+		if(src.absorbed && isbelly(src.loc))
+			var/obj/belly/B = src.loc
+			if(B.absorbedrename_enabled)
+				var/formatted_name = B.absorbedrename_name
+				formatted_name = replacetext(formatted_name,"%pred", B.owner)
+				formatted_name = replacetext(formatted_name,"%belly", B.get_belly_name())
+				formatted_name = replacetext(formatted_name,"%prey", name)
+				message = span_emote_subtle(span_bold("[formatted_name]") + " " + span_italics("[input]"))
 		if(!(subtle_mode == "Adjacent Turfs (Default)"))
 			message = span_bold("(T) ") + message
 	else
@@ -272,6 +280,7 @@
 	var/f = FALSE		//did we find someone to send the message to other than ourself?
 	var/mob/living/pb	//predator body
 	var/mob/living/M = src
+	var/formatted_name = "\The [M]"
 	if(istype(M, /mob/living/dominated_brain))
 		var/mob/living/dominated_brain/db = M
 		if(db.loc != db.pred_body)
@@ -286,7 +295,15 @@
 			f = TRUE
 	else if(M.absorbed && isbelly(M.loc))
 		pb = M.loc.loc
-		to_chat(pb, span_psay("\The [M] thinks, \"[message]\""))	//To our pred if absorbed
+		var/obj/belly/B = M.loc
+		if(B.absorbedrename_enabled)
+			formatted_name = B.absorbedrename_name
+			formatted_name = replacetext(formatted_name,"%pred", B.owner)
+			formatted_name = replacetext(formatted_name,"%belly", B.get_belly_name())
+			formatted_name = replacetext(formatted_name,"%prey", "\The [M]")
+			to_chat(pb, span_psay("[formatted_name] thinks, \"[message]\""))
+		else
+			to_chat(pb, span_psay("\The [M] thinks, \"[message]\""))	//To our pred if absorbed
 		if(pb.read_preference(/datum/preference/toggle/subtle_sounds))
 			pb << sound('sound/talksounds/subtle_sound.ogg', volume = 50)
 		f = TRUE
@@ -303,7 +320,7 @@
 		for(var/B in pb.vore_organs)
 			for(var/mob/living/L in B)
 				if(L.absorbed && L != M && L.ckey)
-					to_chat(L, span_psay("\The [M] thinks, \"[message]\""))	//To any absorbed people in the pred
+					to_chat(L, span_psay("[formatted_name] thinks, \"[message]\""))	//To any absorbed people in the pred
 					if(L.read_preference(/datum/preference/toggle/subtle_sounds))
 						L << sound('sound/talksounds/subtle_sound.ogg', volume = 50)
 					f = TRUE
@@ -312,14 +329,14 @@
 	for(var/I in M.contents)
 		if(istype(I, /mob/living/dominated_brain))
 			var/mob/living/dominated_brain/db = I
-			to_chat(db, span_psay(span_bold("\The [M] thinks, \"[message]\"")))	//To any dominated brains inside us
+			to_chat(db, span_psay(span_bold("[formatted_name] thinks, \"[message]\"")))	//To any dominated brains inside us
 			if(db.read_preference(/datum/preference/toggle/subtle_sounds))
 				db << sound('sound/talksounds/subtle_sound.ogg', volume = 50)
 			f = TRUE
 	for(var/B in M.vore_organs)
 		for(var/mob/living/L in B)
 			if(L.absorbed)
-				to_chat(L, span_psay(span_bold("\The [M] thinks, \"[message]\"")))	//To any absorbed people inside us
+				to_chat(L, span_psay(span_bold("[formatted_name] thinks, \"[message]\"")))	//To any absorbed people inside us
 				if(L.read_preference(/datum/preference/toggle/subtle_sounds))
 					L << sound('sound/talksounds/subtle_sound.ogg', volume = 50)
 				f = TRUE
@@ -339,8 +356,8 @@
 			else if(isobserver(G) &&  G.client?.prefs?.read_preference(/datum/preference/toggle/ghost_ears) && \
 			G.client?.prefs?.read_preference(/datum/preference/toggle/ghost_see_whisubtle))
 				if(client?.prefs?.read_preference(/datum/preference/toggle/whisubtle_vis) || check_rights_for(G.client, R_HOLDER))
-					to_chat(G, span_psay("\The [M] thinks, \"[message]\""))
-		log_say(message,M)
+					to_chat(G, span_psay("[formatted_name] thinks, \"[message]\""))
+		M.log_talk("(PSAY) [message]", LOG_SAY, color="#d900ff")
 	else		//There wasn't anyone to send the message to, pred or prey, so let's just say it instead and correct our psay just in case.
 		M.forced_psay = FALSE
 		M.say(message)
@@ -368,6 +385,7 @@
 	var/f = FALSE		//did we find someone to send the message to other than ourself?
 	var/mob/living/pb	//predator body
 	var/mob/living/M = src
+	var/formatted_name = "\The [M]"
 	if(istype(M, /mob/living/dominated_brain))
 		var/mob/living/dominated_brain/db = M
 		if(db.loc != db.pred_body)
@@ -383,7 +401,15 @@
 
 	else if(M.absorbed && isbelly(M.loc))
 		pb = M.loc.loc
-		to_chat(pb, span_pemote("\The [M] [message]"))	//To our pred if absorbed
+		var/obj/belly/B = M.loc
+		if(B.absorbedrename_enabled)
+			formatted_name = B.absorbedrename_name
+			formatted_name = replacetext(formatted_name,"%pred", B.owner)
+			formatted_name = replacetext(formatted_name,"%belly", B.get_belly_name())
+			formatted_name = replacetext(formatted_name,"%prey", "\The [M]")
+			to_chat(pb, span_pemote("[formatted_name] [message]"))
+		else
+			to_chat(pb, span_pemote("\The [M] [message]"))	//To our pred if absorbed
 		if(pb.read_preference(/datum/preference/toggle/subtle_sounds))
 			pb << sound('sound/talksounds/subtle_sound.ogg', volume = 50)
 		f = TRUE
@@ -393,14 +419,14 @@
 		for(var/I in pb.contents)
 			if(istype(I, /mob/living/dominated_brain) && I != M)
 				var/mob/living/dominated_brain/db = I
-				to_chat(db, span_pemote("\The [M] [message]"))	//To any dominated brains in the pred
+				to_chat(db, span_pemote("[formatted_name] [message]"))	//To any dominated brains in the pred
 				if(db.read_preference(/datum/preference/toggle/subtle_sounds))
 					db << sound('sound/talksounds/subtle_sound.ogg', volume = 50)
 				f = TRUE
 		for(var/B in pb.vore_organs)
 			for(var/mob/living/L in B)
 				if(L.absorbed && L != M && L.ckey)
-					to_chat(L, span_pemote("\The [M] [message]"))	//To any absorbed people in the pred
+					to_chat(L, span_pemote("[formatted_name] [message]"))	//To any absorbed people in the pred
 					if(L.read_preference(/datum/preference/toggle/subtle_sounds))
 						L << sound('sound/talksounds/subtle_sound.ogg', volume = 50)
 					f = TRUE
@@ -409,21 +435,21 @@
 	for(var/I in M.contents)
 		if(istype(I, /mob/living/dominated_brain))
 			var/mob/living/dominated_brain/db = I
-			to_chat(db, span_pemote(span_bold("\The [M] [message]")))	//To any dominated brains inside us
+			to_chat(db, span_pemote(span_bold("[formatted_name] [message]")))	//To any dominated brains inside us
 			if(db.read_preference(/datum/preference/toggle/subtle_sounds))
 				db << sound('sound/talksounds/subtle_sound.ogg', volume = 50)
 			f = TRUE
 	for(var/B in M.vore_organs)
 		for(var/mob/living/L in B)
 			if(L.absorbed)
-				to_chat(L, span_pemote(span_bold("\The [M] [message]")))	//To any absorbed people inside us
+				to_chat(L, span_pemote(span_bold("[formatted_name] [message]")))	//To any absorbed people inside us
 				if(L.read_preference(/datum/preference/toggle/subtle_sounds))
 					L << sound('sound/talksounds/subtle_sound.ogg', volume = 50)
 				f = TRUE
 
 	if(f)	//We found someone to send the message to
 		if(pb)
-			to_chat(M, span_pemote("\The [M] [message]"))	//To us if we are the prey
+			to_chat(M, span_pemote("[formatted_name] [message]"))	//To us if we are the prey
 			if(M.read_preference(/datum/preference/toggle/subtle_sounds))
 				M << sound('sound/talksounds/subtle_sound.ogg', volume = 50)
 		else
@@ -436,8 +462,8 @@
 			else if(isobserver(G) && G.client?.prefs?.read_preference(/datum/preference/toggle/ghost_ears) && \
 			G.client?.prefs?.read_preference(/datum/preference/toggle/ghost_see_whisubtle))
 				if(client?.prefs?.read_preference(/datum/preference/toggle/whisubtle_vis) || check_rights_for(G.client, R_HOLDER))
-					to_chat(G, span_pemote("\The [M] [message]"))
-		log_say(message,M)
+					to_chat(G, span_pemote("[formatted_name] [message]"))
+		M.log_talk(message, LOG_SAY, color="#d900ff")
 	else	//There wasn't anyone to send the message to, pred or prey, so let's just emote it instead and correct our psay just in case.
 		M.forced_psay = FALSE
 		M.me_verb(message)
@@ -484,7 +510,7 @@
 			if(M.stat == UNCONSCIOUS || M.sleeping > 0)
 				continue
 			to_chat(M, span_filter_say("[isobserver(M) ? "[message] ([ghost_follow_link(src, M)])" : message]"))
-	log_emote(message, src)
+	log_message(message, LOG_EMOTE)
 
 /mob/verb/select_speech_bubble()
 	set name = "Select Speech Bubble"

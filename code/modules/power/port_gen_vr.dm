@@ -64,6 +64,7 @@
 	req_components = list(
 		/obj/item/stack/cable_coil = 5,
 		/obj/item/stock_parts/capacitor/hyper = 1)
+	hidden = TRUE
 
 /obj/item/circuitboard/machine/abductor/core/hybrid
 	name = T_BOARD("void generator (hybrid)")
@@ -74,6 +75,7 @@
 		/obj/item/stack/cable_coil = 5,
 		/obj/item/stock_parts/capacitor/hyper = 1,
 		/obj/item/stock_parts/micro_laser/hyper = 1)
+	hidden = TRUE
 
 // Radioisotope Thermoelectric Generator (RTG)
 // Simple power generator that would replace "magic SMES" on various derelicts.
@@ -97,12 +99,59 @@
 	. = ..()
 	default_apply_parts()
 	connect_to_network()
+	if(mapload)
+		return INITIALIZE_HINT_LATELOAD
+
+/obj/machinery/power/rtg/LateInitialize()
+	apply_mapped_upgrades()
+
+/obj/machinery/power/rtg/apply_mapped_upgrades()
+	// Detect new parts placed by mappers
+	var/list/parts_found = list()
+	for(var/i = 1, i <= loc.contents.len, i++)
+		var/obj/item/W = loc.contents[i]
+		if(istype(W, /obj/item/stock_parts/capacitor))
+			parts_found.Add(W)
+		if(istype(W, /obj/item/stock_parts/micro_laser))
+			parts_found.Add(W)
+
+	// Wipe old parts for new ones!
+	if(parts_found.len == 0)
+		return
+	if(locate(/obj/item/stock_parts/capacitor) in parts_found)
+		while(TRUE)
+			var/obj/item/stock_parts/capacitor/C = locate(/obj/item/stock_parts/capacitor) in component_parts
+			if(isnull(C))
+				break
+			component_parts.Remove(C)
+			qdel(C)
+	if(locate(/obj/item/stock_parts/micro_laser) in parts_found)
+		while(TRUE)
+			var/obj/item/stock_parts/micro_laser/M = locate(/obj/item/stock_parts/micro_laser) in component_parts
+			if(isnull(M))
+				break
+			component_parts.Remove(M)
+			qdel(M)
+
+	// Rebuild from mapper's parts
+	for(var/i = 1, i <= parts_found.len, i++)
+		var/obj/item/W = parts_found[i]
+		component_parts.Add(W)
+		W.forceMove(src)
+	RefreshParts()
 
 /obj/machinery/power/rtg/process()
 	..()
 	add_avail(power_gen)
 	if(panel_open && irradiate)
-		SSradiation.radiate(src, 60)
+		radiation_pulse(
+			src,
+			max_range = 3,
+			threshold = RAD_MEDIUM_INSULATION,
+			chance = DEFAULT_RADIATION_CHANCE,
+			minimum_exposure_time = URANIUM_RADIATION_MINIMUM_EXPOSURE_TIME,
+			strength = power_gen * 0.01 //1000 power = 10 rads. 10000 power = 100 rads. You can get creative with rad collectors if you want.
+		)
 
 /obj/machinery/power/rtg/RefreshParts()
 	var/part_level = 0
@@ -151,6 +200,13 @@
 /obj/machinery/power/rtg/fake_gen/update_icon()
 	return
 
+/obj/machinery/power/rtg/fake_gen/grid
+	desc = "An array of conventional power storage units, for when the added charge longivity and cost of a SMES unit is unneded or impractical."
+	icon = 'icons/obj/power.dmi'
+	icon_state = "gridchecker_off"
+	name = "capacitor bank"
+	power_gen = 12000
+
 // Void Core, power source for Abductor ships and bases.
 // Provides a lot of power, but tends to explode when mistreated.
 /obj/machinery/power/rtg/abductor
@@ -180,7 +236,7 @@
 	visible_message(span_danger("\The [src] lets out an shower of sparks as it starts to lose stability!"),\
 		span_warningplain("You hear a loud electrical crack!"))
 	playsound(src, 'sound/effects/lightningshock.ogg', 100, 1, extrarange = 5)
-	tesla_zap(src, 5, power_gen * 0.05)
+	tesla_zap(src, 5, power_gen * 0.05, current_jumps = 1)
 	addtimer(CALLBACK(GLOBAL_PROC, PROC_REF(explosion), get_turf(src), 2, 3, 4, 8), 100) // Not a normal explosion.
 
 /obj/machinery/power/rtg/abductor/bullet_act(obj/item/projectile/Proj)
@@ -241,10 +297,6 @@
 /obj/machinery/power/rtg/abductor/fire_act(exposed_temperature, exposed_volume)
 	asplod()
 
-/obj/machinery/power/rtg/abductor/tesla_act()
-	..() //extend the zap
-	asplod()
-
 // Comes with an installed cell
 /obj/machinery/power/rtg/abductor/built
 	icon_state = "core"
@@ -297,10 +349,6 @@
 	asplod()
 
 /obj/machinery/power/rtg/kugelblitz/fire_act(exposed_temperature, exposed_volume)
-	asplod()
-
-/obj/machinery/power/rtg/kugelblitz/tesla_act()
-	..() //extend the zap
 	asplod()
 
 /obj/machinery/power/rtg/kugelblitz/bullet_act(obj/item/projectile/Proj)
@@ -410,9 +458,6 @@
 		cool_rotations += (cool_rotations * (part_mult - 1)) / 4
 	power_gen = cool_rotations
 	runner.nutrition -= nutrition_drain
-
-/obj/machinery/power/rtg/reg/emp_act(severity)
-	return
 
 /obj/item/circuitboard/machine/reg_d
 	name = T_BOARD("D-Type-REG")
@@ -544,9 +589,15 @@
 	var/turf/T = get_turf(src)
 	qdel(src)
 	if(T)
+		radiation_pulse(
+			T,
+			max_range = 50,
+			threshold = RAD_HEAVY_INSULATION,
+			chance = DEFAULT_RADIATION_CHANCE * 3,
+			strength = power_gen * 0.01 ///1MW = 1000 rads. If you blow up a BLACK HOLE ENGINE, you deserve the radiation that comes with it.
+		)
 		empulse(T, 12, 14, 16, 18)
 		explosion(T, 7, 12, 18, 20)
-		SSradiation.radiate(T, 200)
 		new /obj/effect/bhole(T)
 
 /obj/machinery/power/rtg/antimatter_core/blob_act(obj/structure/blob/B)
@@ -557,10 +608,6 @@
 
 /obj/machinery/power/rtg/antimatter_core/fire_act(exposed_temperature, exposed_volume)
 	return
-
-/obj/machinery/power/rtg/antimatter_core/tesla_act()
-	..() //extend the zap
-	asplod()
 
 /obj/machinery/power/rtg/antimatter_core/bullet_act(obj/item/projectile/Proj)
 	. = ..()

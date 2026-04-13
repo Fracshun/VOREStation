@@ -3,6 +3,7 @@
 /obj/item/storage/internal
 	preserve_item = 1
 	var/obj/item/master_item
+	item_flags = ABSTRACT
 
 /obj/item/storage/internal/Initialize(mapload)
 	. = ..()
@@ -41,7 +42,7 @@
 			src.open(user)
 			return 0
 
-		if (!( istype(over_object, /obj/screen) ))
+		if (!( istype(over_object, /atom/movable/screen) ))
 			return 1
 
 		//makes sure master_item is equipped before putting it in hand, so that we can't drag it into our hand from miles away.

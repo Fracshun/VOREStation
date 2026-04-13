@@ -26,7 +26,6 @@
 	else if(material.opacity < 0.5 && opacity)
 		set_light(0)
 
-	SSradiation.resistance_cache.Remove(src)
 	update_connections(1)
 	update_icon()
 
@@ -67,13 +66,13 @@
 			I.color = reinf_material.icon_colour
 			add_overlay(I)
 		else
-			if("[reinf_material.icon_reinf]0" in cached_icon_states(wall_masks))
+			if(icon_exists(wall_masks, "[reinf_material.icon_reinf]0"))
 				// Directional icon
 				for(var/i = 1 to 4)
 					I = image(wall_masks, "[reinf_material.icon_reinf][wall_connections[i]]", dir = 1<<(i-1))
 					I.color = reinf_material.icon_colour
 					add_overlay(I)
-			else if("[reinf_material.icon_reinf]" in cached_icon_states(wall_masks))
+			else if(icon_exists(wall_masks, "[reinf_material.icon_reinf]"))
 				I = image(wall_masks, reinf_material.icon_reinf)
 				I.color = reinf_material.icon_colour
 				add_overlay(I)

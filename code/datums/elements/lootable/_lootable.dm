@@ -6,12 +6,15 @@
 
 	var/allow_multiple_looting = FALSE	// If true, the same person can loot multiple times.  Mostly for debugging.
 	var/loot_depletion = FALSE		// If true, loot piles can be 'depleted' after a certain number of searches by different players, where no more loot can be obtained.
-	var/loot_left = 0				// When this reaches zero, and loot_depleted is true, you can't obtain anymore loot.
+	var/loot_left = 0				// Maximum number of times a pile can be looted before no loot will remain for anyone
 	var/delete_on_depletion = FALSE	// If true, and if the loot gets depleted as above, the pile is deleted.
 
+	var/list/unlucky_loot = list()	// Unlucky is the worst tier. Only people with the unlucky trait can get this stuff. Primed grenades, dangerous syringes, etc.
 	var/list/common_loot = list()	// Common is generally less-than-useful junk and filler, at least for maint loot piles.
 	var/list/uncommon_loot = list()	// Uncommon is actually maybe some useful items, usually the reason someone bothers looking inside.
 	var/list/rare_loot = list()		// Rare is really powerful, or at least unique items.
+
+	var/static/list/piles_looted = list() // Keeps track of the number of times a specific pile has been looted if the specific lootable type has loot_depletion on
 
 /datum/element/lootable/Attach(atom/target)
 	. = ..()
@@ -21,15 +24,19 @@
 
 /datum/element/lootable/Detach(atom/target)
 	. = ..()
+	if(loot_depletion)
+		piles_looted -= REF(target)
 	UnregisterSignal(target, COMSIG_LOOT_REWARD)
 
 /// Calculates and drops loot, the source's turf is where it will be dropped, L is the searching mob, and searched_by is a passed list for storing who has searched a loot pile.
 /datum/element/lootable/proc/loot(atom/source,mob/living/L,var/list/searched_by, wake_chance = 0)
 	SIGNAL_HANDLER
 	// The loot's all gone.
-	if(loot_depletion && loot_left <= 0)
-		to_chat(L, span_warning("\The [source] has been picked clean."))
-		return
+	if(loot_depletion)
+		var/looted_count = piles_looted[REF(source)]
+		if(looted_count >= loot_left)
+			to_chat(L, span_warning("\The [source] has been picked clean."))
+			return
 
 	// You got unlucky.
 	if(chance_nothing && prob(chance_nothing))
@@ -47,7 +54,17 @@
 	var/obj/item/loot = null
 	var/span = "notice" // Blue
 
-	if(prob(chance_uncommon) && uncommon_loot.len) // You might still get something good.
+	if(HAS_TRAIT(L, TRAIT_UNLUCKY) && unlucky_loot.len) // If you're unlucky, you will always find bad stuff.
+		loot = produce_unlucky_item(source)
+		span = "cult" // Purple and bold.
+		if(prob(1))
+			to_chat(L, span_danger("You cut your hand on something in the trash!"))
+			L.apply_damage(2, BRUTE, pick(BP_L_HAND, BP_R_HAND), used_weapon = "sharp object")
+			var/datum/disease/advance/random/random_disease = new /datum/disease/advance/random()
+			random_disease.spread_flags |= DISEASE_SPREAD_NON_CONTAGIOUS
+			L.ForceContractDisease(random_disease)
+
+	else if(prob(chance_uncommon) && uncommon_loot.len) // You might still get something good.
 		loot = produce_uncommon_item(source)
 		span = "alium" // Green
 
@@ -66,7 +83,7 @@
 	if(istype(loot,/obj/random))
 		var/obj/random/randy = loot
 		var/new_I = randy.spawn_item()
-		qdel_swap(loot,new_I)
+		QDEL_SWAP(loot,new_I)
 
 	//We either have an item to hand over or we don't, at this point!
 	if(!loot)
@@ -89,13 +106,20 @@
 	// Check if we should delete on depletion
 	if(!loot_depletion)
 		return
-	loot_left--
-	if(loot_left > 0)
+	// Add to looted piles if not already one
+	if(!(REF(source) in piles_looted))
+		piles_looted[REF(source)] = 0
+	// Increase the looted count till we've hit our limit
+	piles_looted[REF(source)] += 1
+	if(piles_looted[REF(source)] < loot_left)
 		return
 	to_chat(L, span_warning("You seem to have gotten the last of the spoils in \the [source]."))
 	if(delete_on_depletion)
 		qdel(source)
 
+/datum/element/lootable/proc/produce_unlucky_item(atom/source)
+	var/path = pick(unlucky_loot)
+	return new path(source)
 
 /datum/element/lootable/proc/produce_common_item(atom/source)
 	var/path = pick(common_loot)

@@ -11,20 +11,24 @@
 		"basic_micro_laser",
 		"micro_manipulator",
 		"basic_cell",
-		"high_cell",
 		"device_cell",
 		"weapon_cell",
-		"high_mech_cell",
+		"potato_cell",
+		"smes_magnetic_coil",
 		// "basic_scanning",
 		// "condenser",
-		// "igniter",
-		// "infrared_emitter",
-		// "prox_sensor",
-		// "signaler",
-		// "timer",
+		"igniter",
+		"infrared_emitter",
+		"prox_sensor",
+		"signaler",
+		"timer",
 		// "voice_analyzer",
 		// "health_sensor",
 		// "sflash",
+		"console_screen",
+		"motor",
+		"gear",
+		"spring"
 	)
 
 /datum/techweb_node/parts_upg
@@ -38,9 +42,11 @@
 		"adv_capacitor",
 		"adv_sensor",
 		"high_micro_laser",
-		"super_cell",
-		"super_mech_cell",
+		"high_cell",
+		"high_mech_cell",
 		"rped",
+		"smes_cap_basic",
+		"smes_trans_basic",
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_2_POINTS)
 	announce_channels = list(CHANNEL_ENGINEERING)
@@ -56,8 +62,12 @@
 		"super_capacitor",
 		"phasic_sensor",
 		"ultra_micro_laser",
-		"hyper_cell",
+		"super_cell",
+		"super_mech_cell",
+		"super_device",
 		"arped",
+		"smes_cap_ultra",
+		"smes_trans_ultra",
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
 	required_experiments = list(/datum/experiment/scanning/points/machinery_tiered_scan/tier2_any)
@@ -72,11 +82,11 @@
 		"pbrped",
 		"hyper_mani",
 		"hyper_matter_bin",
-		"hyper_mani",
 		"hyper_capacitor",
 		"hyper_sensor",
 		"hyper_micro_laser",
 		"hyper_cell",
+		"hyper_device",
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_4_POINTS)
 	discount_experiments = list(/datum/experiment/scanning/points/machinery_tiered_scan/tier3_any = TECHWEB_TIER_4_POINTS)
@@ -97,9 +107,12 @@
 		"tcom-receiver",
 		"tcom-exonet_node",
 		"message_monitor",
+		"message_server",
 		"comm_monitor",
 		"comm_server",
 		"ntnet_relay",
+		"pda_multicaster",
+		"comm_traffic",
 		"s-ansible",
 		"s-filter",
 		"s-amplifier",
@@ -109,6 +122,7 @@
 		"s-transmitter",
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_5_POINTS)
+	announce_channels = list(CHANNEL_ENGINEERING)
 
 /datum/techweb_node/parts_omni
 	id = TECHWEB_NODE_PARTS_OMNI
@@ -122,6 +136,10 @@
 		"omni_capacitor",
 		"omni_sensor",
 		"omni_micro_laser",
+		"giga_device",
+		"giga_cell",
+		"smes_cap_hyper",
+		"smes_trans_hyper",
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_5_POINTS)
 	discount_experiments = list(/datum/experiment/scanning/points/machinery_tiered_scan/tier4_any = TECHWEB_TIER_5_POINTS)
@@ -138,19 +156,26 @@
 		"tscanner",
 		"rcon_console",
 		"powermonitor",
-		"solarcontrol",
 		"circuit_imprinter",
 		"airlock_cycling",
 		"partslathe",
 		"securedoor",
 		// "circuit_imprinter_offstation",
-		// "solarcontrol",
+		"solarcontrol",
+		"solar_tracker",
 		// "solar_panel",
-		// "solar_tracker",
-		// "power_control",
-		// "airalarm_electronics",
-		// "airlock_board",
-		// "firealarm_electronics",
+		"power_control",
+		"intercom",
+		"airalarm_electronics",
+		"airlock_board",
+		"geiger",
+		"firealarm_electronics",
+		"camera_assembly",
+		"status_display",
+		"ai_status_display",
+		"newscaster",
+		"timeclock",
+		"keycard_auth",
 		// "firelock_board",
 		// "trapdoor_electronics",
 		// "blast",
@@ -160,17 +185,23 @@
 		// "airlock_painter",
 		// "decal_painter",
 		// "rwd",
-		// "cable_coil",
-		// "welding_helmet",
-		// "welding_tool",
-		// "mini_welding_tool",
-		// "multitool",
-		// "wrench",
-		// "crowbar",
-		// "screwdriver",
-		// "wirecutters",
-		// "light_bulb",
-		// "light_tube",
+		"cable_coil",
+		"welding_helmet",
+		"welding_tool",
+		"mini_welding_tool",
+		"multitool",
+		"wrench",
+		"prybar",
+		"crowbar",
+		"screwdriver",
+		"wirecutters",
+		"light_bulb",
+		"light_tube",
+		"large_light_bulb",
+		"large_light_tube",
+		"floor_light",
+		"electrochromic",
+		"mass_driver_button",
 		// "crossing_signal",
 		// "guideway_sensor",
 		// "manuunloader",
@@ -181,6 +212,17 @@
 		// "manusorter",
 		// "manurouter",
 		// "mailsorter",
+		"automatic_pipe_layer",
+	)
+
+/datum/techweb_node/emerge_power
+	id = TECHWEB_NODE_EMERGPOWER
+	starting_node = TRUE
+	display_name = "Emergency Power"
+	description = "Restarting the station power grid one step at a time."
+	design_ids = list(
+		"dtype_rtg",
+		"ctype_rtg",
 	)
 
 /datum/techweb_node/energy_manipulation
@@ -196,17 +238,21 @@
 		"smes_cell",
 		"grid_checker",
 		"breakerbox",
+		"hydromagnetic_trap",
 		"tesla_coil",
+		"rtg",
 		// "apc_control",
 		// "powermonitor",
 		// "smes",
 		// "portable_smes",
 		// "power_connector",
 		// "emitter",
-		// "grounding_rod",
-		// "cell_charger",
-		// "recharger",
-		// "welding_goggles",
+		"grounding_rod",
+		"gyrotron",
+		"supermatter_core_manager",
+		"supermatter_injector_control",
+		"welding_goggles",
+		"electric_welding_tool",
 		// "tray_goggles",
 		// "geigercounter",
 	)
@@ -231,7 +277,7 @@
 		// "holosignbar",
 		// "holobarrier_jani",
 		// "holobarrier_med",
-		// "holopad",
+		"holopad",
 		// "vendatray",
 		// "holodisk",
 		// "modular_shield_generator",
@@ -243,6 +289,7 @@
 		// "modular_shield_console",
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_2_POINTS)
+	announce_channels = list(CHANNEL_ENGINEERING)
 
 /datum/techweb_node/exp_tools
 	id = TECHWEB_NODE_EXP_TOOLS
@@ -256,12 +303,14 @@
 		"advancedtscanner",
 		"rapidpipedispenser",
 		"protohypospray",
+		"atmos_holosign",
 		// "flatpacker",
 		// "rangedanalyzer",
 		// "rtd_loaded",
 		// "mech_rcd",
-		// "rcd_loaded",
-		// "rcd_ammo",
+		"rcd_loaded",
+		"rcd_ammo",
+		"rms",
 		// "weldingmask",
 		// "magboots",
 	)
@@ -279,6 +328,7 @@
 		"janitor_hud",
 		"rig_component_medhud",
 		"rig_component_sechud",
+		"rig_component_mining",
 		"graviton_goggles",
 		"omnihud",
 		// "diagnostic_hud",
@@ -321,13 +371,74 @@
 		"industrial_reagent_pump",
 		"industrial_reagent_reactor",
 		"industrial_reagent_vat",
+		"industrial_reagent_mixer",
+		"industrial_reagent_splitter",
 		"industrial_reagent_waste_processor",
-		"smart_centrifuge",
 		"pump_relay",
 		"fluid_pump"
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_2_POINTS)
 	announce_channels = list(CHANNEL_ENGINEERING,CHANNEL_MEDICAL)
+
+
+/datum/techweb_node/smartfridges
+	id = TECHWEB_NODE_SMARTFRIDGES
+	display_name = "Smart Fridges"
+	description = "Is it the space that makes the fridge smart, or the fridge that makes the space smart?"
+	prereq_ids = list(TECHWEB_NODE_PARTS_UPG)
+	design_ids = list(
+		"drying_rack_circuit",
+		"industrial_sheet_storage_circuit",
+		"mining_sheet_storage_circuit",
+		"refrigerated_medicine_storage_circuit",
+		"secure_refrigerated_medicine_storage_circuit",
+		"biological_sample_storage_circuit",
+		"food_storage_circuit",
+		"drink_storage_circuit",
+		"drink_showcase_circuit",
+		"produce_storage_circuit",
+		"seed_storage_circuit",
+		"chemavator_storage_upper_circuit",
+		"chemavator_storage_lower_circuit",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_2_POINTS)
+	announce_channels = list(CHANNEL_ENGINEERING)
+
+/datum/techweb_node/cells_empproof
+	id = TECHWEB_NODE_PARTS_EMP_PROOF
+	display_name = "EMP-Proof Parts"
+	description = "Advanced batteries that are able to withstand strong bursts of energy without failure."
+	prereq_ids = list(TECHWEB_NODE_PARTS_HYPER)
+	design_ids = list(
+		"empproof_device",
+		"empproof_advanced_device",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_4_POINTS)
+	announce_channels = list(CHANNEL_ENGINEERING)
+
+/datum/techweb_node/cells_recharging
+	id = TECHWEB_NODE_PARTS_RECHARGING
+	display_name = "Self Charging Batteries"
+	description = "The end-game of battery technology, these batteries self charge."
+	prereq_ids = list(TECHWEB_NODE_PARTS_OMNI)
+	design_ids = list(
+		"recharging_advanced_device",
+		"omni-device",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_5_POINTS)
+	announce_channels = list(CHANNEL_ENGINEERING)
+
+/datum/techweb_node/teleporter
+	id = TECHWEB_NODE_TELEPORTER
+	display_name = "Teleportation Machinery"
+	description = "Allows for the creation of teleportation machinery that spontaneously transports an entity."
+	prereq_ids = list(TECHWEB_NODE_PARTS_ADV)
+	design_ids = list(
+		"teleporter_hub",
+		"teleporter_station",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
+	announce_channels = list(CHANNEL_ENGINEERING)
 
 /datum/techweb_node/thermal_vision
 	id = TECHWEB_NODE_THERMAL_VISION
@@ -343,6 +454,8 @@
 		// "nv_scigoggles",
 		// "security_hud_night",
 	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_4_POINTS)
+	announce_channels = list(CHANNEL_SECURITY, CHANNEL_SCIENCE, CHANNEL_ENGINEERING)
 
 /datum/techweb_node/graviton_vision
 	id = TECHWEB_NODE_GRAVITON_VISION

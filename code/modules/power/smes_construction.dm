@@ -23,7 +23,7 @@
 	ChargeCapacity = 1200000			// 20 kWh
 	IOCapacity = 150000					// 150 kW
 
-// 1000% Charge Capacity, 20% I/O Capacity
+// Capacity Coils: High Capacity, Low Flow
 /obj/item/smes_coil/super_capacity
 	name = "superconductive capacitance coil"
 	desc = "A specialised type of superconductive magnetic coil with a significantly stronger containment field, allowing for larger power storage. Its IO rating is much lower, however."
@@ -31,7 +31,21 @@
 	ChargeCapacity = 60000000			// 1000 kWh
 	IOCapacity = 50000					// 50 kW
 
-// 10% Charge Capacity, 400% I/O Capacity. Technically turns SMES into large super capacitor.Ideal for shields.
+/obj/item/smes_coil/super_capacity/ultra
+	name = "ultraconductive capacitance coil"
+	desc = "A specialised type of superconductive magnetic coil with a significantly stronger containment field, allowing for larger power storage. Its IO rating is much lower, however."
+	icon_state = "smes_coil_capacitance_ultra"
+	ChargeCapacity = 120000000			// 2000 kWh
+	IOCapacity = 100000					// 100 kW
+
+/obj/item/smes_coil/super_capacity/hyper
+	name = "hyperconductive capacitance coil"
+	desc = "A specialised type of superconductive magnetic coil with a significantly stronger containment field, allowing for larger power storage. Its IO rating is much lower, however."
+	icon_state = "smes_coil_capacitance_hyper"
+	ChargeCapacity = 360000000			// 6000 kWh
+	IOCapacity = 200000					// 200 kW
+
+// Flow Coils: Low Capacity, High Flow
 /obj/item/smes_coil/super_io
 	name = "superconductive transmission coil"
 	desc = "A specialised type of superconductive magnetic coil with reduced storage capabilites but vastly improved power transmission capabilities, making it useful in systems which require large throughput."
@@ -39,6 +53,19 @@
 	ChargeCapacity = 600000				// 10 kWh
 	IOCapacity = 1000000				// 1000 kW
 
+/obj/item/smes_coil/super_io/ultra
+	name = "ultraconductive transmission coil"
+	desc = "A specialised type of superconductive magnetic coil with reduced storage capabilites but vastly improved power transmission capabilities, making it useful in systems which require large throughput."
+	icon_state = "smes_coil_transmission_ultra"
+	ChargeCapacity = 1200000				// 20 kWh
+	IOCapacity = 2000000				// 2000 kW
+
+/obj/item/smes_coil/super_io/hyper
+	name = "hyperconductive transmission coil"
+	desc = "A specialised type of superconductive magnetic coil with reduced storage capabilites but vastly improved power transmission capabilities, making it useful in systems which require large throughput."
+	icon_state = "smes_coil_transmission_hyper"
+	ChargeCapacity = 2400000				// 40 kWh
+	IOCapacity = 6000000				// 6000 kW
 
 // SMES SUBTYPES - THESE ARE MAPPED IN AND CONTAIN DIFFERENT TYPES OF COILS
 
@@ -77,7 +104,6 @@
 	var/cur_coils = 1 			// Current amount of installed coils
 	var/safeties_enabled = 1 	// If 0 modifications can be done without discharging the SMES, at risk of critical failure.
 	var/failing = 0 			// If 1 critical failure has occured and SMES explosion is imminent.
-	var/datum/wires/smes/wires
 	var/grounding = 1			// Cut to quickly discharge, at cost of "minor" electrical issues in output powernet.
 	var/RCon = 1				// Cut to disable AI and remote control.
 	var/RCon_tag = "NO_TAG"		// RCON tag, change to show it on SMES Remote control console.
@@ -126,7 +152,7 @@
 	. = ..()
 	component_parts = list()
 	component_parts += new /obj/item/stack/cable_coil(src,30)
-	wires = new /datum/wires/smes(src)
+	set_wires(new /datum/wires/smes(src))
 
 	// Allows for mapped-in SMESs with larger capacity/IO
 	if(mapload)
@@ -313,9 +339,14 @@
 		// Multitool - change RCON tag
 		if(istype(W, /obj/item/multitool))
 			var/newtag = tgui_input_text(user, "Enter new RCON tag. Use \"NO_TAG\" to disable RCON or leave empty to cancel.", "SMES RCON system", "", MAX_NAME_LEN)
-			if(newtag)
-				RCon_tag = newtag
-				to_chat(user, span_notice("You changed the RCON tag to: [newtag]"))
+			if(!newtag)
+				return
+			for(var/obj/machinery/power/smes/buildable/smes in GLOB.smeses)
+				if(smes.RCon_tag == newtag)
+					to_chat(user, span_warning("The entered RCON tag [newtag] already exists. Aborting."))
+					return
+			RCon_tag = newtag
+			to_chat(user, span_notice("You changed the RCON tag to: [newtag]"))
 			return
 		// Charged above 1% and safeties are enabled.
 		if((charge > (capacity/100)) && safeties_enabled)
@@ -341,7 +372,7 @@
 
 			playsound(src, W.usesound, 50, 1)
 			to_chat(user, span_warning("You begin to disassemble the [src]!"))
-			if (do_after(user, (100 * cur_coils) * W.toolspeed)) // More coils = takes longer to disassemble. It's complex so largest one with 5 coils will take 50s with a normal crowbar
+			if (do_after(user, (10 SECONDS * cur_coils) * W.toolspeed, target = src)) // More coils = takes longer to disassemble. It's complex so largest one with 5 coils will take 50s with a normal crowbar
 
 				if (failure_probability && prob(failure_probability))
 					total_system_failure(failure_probability, user)

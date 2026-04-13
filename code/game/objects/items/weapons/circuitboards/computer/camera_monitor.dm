@@ -5,7 +5,7 @@
 /obj/item/circuitboard/security
 	name = T_BOARD("security camera monitor")
 	build_path = /obj/machinery/computer/security
-	req_access = list(access_security)
+	req_access = list(ACCESS_SECURITY)
 	var/list/network
 	var/locked = 1
 	var/emagged = 0
@@ -17,6 +17,7 @@
 /obj/item/circuitboard/security/tv
 	name = T_BOARD("security camera monitor - television")
 	build_path = /obj/machinery/computer/security/wooden_tv
+	hidden = TRUE
 
 /obj/item/circuitboard/security/engineering
 	name = T_BOARD("engineering camera monitor")
@@ -30,7 +31,7 @@
 /obj/item/circuitboard/security/mining
 	name = T_BOARD("mining camera monitor")
 	build_path = /obj/machinery/computer/security/mining
-	network = list("Mining Outpost")
+	network = list(NETWORK_MINE)
 	req_access = list()
 
 /obj/item/circuitboard/security/telescreen/entertainment
@@ -47,7 +48,7 @@
 	if (..(C))
 		C.set_network(network.Copy())
 
-/obj/item/circuitboard/security/deconstruct(var/obj/machinery/computer/security/C)
+/obj/item/circuitboard/security/atom_deconstruct(disassembled = TRUE, var/obj/machinery/computer/security/C)
 	if (..(C))
 		network = C.network.Copy()
 
@@ -80,7 +81,7 @@
 			to_chat(user, "No input found please hang up and try your call again.")
 			return
 		var/list/tempnetwork = splittext(input, ",")
-		tempnetwork = difflist(tempnetwork,restricted_camera_networks,1)
+		tempnetwork = difflist(tempnetwork, GLOB.restricted_camera_networks, 1)
 		if(tempnetwork.len < 1)
 			to_chat(user, "No network found please hang up and try your call again.")
 			return

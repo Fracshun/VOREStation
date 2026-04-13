@@ -48,6 +48,9 @@
 	. = ..()
 
 /obj/item/tvcamera/attack_self(mob/user)
+	. = ..(user)
+	if(.)
+		return TRUE
 	add_fingerprint(user)
 	user.set_machine(src)
 	show_ui(user)
@@ -123,7 +126,7 @@
 	if(camera.status && !isturf(target))
 		show_tvs(target)
 		user.visible_message(span_infoplain(span_bold("[user]") + " aims [src] at [target]."), span_info("You aim [src] at [target]."))
-		if(user.machine == src)
+		if(user.check_current_machine(src))
 			show_ui(user) // refresh the UI
 
 /obj/item/tvcamera/process()
@@ -154,7 +157,7 @@
 
 /obj/item/tvcamera/proc/update_feed()
 	if(camera.status)
-		SEND_SIGNAL(camera, COMSIG_OBSERVER_MOVED) // Forward the movement signal
+		SEND_SIGNAL(camera, COMSIG_MOVABLE_ATTEMPTED_MOVE) // Forward the movement signal
 
 //Assembly by roboticist
 

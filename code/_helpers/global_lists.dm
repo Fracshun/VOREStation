@@ -16,12 +16,13 @@ GLOBAL_LIST_EMPTY(cable_list)						//Index for all cables, so that powernets don
 GLOBAL_LIST_EMPTY(landmarks_list)					//list of all landmarks created
 GLOBAL_LIST_EMPTY(event_triggers)					//Associative list of creator_ckey:list(landmark references) for event triggers
 GLOBAL_LIST_EMPTY(surgery_steps)					//list of all surgery steps  |BS12
-GLOBAL_LIST_EMPTY(joblist)							//list of all jobstypes, minus borg and AI
 
 GLOBAL_LIST_EMPTY(mechas_list)						//list of all mechs. Used by hostile mobs target tracking.
-var/global/list/obj/item/pda/PDAs = list()
-var/global/list/obj/item/communicator/all_communicators = list()
+GLOBAL_LIST_EMPTY_TYPED(PDAs, /obj/item/pda)
+GLOBAL_LIST_EMPTY_TYPED(all_communicators, /obj/item/communicator)
 
+// Those networks can only be accessed by pre-existing terminals. AIs and new terminals can't use them.
+GLOBAL_LIST_INIT(restricted_camera_networks, list(NETWORK_ERT,NETWORK_MERCENARY,"Secret", NETWORK_COMMUNICATORS))
 
 #define all_genders_define_list list(MALE,FEMALE,PLURAL,NEUTER,HERM)
 #define all_genders_text_list list("Male","Female","Plural","Neuter","Herm")
@@ -62,9 +63,7 @@ GLOBAL_LIST_EMPTY(ear_styles_list)	// Stores /datum/sprite_accessory/ears indexe
 GLOBAL_LIST_EMPTY(tail_styles_list)	// Stores /datum/sprite_accessory/tail indexed by type
 GLOBAL_LIST_EMPTY(wing_styles_list)	// Stores /datum/sprite_accessory/wing indexed by type
 
-GLOBAL_LIST_INIT(custom_species_bases, new) // Species that can be used for a Custom Species icon base
-	//Underwear
-var/datum/category_collection/underwear/global_underwear = new()
+GLOBAL_LIST_EMPTY(custom_species_bases) // Species that can be used for a Custom Species icon base
 
 	//Customizables
 GLOBAL_LIST_INIT(headsetlist, list("Standard","Bowman","Earbud"))
@@ -72,21 +71,15 @@ GLOBAL_LIST_INIT(backbaglist, list("Nothing", "Backpack", "Satchel", "Satchel Al
 GLOBAL_LIST_INIT(pdachoicelist, list("Default", "Slim", "Old", "Rugged", "Holographic", "Wrist-Bound","Slider", "Vintage"))
 GLOBAL_LIST_INIT(exclude_jobs, list(/datum/job/ai,/datum/job/cyborg))
 
-// Visual nets
-var/list/datum/visualnet/visual_nets = list()
-var/datum/visualnet/camera/cameranet = new()
-var/datum/visualnet/cult/cultnet = new()
-var/datum/visualnet/ghost/ghostnet = new()
-
-var/global/list/obj/machinery/message_server/message_servers = list()
-var/global/list/datum/supply_drop_loot/supply_drop
+GLOBAL_LIST_EMPTY_TYPED(message_servers, /obj/machinery/message_server)
+GLOBAL_LIST_INIT_TYPED(supply_drop, /datum/supply_drop_loot, dd_sortedObjectList(init_subtypes(/datum/supply_drop_loot)))
 // Runes
 GLOBAL_LIST_EMPTY(rune_list)
 GLOBAL_LIST_EMPTY(escape_list)
 GLOBAL_LIST_EMPTY(endgame_exits)
 GLOBAL_LIST_EMPTY(endgame_safespawns)
 
-GLOBAL_LIST_INIT(syndicate_access, list(access_maint_tunnels, access_syndicate, access_external_airlocks))
+GLOBAL_LIST_INIT(syndicate_access, list(ACCESS_MAINT_TUNNELS, ACCESS_SYNDICATE, ACCESS_EXTERNAL_AIRLOCKS))
 
 // Ores (for mining)
 GLOBAL_LIST_EMPTY(ore_data)
@@ -137,7 +130,7 @@ GLOBAL_LIST_EMPTY(mannequins)
 /////Initial Building/////
 //////////////////////////
 
-/proc/makeDatumRefLists()
+/proc/make_datum_reference_lists()
 	var/list/paths
 
 	//Hair - Initialise all /datum/sprite_accessory/hair into an list indexed by hair-style name
@@ -179,13 +172,6 @@ GLOBAL_LIST_EMPTY(mannequins)
 		GLOB.surgery_steps += S
 	sort_surgeries()
 
-	//List of job. I can't believe this was calculated multiple times per tick!
-	paths = subtypesof(/datum/job)
-	paths -= GLOB.exclude_jobs
-	for(var/T in paths)
-		var/datum/job/J = new T
-		GLOB.joblist[J.title] = J
-
 	//Languages
 	paths = subtypesof(/datum/language)
 	for(var/T in paths)
@@ -193,7 +179,6 @@ GLOBAL_LIST_EMPTY(mannequins)
 		if (isnull(GLOB.all_languages[L.name]))
 			GLOB.all_languages[L.name] = L
 		else
-			log_debug("Language name conflict! [T] is named [L.name], but that is taken by [GLOB.all_languages[L.name].type]")
 			if(isnull(GLOB.language_name_conflicts[L.name]))
 				GLOB.language_name_conflicts[L.name] = list(GLOB.all_languages[L.name])
 			GLOB.language_name_conflicts[L.name] += L
@@ -204,7 +189,6 @@ GLOBAL_LIST_EMPTY(mannequins)
 			if(isnull(GLOB.language_keys[L.key]))
 				GLOB.language_keys[L.key] = L
 			else
-				log_debug("Language key conflict! [L] has key [L.key], but that is taken by [(GLOB.language_keys[L.key])]")
 				if(isnull(GLOB.language_key_conflicts[L.key]))
 					GLOB.language_key_conflicts[L.key] = list(GLOB.language_keys[L.key])
 				GLOB.language_key_conflicts[L.key] += L
@@ -253,9 +237,9 @@ GLOBAL_LIST_EMPTY(mannequins)
 		GLOB.suit_cycler_emagged += new SCC()
 
 	//Ores
-	paths = subtypesof(/ore)
+	paths = subtypesof(/datum/ore)
 	for(var/oretype in paths)
-		var/ore/OD = new oretype()
+		var/datum/ore/OD = new oretype()
 		GLOB.ore_data[OD.name] = OD
 
 	paths = subtypesof(/datum/alloy)
@@ -263,7 +247,7 @@ GLOBAL_LIST_EMPTY(mannequins)
 		GLOB.alloy_data += new alloytype()
 
 	//Closet appearances
-	GLOB.closet_appearances = decls_repository.get_decls_of_type(/decl/closet_appearance)
+	GLOB.closet_appearances = GLOB.decls_repository.get_decls_of_type(/datum/decl/closet_appearance)
 
 	paths = subtypesof(/datum/sprite_accessory/ears)
 	for(var/path in paths)
@@ -283,11 +267,17 @@ GLOBAL_LIST_EMPTY(mannequins)
 		GLOB.wing_styles_list[path] = instance
 
 	paths = typesof(/datum/digest_mode)
-	for(var/T in paths)
-		var/datum/digest_mode/DM = new T
+	for(var/path in paths)
+		var/datum/digest_mode/DM = new path
 		GLOB.digest_modes[DM.id] = DM
 	init_crafting_recipes(GLOB.crafting_recipes)
 
+	paths = subtypesof(/datum/ai_laws)
+	for(var/path in paths)
+		var/datum/ai_laws/laws = new path
+		GLOB.admin_laws += laws
+		if(laws.selectable)
+			GLOB.player_laws += laws
 /*
 	// Custom species traits
 	paths = subtypesof(/datum/trait)
@@ -322,8 +312,13 @@ GLOBAL_LIST_EMPTY(mannequins)
 	for(var/species_name in whitelisted_icons)
 		GLOB.custom_species_bases += species_name
 
-	return 1 // Hooks must return 1
+	// Create frame types.
+	populate_frame_types()
 
+	// Create robolimbs for chargen.
+	populate_robolimb_list()
+
+	cache_no_ceiling_image()
 
 /// Inits the crafting recipe list, sorting crafting recipe requirements in the process.
 /proc/init_crafting_recipes(list/crafting_recipes)
@@ -346,23 +341,13 @@ GLOBAL_LIST_EMPTY(mannequins)
 //Hexidecimal numbers
 GLOBAL_LIST_INIT(hexNums, list("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"))
 
-// Many global vars aren't GLOB type. This puts them there to be more easily inspected.
-GLOBAL_LIST_EMPTY(legacy_globals)
-
-/proc/populate_legacy_globals()
-	//Note: these lists cannot be changed to a new list anywhere in code! //Lies. TG doesn't use any var/global/list so neither will we!
-	//If they are, these will cause the old list to stay around!
-	//Check by searching for "<GLOBAL_NAME> =" in the entire codebase
-	//visual nets
-	GLOB.legacy_globals["visual_nets"] = visual_nets
-	GLOB.legacy_globals["cameranet"] = cameranet
-	GLOB.legacy_globals["cultnet"] = cultnet
-
 GLOBAL_LIST_INIT(selectable_footstep, list(
 	"Default" = FOOTSTEP_MOB_HUMAN,
 	"Claw" = FOOTSTEP_MOB_CLAW,
 	"Light Claw" = FOOTSTEP_MOB_TESHARI,
 	"Slither" = FOOTSTEP_MOB_SLITHER,
+	"Mech" = FOOTSTEP_MOB_MECHY,
+	"Heavy" = FOOTSTEP_MOB_HEAVY_ALT
 ))
 
 // Put any artifact effects that are duplicates, unique, or otherwise unwated in here! This prevents them from spawning via RNG.
@@ -398,6 +383,20 @@ GLOBAL_LIST_INIT(item_digestion_blacklist, list(
 		/obj/item/mmi/digital/robot,
 		/obj/item/rig/protean))
 
+///A list of stuff we do NOT want being deconstructed. Either due to how critical it is (ID/nuke disk) or buggy (holders and paicards)
+GLOBAL_LIST_INIT(item_deconstruction_blacklist, list(
+		/obj/item/card/id,
+		/obj/item/areaeditor/blueprints,
+		/obj/item/disk/nuclear,
+		/obj/item/perfect_tele_beacon,
+		/obj/item/organ/internal/brain,
+		/obj/item/mmi,
+		/obj/item/rig/protean,
+		/obj/item/holder,
+		/obj/item/paicard,
+		/obj/item/stack/material/cyborg,
+		/obj/item/storage))
+
 ///A list of chemicals that are banned from being obtainable through means that generate chemicals. These chemicals are either lame, annoying, pref-breaking, or OP (This list does NOT include reactions)
 GLOBAL_LIST_INIT(obtainable_chemical_blacklist, list(
 	REAGENT_ID_ADMINORDRAZINE,
@@ -408,6 +407,44 @@ GLOBAL_LIST_INIT(obtainable_chemical_blacklist, list(
 	REAGENT_ID_MAGICDUST,
 	REAGENT_ID_SUPERMATTER
 	))
+
+GLOBAL_LIST_INIT(reagent_containers_can_be_placed_into, list(
+	REAGENT_CONTAINER_CAN_BE_PLACED_INTO_DEFAULT = list(
+		/obj/machinery/chem_master,
+		/obj/machinery/chemical_dispenser,
+		/obj/machinery/reagentgrinder,
+		/obj/structure/table,
+		/obj/structure/closet,
+		/obj/structure/sink,
+		/obj/item/storage,
+		/obj/machinery/atmospherics/unary/cryo_cell,
+		/obj/machinery/dna_scannernew,
+		/obj/item/grenade/chem_grenade,
+		/mob/living/bot/medbot,
+		/obj/item/storage/secure/safe,
+		/obj/machinery/iv_drip,
+		/obj/structure/medical_stand,
+		/obj/machinery/disposal,
+		/mob/living/simple_mob/animal/passive/cow,
+		/mob/living/simple_mob/animal/goat,
+		/obj/machinery/sleeper,
+		/obj/machinery/smartfridge,
+		/obj/machinery/biogenerator,
+		/obj/structure/frame,
+		/obj/machinery/radiocarbon_spectrometer,
+		/obj/machinery/portable_atmospherics/powered/reagent_distillery,
+		/obj/machinery/computer/pandemic,
+		/obj/machinery/reagent_refinery,
+		/obj/vehicle/train/trolley_tank,
+	),
+	REAGENT_CONTAINER_CAN_BE_PLACED_INTO_WATERCOOLER = list(
+		/obj/structure/table,
+		/obj/structure/closet,
+		/obj/structure/sink
+	),
+	REAGENT_CONTAINER_CAN_BE_PLACED_INTO_NONE = list(
+	),
+))
 
 GLOBAL_LIST_EMPTY(item_tf_spawnpoints) // Global variable tracking which items are item tf spawnpoints
 
@@ -611,15 +648,15 @@ GLOBAL_LIST_INIT(changeling_fabricated_clothing, list(
 //  This is to make some of the more OP superpowers a larger PITA to activate,
 //  and to tell our new DNA datum which values to set in order to turn something
 //  on or off.
-var/global/list/dna_activity_bounds[DNA_SE_LENGTH]
+GLOBAL_ALIST_EMPTY(dna_activity_bounds)
 
 // Used to determine what each block means (admin hax and species stuff on /vg/, mostly)
-var/global/list/assigned_blocks[DNA_SE_LENGTH]
+GLOBAL_ALIST_EMPTY(assigned_blocks)
 
 GLOBAL_LIST_EMPTY(gear_distributed_to)
 GLOBAL_LIST_EMPTY(overlay_cache) //cache recent overlays
 
-var/global/list/all_technomancer_gambit_spells = typesof(/obj/item/spell) - list(
+GLOBAL_LIST_INIT(all_technomancer_gambit_spells, typesof(/obj/item/spell) - list(
 	/obj/item/spell,
 	/obj/item/spell/gambit,
 	/obj/item/spell/projectile,
@@ -627,25 +664,22 @@ var/global/list/all_technomancer_gambit_spells = typesof(/obj/item/spell) - list
 //	/obj/item/spell/insert,
 	/obj/item/spell/spawner,
 	/obj/item/spell/summon,
-	/obj/item/spell/modifier)
+	/obj/item/spell/modifier))
 
-var/global/list/image/splatter_cache=list()
-var/global/list/obj/cortical_stacks = list() //Stacks for 'leave nobody behind' objective. Clumsy, rewrite sometime.
-var/global/list/obj/machinery/telecomms/telecomms_list = list()
+GLOBAL_LIST_EMPTY_TYPED(telecomms_list, /obj/machinery/telecomms)
 
 // color-dir-dry
-var/global/list/image/fluidtrack_cache=list()
+GLOBAL_LIST_EMPTY_TYPED(fluidtrack_cache, /image)
 
-var/global/list/datum/stack_recipe/sandbag_recipes = list( \
-	new/datum/stack_recipe("barricade", /obj/structure/barricade/sandbag, 3, time = 5 SECONDS, one_per_turf = 1, on_floor = 1, pass_stack_color = TRUE))
+GLOBAL_LIST_INIT_TYPED(sandbag_recipes, /datum/stack_recipe, list( \
+	new/datum/stack_recipe("barricade", /obj/structure/barricade/sandbag, 3, time = 5 SECONDS, one_per_turf = 1, on_floor = 1, pass_stack_color = TRUE)))
 
-var/global/list/datum/stack_recipe/wax_recipes = list( \
-	new/datum/stack_recipe("candle", /obj/item/flame/candle) \
-)
-var/global/list/datum/stack_recipe/rods_recipes = list( \
+GLOBAL_LIST_INIT_TYPED(wax_recipes, /datum/stack_recipe, list( \
+	new/datum/stack_recipe("candle", /obj/item/flame/candle)))
+
+GLOBAL_LIST_INIT_TYPED(rods_recipes, /datum/stack_recipe, list( \
 	new/datum/stack_recipe("grille", /obj/structure/grille, 2, time = 10, one_per_turf = 1, on_floor = 0),
-	new/datum/stack_recipe("catwalk", /obj/structure/catwalk, 2, time = 80, one_per_turf = 1, on_floor = 1))
-
+	new/datum/stack_recipe("catwalk", /obj/structure/catwalk, 2, time = 80, one_per_turf = 1, on_floor = 1)))
 
 GLOBAL_LIST_INIT(possible_plants, list(
 	"plant-1",
@@ -677,19 +711,19 @@ GLOBAL_LIST_BOILERPLATE(all_pai_cards, /obj/item/paicard)
 // Access check is of the type requires one. These have been carefully selected to avoid allowing the janitor to see channels he shouldn't
 GLOBAL_LIST_INIT(default_internal_channels, list(
 	num2text(PUB_FREQ) = list(),
-	num2text(AI_FREQ)  = list(access_synth),
+	num2text(AI_FREQ)  = list(ACCESS_SYNTH),
 	num2text(ENT_FREQ) = list(),
-	num2text(ERT_FREQ) = list(access_cent_specops),
-	num2text(COMM_FREQ)= list(access_heads),
-	num2text(ENG_FREQ) = list(access_engine_equip, access_atmospherics),
-	num2text(MED_FREQ) = list(access_medical_equip),
-	num2text(MED_I_FREQ)=list(access_medical_equip),
-	num2text(SEC_FREQ) = list(access_security),
-	num2text(SEC_I_FREQ)=list(access_security),
-	num2text(SCI_FREQ) = list(access_tox, access_robotics, access_xenobiology),
-	num2text(SUP_FREQ) = list(access_cargo, access_mining_station),
-	num2text(SRV_FREQ) = list(access_janitor, access_library, access_hydroponics, access_bar, access_kitchen),
-	num2text(EXP_FREQ) = list(access_explorer)
+	num2text(ERT_FREQ) = list(ACCESS_CENT_SPECOPS),
+	num2text(COMM_FREQ)= list(ACCESS_HEADS),
+	num2text(ENG_FREQ) = list(ACCESS_ENGINE_EQUIP, ACCESS_ATMOSPHERICS),
+	num2text(MED_FREQ) = list(ACCESS_MEDICAL_EQUIP),
+	num2text(MED_I_FREQ)=list(ACCESS_MEDICAL_EQUIP),
+	num2text(SEC_FREQ) = list(ACCESS_SECURITY),
+	num2text(SEC_I_FREQ)=list(ACCESS_SECURITY),
+	num2text(SCI_FREQ) = list(ACCESS_TOX, ACCESS_ROBOTICS, ACCESS_XENOBIOLOGY),
+	num2text(SUP_FREQ) = list(ACCESS_CARGO, ACCESS_MINING_STATION),
+	num2text(SRV_FREQ) = list(ACCESS_JANITOR, ACCESS_LIBRARY, ACCESS_HYDROPONICS, ACCESS_BAR, ACCESS_KITCHEN),
+	num2text(EXP_FREQ) = list(ACCESS_EXPLORER)
 ))
 
 GLOBAL_LIST_INIT(default_medbay_channels, list(
@@ -970,16 +1004,13 @@ GLOBAL_LIST_INIT(special_roles, list(
 	"ninja" = 0,										// 10
 	"raider" = 0,										// 11
 	"diona" = 0,										// 12
-	"mutineer" = 0,										// 13
-	"loyalist" = 0,										// 14
-	"pAI candidate" = 1,								// 15
-	"lost drone" = 1,									// 16
-	"maint pred" = 1,									// 17
-	"maint lurker" = 1,									// 18
-	"morph" = 1,										// 19
-	"corgi" = 1,										// 20
-	"cursed sword" = 1,									// 21
-	"Ship Survivor" = 1,								// 22
+	"loyalist" = 0,										// 13
+	"pAI" = 1,											// 14
+	"lost drone" = 1,									// 15
+	"maint critter" = 1,								// 16
+	"corgi" = 1,										// 17
+	"cursed sword" = 1,									// 18
+	"ship survivor" = 1,								// 19
 ))
 
 GLOBAL_LIST_INIT(maint_mob_pred_options, list(
@@ -1096,23 +1127,27 @@ GLOBAL_LIST_INIT(breach_burn_descriptors, list(
 	"huge scorched area"
 	))
 
-GLOBAL_LIST_INIT(wide_chassis, list(
-	"rat",
-	"panther",
-	"teppi",
-	"pai-diredog",
-	"pai-horse_lune",
-	"pai-horse_soleil",
-	"pai-pdragon",
-	"pai-protodog"
-	))
+GLOBAL_LIST_EMPTY(paikeys)
 
-GLOBAL_LIST_INIT(flying_chassis, list(
-	"pai-parrot",
-	"pai-bat",
-	"pai-butterfly",
-	"pai-hawk",
-	"cyberelf"
+GLOBAL_LIST_EMPTY(pai_software_by_key)
+GLOBAL_LIST_EMPTY(default_pai_software)
+GLOBAL_LIST_INIT(pai_emotions, list(
+		"Neutral" = 1,
+		"What" = 2,
+		"Happy" = 3,
+		"Cat" = 4,
+		"Extremely Happy" = 5,
+		"Face" = 6,
+		"Laugh" = 7,
+		"Sad" = 8,
+		"Angry" = 9,
+		"Silly" = 10,
+		"Nose" = 11,
+		"Smirk" = 12,
+		"Exclamation Points" = 13,
+		"Question Mark" = 14,
+		"Blank" = 15,
+		"Off" = 16
 	))
 
 //Sure I could spend all day making wacky overlays for all of the different forms
@@ -1153,13 +1188,12 @@ GLOBAL_LIST_EMPTY(entopic_users)
 
 GLOBAL_LIST_EMPTY(alt_farmanimals)
 
-GLOBAL_LIST_EMPTY(acceptable_items) // List of the items you can put in
-GLOBAL_LIST_EMPTY(available_recipes) // List of the recipes you can use
-GLOBAL_LIST_EMPTY(acceptable_reagents) // List of the reagents you can put in
+GLOBAL_ALIST_INIT(available_recipes, build_kitchen_recipes()) //List of all recipies. THIS MUST COME FIRST before acceptable_items and acceptable_reagents because it is used to build those lists.
+GLOBAL_LIST_INIT(acceptable_items, build_kitchen_items()) // List of the items you can put in
+GLOBAL_LIST_INIT(acceptable_reagents, build_kitchen_reagents()) // List of the reagents you can put in
 
 
-
-/var/all_ui_styles = list(
+GLOBAL_LIST_INIT(all_ui_styles, list(
 	"Midnight"     = 'icons/mob/screen/midnight.dmi',
 	"Orange"       = 'icons/mob/screen/orange.dmi',
 	"old"          = 'icons/mob/screen/old.dmi',
@@ -1167,9 +1201,9 @@ GLOBAL_LIST_EMPTY(acceptable_reagents) // List of the reagents you can put in
 	"old-noborder" = 'icons/mob/screen/old-noborder.dmi',
 	"minimalist"   = 'icons/mob/screen/minimalist.dmi',
 	"Hologram"     = 'icons/mob/screen/holo.dmi'
-	)
+	))
 
-/var/all_ui_styles_robot = list(
+GLOBAL_LIST_INIT(all_ui_styles_robot, list(
 	"Midnight"     = 'icons/mob/screen1_robot.dmi',
 	"Orange"       = 'icons/mob/screen1_robot.dmi',
 	"old"          = 'icons/mob/screen1_robot.dmi',
@@ -1177,7 +1211,7 @@ GLOBAL_LIST_EMPTY(acceptable_reagents) // List of the reagents you can put in
 	"old-noborder" = 'icons/mob/screen1_robot.dmi',
 	"minimalist"   = 'icons/mob/screen1_robot_minimalist.dmi',
 	"Hologram"     = 'icons/mob/screen1_robot_minimalist.dmi'
-	)
+	))
 
 GLOBAL_LIST_INIT(all_tooltip_styles, list(
 	"Midnight",		//Default for everyone is the first one,
@@ -1188,24 +1222,12 @@ GLOBAL_LIST_INIT(all_tooltip_styles, list(
 	"Clockwork"
 	))
 
-//Global Datums
-var/global/datum/pipe_icon_manager/icon_manager
-var/global/datum/emergency_shuttle_controller/emergency_shuttle = new
-
-// We manually initialize the alarm handlers instead of looping over all existing types
-// to make it possible to write: camera_alarm.triggerAlarm() rather than SSalarm.managers[datum/alarm_handler/camera].triggerAlarm() or a variant thereof.
-/var/global/datum/alarm_handler/atmosphere/atmosphere_alarm	= new()
-/var/global/datum/alarm_handler/camera/camera_alarm			= new()
-/var/global/datum/alarm_handler/fire/fire_alarm				= new()
-/var/global/datum/alarm_handler/motion/motion_alarm			= new()
-/var/global/datum/alarm_handler/power/power_alarm			= new()
-
 GLOBAL_LIST_EMPTY(gun_choices)
 
-GLOBAL_LIST_INIT(severity_to_string, list(
-	EVENT_LEVEL_MUNDANE = "Mundane",
-	EVENT_LEVEL_MODERATE = "Moderate",
-	EVENT_LEVEL_MAJOR = "Major"
+GLOBAL_ALIST_INIT(severity_to_string, list(
+	/* EVENT_LEVEL_MUNDANE = */ "Mundane",
+	/* EVENT_LEVEL_MODERATE = */ "Moderate",
+	/* EVENT_LEVEL_MAJOR = */ "Major"
 	))
 
 //Some global icons for the examine tab to use to display some item properties.
@@ -1237,9 +1259,9 @@ GLOBAL_LIST_INIT(description_icons, list(
 	"stunbaton" = image(icon='icons/obj/weapons.dmi',icon_state="stunbaton_active"),
 	"slimebaton" = image(icon='icons/obj/weapons.dmi',icon_state="slimebaton_active"),
 
-	"power cell" = image(icon='icons/obj/power.dmi',icon_state="hcell"),
-	"device cell" = image(icon='icons/obj/power.dmi',icon_state="dcell"),
-	"weapon cell" = image(icon='icons/obj/power.dmi',icon_state="wcell"),
+	"power cell" = image(icon='icons/obj/power_cells_old.dmi',icon_state="b_st"),
+	"device cell" = image(icon='icons/obj/power_cells_old.dmi',icon_state="m_st"),
+	"weapon cell" = image(icon='icons/obj/power_cells_old.dmi',icon_state="m_sup"),
 
 	"hatchet" = image(icon='icons/obj/weapons.dmi',icon_state="hatchet"),
 	))
@@ -1318,41 +1340,6 @@ GLOBAL_LIST_EMPTY(sparring_attack_cache)
 GLOBAL_LIST_EMPTY(protean_abilities)
 
 //PAI stuff
-GLOBAL_LIST_INIT(possible_chassis, list(
-	"Drone" = "pai-repairbot",
-	"Cat" = "pai-cat",
-	"Mouse" = "pai-mouse",
-	"Monkey" = "pai-monkey",
-	"Borgi" = "pai-borgi",
-	"Fox" = "pai-fox",
-	"Parrot" = "pai-parrot",
-	"Rabbit" = "pai-rabbit",
-	"Dire wolf" = "pai-diredog",
-	"Horse (Lune)" = "pai-horse_lune",
-	"Horse (Soleil)" = "pai-horse_soleil",
-	"Dragon" = "pai-pdragon",
-	"Bear" = "pai-bear",
-	"Fennec" = "pai-fen",
-	"Type Zero" = "pai-typezero",
-	"Raccoon" = "pai-raccoon",
-	"Raptor" = "pai-raptor",
-	"Corgi" = "pai-corgi",
-	"Bat" = "pai-bat",
-	"Butterfly" = "pai-butterfly",
-	"Hawk" = "pai-hawk",
-	"Duffel" = "pai-duffel",
-	"Rat" = "rat",
-	"Panther" = "panther",
-	"Cyber Elf" = "cyberelf",
-	"Teppi" = "teppi",
-	"Catslug" = "catslug",
-	"Car" = "car",
-	"Type One" = "typeone",
-	"Type Thirteen" = "13",
-	"Protogen Dog" = "pai-protodog"
-	))
-
-//PAI stuff
 GLOBAL_LIST_INIT(possible_say_verbs, list(
 	"Robotic" = list("states","declares","queries"),
 	"Natural" = list("says","yells","asks"),
@@ -1379,8 +1366,8 @@ GLOBAL_LIST_INIT(robot_modules, list(
 	"Exploration"	= /obj/item/robot_module/robot/exploration,
 	"Engineering"	= /obj/item/robot_module/robot/engineering,
 	"Janitor" 		= /obj/item/robot_module/robot/janitor,
-	"Gravekeeper"	= /obj/item/robot_module/robot/gravekeeper,
-	"Lost"			= /obj/item/robot_module/robot/lost,
+	"Gravekeeper"	= /obj/item/robot_module/robot/malf/gravekeeper,
+	"Lost"			= /obj/item/robot_module/robot/malf/lost,
 	"Protector" 	= /obj/item/robot_module/robot/syndicate/protector,
 	"Mechanist" 	= /obj/item/robot_module/robot/syndicate/mechanist,
 	"Combat Medic"	= /obj/item/robot_module/robot/syndicate/combat_medic,
@@ -1421,8 +1408,8 @@ GLOBAL_LIST_INIT(finds_as_strings, list(
 
 
 //tgui law manager
-var/global/list/datum/ai_laws/admin_laws
-var/global/list/datum/ai_laws/player_laws
+GLOBAL_LIST_EMPTY_TYPED(admin_laws, /datum/ai_laws)
+GLOBAL_LIST_EMPTY_TYPED(player_laws, /datum/ai_laws)
 
 //shield_gen/external
 GLOBAL_LIST_INIT(external_shield_gen_blockedturfs,  list(
@@ -1457,6 +1444,7 @@ GLOBAL_LIST_INIT(sheet_reagents, list( //have a number of reagents divisible by 
 	/obj/item/stack/material/sandstone = list(REAGENT_ID_SILICON, REAGENT_ID_OXYGEN),
 	/obj/item/stack/material/marble = list(REAGENT_ID_CALCIUM),
 	/obj/item/stack/material/titanium = list(REAGENT_ID_ALUMINIUM),
+	/obj/item/stack/material/lead = list(REAGENT_ID_LEAD),
 	// Nuclear
 	/obj/item/stack/material/mhydrogen = list(REAGENT_ID_HYDROGEN),
 	/obj/item/stack/material/deuterium = list(REAGENT_ID_HYDROGEN),
@@ -1612,6 +1600,12 @@ GLOBAL_LIST_INIT(suitable_fish_turf_types,  list(
 	/turf/simulated/floor/water
 ))
 
+GLOBAL_LIST_INIT(ventcrawl_machinery, list(
+	/obj/machinery/atmospherics/unary/vent_pump,
+	/obj/machinery/atmospherics/unary/vent_scrubber
+	))
+
+GLOBAL_LIST_BOILERPLATE(papers_dockingcode, /obj/item/paper/dockingcodes)
 
 //Chamelion clothing was all stupid so it's done here instead.
 //Jumpsuit
@@ -1634,3 +1628,15 @@ GLOBAL_LIST(chamelion_belt_choices)
 GLOBAL_LIST(chamelion_accessory_choices)
 
 GLOBAL_LIST_INIT(tail_layer_options, list("Lower layer" = TAIL_UPPER_LAYER_LOW , "Default layer" = TAIL_UPPER_LAYER , "Upper layer" = TAIL_UPPER_LAYER_HIGH ))
+
+//Spritesheet stuff. Used by /obj/item/clothing/proc/refit_for_species(var/target_species)
+#define SPECIES_HUMANOID_CAN_WEAR list(SPECIES_HUMAN, SPECIES_SKRELL, SPECIES_RAPALA, SPECIES_VASILISSAN, SPECIES_ALRAUNE, SPECIES_PROMETHEAN)
+#define SPECIES_UNATHI_CAN_WEAR list(SPECIES_UNATHI, SPECIES_XENOHYBRID)
+#define SPECIES_TAJARAN_CAN_WEAR list(SPECIES_TAJARAN, SPECIES_XENOCHIMERA)
+#define SPECIES_VULPKANIN_CAN_WEAR list(SPECIES_VULPKANIN, SPECIES_ZORREN_HIGH, SPECIES_FENNEC)
+#define SPECIES_SERGAL_CAN_WEAR list(SPECIES_SERGAL, SPECIES_NEVREAN)
+#define SPECIES_TESHARI_CAN_WEAR list(SPECIES_TESHARI)
+#define SPECIES_VOX_CAN_WEAR list(SPECIES_VOX)
+#define SPECIES_ALL_BUT_TESHARI_CAN_WEAR list(SPECIES_HUMAN, SPECIES_SKRELL, SPECIES_RAPALA, SPECIES_VASILISSAN, SPECIES_ALRAUNE, SPECIES_PROMETHEAN, SPECIES_UNATHI, SPECIES_XENOHYBRID, SPECIES_TAJARAN, SPECIES_XENOCHIMERA, SPECIES_VULPKANIN, SPECIES_ZORREN_HIGH, SPECIES_FENNEC, SPECIES_SERGAL, SPECIES_NEVREAN, SPECIES_VOX, SPECIES_SHADEKIN)
+#define SPECIES_ALL_BUT_TESHARI_AND_VOX_CAN_WEAR list(SPECIES_HUMAN, SPECIES_SKRELL, SPECIES_RAPALA, SPECIES_VASILISSAN, SPECIES_ALRAUNE, SPECIES_PROMETHEAN, SPECIES_UNATHI, SPECIES_XENOHYBRID, SPECIES_TAJARAN, SPECIES_XENOCHIMERA, SPECIES_VULPKANIN, SPECIES_ZORREN_HIGH, SPECIES_FENNEC, SPECIES_SERGAL, SPECIES_NEVREAN, SPECIES_SHADEKIN)
+#define SPECIES_ALL_CAN_WEAR list(SPECIES_HUMAN, SPECIES_SKRELL, SPECIES_RAPALA, SPECIES_VASILISSAN, SPECIES_ALRAUNE, SPECIES_PROMETHEAN, SPECIES_UNATHI, SPECIES_XENOHYBRID, SPECIES_TAJARAN, SPECIES_XENOCHIMERA, SPECIES_VULPKANIN, SPECIES_ZORREN_HIGH, SPECIES_FENNEC, SPECIES_SERGAL, SPECIES_NEVREAN, SPECIES_TESHARI, SPECIES_VOX, SPECIES_SHADEKIN)

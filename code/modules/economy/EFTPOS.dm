@@ -73,7 +73,10 @@
 	D.wrapped = R
 	D.name = "small parcel - 'EFTPOS access code'"
 
-/obj/item/eftpos/attack_self(mob/user as mob)
+/obj/item/eftpos/attack_self(mob/user)
+	. = ..(user)
+	if(.)
+		return TRUE
 	if(get_dist(src,user) <= 1)
 		var/dat = span_bold("[eftpos_name]") + "<br>"
 		dat += "<i>This terminal is</i> [machine_id]. <i>Report this code when contacting IT Support</i><br>"
@@ -210,7 +213,7 @@
 				var/obj/item/I = usr.get_active_hand()
 				if (istype(I, /obj/item/card))
 					var/obj/item/card/id/C = I
-					if((access_cent_captain in C.access) || (access_hop in C.access) || (access_captain in C.access))
+					if((ACCESS_CENT_CAPTAIN in C.access) || (ACCESS_HOP in C.access) || (ACCESS_CAPTAIN in C.access))
 						access_code = 0
 						to_chat(usr, "[icon2html(src, usr.client)]" + span_info("Access code reset to 0."))
 				else if (istype(I, /obj/item/card/emag))

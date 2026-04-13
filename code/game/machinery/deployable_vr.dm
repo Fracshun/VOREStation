@@ -16,6 +16,7 @@
 
 	var/static/list/cutout_types
 	var/static/list/painters = list(/obj/item/reagent_containers/glass/paint, /obj/item/floor_painter)//, /obj/item/closet_painter)
+	resistance_flags = FLAMMABLE
 
 /obj/structure/barricade/cutout/Initialize(mapload)
 	. = ..()
@@ -74,7 +75,7 @@
 		var/choice = tgui_input_list(user, "What would you like to paint the cutout as?", "Cutout Painting", cutout_types)
 		if(!choice || !Adjacent(user) || I != user.get_active_hand())
 			return TRUE
-		if(do_after(user, 10 SECONDS, src))
+		if(do_after(user, 10 SECONDS, target = src))
 			var/picked_type = cutout_types[choice]
 			new picked_type(loc)
 			qdel(src) //Laaaazy. Technically heals it too. Must be held together with all that paint.

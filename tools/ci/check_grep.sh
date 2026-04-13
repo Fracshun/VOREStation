@@ -64,6 +64,13 @@ if grep -P '^\ttag = \"icon' $map_files;	then
 	FAILED=1
 fi;
 
+part "suspicious symbols in maps"
+if grep -P '[<>]' $map_files;	then
+	echo
+	echo -e "${RED}ERROR: potential html code in maps detected.${NC}"
+	FAILED=1
+fi;
+
 part "step_[xy]"
 #Checking for step_x/step_y defined in any maps anywhere.
 (! $grep 'step_[xy]' $map_files)
@@ -105,16 +112,6 @@ fi;
 
 section "code issues"
 
-#part "indentation"
-#echo -e "${RED}DISABLED"
-#Check for weird indentation in any .dm files
-# awk -f tools/indentation.awk $code_files
-# retVal=$?
-# if [ $retVal -ne 0 ]; then
-#	 echo -e "${RED}Indention testing failed. Please see results and fix indentation.${NC}"
-#	 FAILED=1
-# fi
-
 part "space indentation"
 if grep -P '(^ {2})|(^ [^ * ])|(^    +)' $code_files; then
 	echo
@@ -133,12 +130,21 @@ part "improperly pathed static lists"
 if $grep -i 'var/list/static/.*' $code_files; then
 	echo
 	echo -e "${RED}ERROR: Found incorrect static list definition 'var/list/static/', it should be 'var/static/list/' instead.${NC}"
-	st=1
+	FAILED=1
+fi;
+
+part "changelog"
+#Checking for a change to html/changelogs/example.yml
+md5sum -c - <<< "0c56937110d88f750a32d9075ddaab8b *html/changelogs/example.yml"
+retVal=$?
+if [ $retVal -ne 0 ]; then
+	echo -e "${RED}Do not modify the example.yml changelog file.${NC}"
+	FAILED=1
 fi;
 
 part "color macros"
 #Checking for color macros
-(num=`$grep -n '\\\\(red|blue|green|black|b|i[^mnc])' $code_files | wc -l`; echo "$num escapes (expecting ${MACRO_COUNT} or less)"; [ $num -le ${MACRO_COUNT} ])
+(num=`$grep -n '\\\\(red|blue|green|black|b|i[^mnct])' $code_files | wc -l`; echo "$num escapes (expecting ${MACRO_COUNT} or less)"; [ $num -le ${MACRO_COUNT} ])
 retVal=$?
 if [ $retVal -ne 0 ]; then
 	echo -e "${RED}Do not use any byond color macros (such as \blue), they are deprecated.${NC}"
@@ -153,22 +159,23 @@ if ls -1 tgui/**/*.jsx 2>/dev/null; then
 fi;
 
 part "balloon_alert sanity"
-if $grep 'balloon_alert\(".*"\)' $code_files; then
+if $grep 'balloon_alert\(".*"' $code_files; then
 	echo
 	echo -e "${RED}ERROR: Found a balloon alert with improper arguments.${NC}"
 	FAILED=1
 fi;
 
-if $grep 'balloon_alert(.*span_)' $code_files; then
+part "balloon_alert span check"
+if $grep 'balloon_alert\(.*[Ss][Pp][Aa][Nn]' $code_files; then
 	echo
 	echo -e "${RED}ERROR: Balloon alerts should never contain spans.${NC}"
 	FAILED=1
 fi;
 
 part "balloon_alert idiomatic usage"
-if $grep 'balloon_alert\(.*?, ?"[A-Z]' $code_files; then
+if $grep 'balloon_alert\(.*?,\s*"[\sA-Z]' $code_files; then
 	echo
-	echo -e "${RED}ERROR: Balloon alerts should not start with capital letters. This includes text like 'AI'. If this is a false positive, wrap the text in UNLINT().${NC}"
+	echo -e "${RED}ERROR: Balloon alerts should not start with capital letters or whitespace. This includes text like 'AI'. If this is a false positive, wrap the text in UNLINT().${NC}"
 	FAILED=1
 fi;
 
@@ -202,6 +209,20 @@ if $grep '\.proc/' $code_x_515 ; then
     FAILED=1
 fi;
 
+#part "var in proc args"
+#if grep -P '^/[\w/]\S+\(.*(var/|, ?var/.*).*\)' $code_files; then
+#	echo
+#	echo -e "${RED}ERROR: changed files contains proc argument starting with 'var'.${NC}"
+#	FAILED=1
+#fi;
+
+part "unmanaged global vars"
+if grep -P '^/*var/' $code_files; then
+	echo
+	echo -e "${RED}ERROR: Unmanaged global var use detected in code, please use the helpers.${NC}"
+	FAILED=1
+fi;
+
 part "ambiguous bitwise or"
 if grep -P '^(?:[^\/\n]|\/[^\/\n])*(&[ \t]*\w+[ \t]*\|[ \t]*\w+)' $code_files; then
 	echo
@@ -211,6 +232,13 @@ fi;
 
 if [ "$pcre2_support" -eq 1 ]; then
 	section "regexes requiring PCRE2"
+
+    part "deoptimization of range/view with as anything"
+	if $grep -PU 'var\/(?!atom).* as anything in o?(range|view)\(' $code_files; then
+		echo
+		echo -e "${RED}ERROR: range(), orange(), view(), and oview() perform significantly worse with as anything.${NC}"
+		FAILED=1
+	fi;
 
 	part "empty variable values"
 	if $grep -PU '{\n\t},' $map_files; then
@@ -263,6 +291,13 @@ if [ "$pcre2_support" -eq 1 ]; then
 		echo -e "${RED}A map has 'tag' set on an atom. It may cause problems and should be removed.${NC}"
 		FAILED=1
 	fi;
+
+	(! $grep -Pn '( |\t|;|{)tag( ?)=' $map_files)
+	retVal=$?
+	if [ $retVal -ne 0 ]; then
+		echo -e "${RED}A map has 'tag' set on an atom. It may cause problems and should be removed.${NC}"
+		FAILED=1
+	fi
 
 	part "broken html"
 	# echo -e "${RED}DISABLED"

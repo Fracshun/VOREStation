@@ -9,8 +9,7 @@
 	var/moving_diagonally
 	var/move_speed = 10
 	var/l_move_time = 1
-	var/throwing = 0
-	var/thrower
+	var/datum/thrownthing/throwing
 	var/turf/throw_source = null
 	var/throw_speed = 2
 	var/throw_range = 7
@@ -34,21 +33,31 @@
 	var/autotransferable = TRUE // Toggle for autotransfer mechanics.
 	var/recursive_listeners
 	var/listening_recursive = NON_LISTENING_ATOM
+	var/unacidable = TRUE
 
 /atom/movable/Initialize(mapload)
 	. = ..()
-	switch(blocks_emissive)
-		if(EMISSIVE_BLOCK_GENERIC)
-			var/mutable_appearance/gen_emissive_blocker = mutable_appearance(icon, icon_state, plane = PLANE_EMISSIVE, alpha = src.alpha)
-			gen_emissive_blocker.color = GLOB.em_block_color
-			gen_emissive_blocker.dir = dir
-			gen_emissive_blocker.appearance_flags |= appearance_flags
-			add_overlay(list(gen_emissive_blocker), TRUE)
-		if(EMISSIVE_BLOCK_UNIQUE)
+
+#if EMISSIVE_BLOCK_GENERIC != 0
+	#error EMISSIVE_BLOCK_GENERIC is expected to be 0 to facilitate a weird optimization hack where we rely on it being the most common.
+	#error Read the comment in code/game/atoms_movable.dm for details.
+#endif
+
+	if (blocks_emissive)
+		if (blocks_emissive == EMISSIVE_BLOCK_UNIQUE)
 			render_target = ref(src)
-			em_block = new(src, render_target)
+			em_block = new(null, src)
+			// Note, this should be refactored to drop priority overlays
 			add_overlay(list(em_block), TRUE)
-			RegisterSignal(em_block, COMSIG_PARENT_QDELETING, PROC_REF(emblocker_gc))
+			RegisterSignal(em_block, COMSIG_QDELETING, PROC_REF(emblocker_gc))
+	else
+		var/mutable_appearance/gen_emissive_blocker = mutable_appearance(icon, icon_state, plane = PLANE_EMISSIVE, alpha = src.alpha)
+		gen_emissive_blocker.color = GLOB.em_block_color
+		gen_emissive_blocker.dir = dir
+		gen_emissive_blocker.appearance_flags |= appearance_flags
+		// Note, this should be refactored to drop priority overlays
+		add_overlay(list(gen_emissive_blocker), TRUE)
+
 	if(opacity)
 		AddElement(/datum/element/light_blocking)
 	if(icon_scale_x != DEFAULT_ICON_SCALE_X || icon_scale_y != DEFAULT_ICON_SCALE_Y || icon_rotation != DEFAULT_ICON_ROTATION)
@@ -67,7 +76,7 @@
 /atom/movable/Destroy()
 	if(em_block)
 		cut_overlay(em_block)
-		UnregisterSignal(em_block, COMSIG_PARENT_QDELETING)
+		UnregisterSignal(em_block, COMSIG_QDELETING)
 		QDEL_NULL(em_block)
 	. = ..()
 
@@ -90,6 +99,7 @@
 
 	if(orbiting)
 		stop_orbit()
+	throw_source = null
 	QDEL_NULL(riding_datum)
 	set_listening(NON_LISTENING_ATOM)
 
@@ -238,7 +248,7 @@
 	last_move = direct // The direction you last moved
 	// set_dir(direct) //Don't think this is necessary
 
-//Called after a successful Move(). By this point, we've already moved
+///Called after a successful Move(). By this point, we've already moved
 /atom/movable/proc/Moved(atom/old_loc, direction, forced = FALSE, movetime)
 	SEND_SIGNAL(src, COMSIG_MOVABLE_MOVED, old_loc, direction, forced, movetime)
 	// Handle any buckled mobs on this movable
@@ -249,8 +259,13 @@
 		riding_datum.handle_vehicle_offsets()
 	for (var/datum/light_source/light as anything in light_sources) // Cycle through the light sources on this atom and tell them to update.
 		light.source_atom.update_light()
-
 	return TRUE
+
+/mob/Moved(atom/old_loc, direction, forced, movetime)
+	. = ..()
+	//If we return focus to our own mob, but we are still inside something with an inherent remote view. Restart it.
+	if(client)
+		restore_remote_views()
 
 /atom/movable/set_dir(newdir)
 	. = ..(newdir)
@@ -265,6 +280,10 @@
 // Make sure you know what you're doing if you call this, this is intended to only be called by byond directly.
 // You probably want CanPass()
 /atom/movable/Cross(atom/movable/AM)
+	if(SEND_SIGNAL(src, COMSIG_MOVABLE_CROSS, AM) & COMPONENT_BLOCK_CROSS)
+		return FALSE
+	if(SEND_SIGNAL(AM, COMSIG_MOVABLE_CROSS_OVER, src) & COMPONENT_BLOCK_CROSS)
+		return FALSE
 	return CanPass(AM, loc)
 
 /atom/movable/CanPass(atom/movable/mover, turf/target)
@@ -278,9 +297,8 @@
 	if(!A)
 		CRASH("Bump was called with no argument.")
 	. = ..()
-	if(throwing)
-		throw_impact(A)
-		throwing = 0
+	if(!QDELETED(throwing))
+		throwing.finalize(hit = TRUE, t_target = A)
 		if(QDELETED(A))
 			return
 
@@ -400,49 +418,22 @@
 /////////////////////////////////////////////////////////////////
 
 //called when src is thrown into hit_atom
-/atom/movable/proc/throw_impact(atom/hit_atom, var/speed)
+/atom/movable/proc/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
 	if(isliving(hit_atom))
 		var/mob/living/M = hit_atom
 		if(M.buckled == src)
 			return // Don't hit the thing we're buckled to.
-		M.hitby(src,speed)
+		M.hitby(src, throwingdatum)
 
 	else if(isobj(hit_atom))
 		var/obj/O = hit_atom
 		if(!O.anchored)
 			step(O, src.last_move)
-		O.hitby(src,speed)
+		O.hitby(src, throwingdatum)
 
 	else if(isturf(hit_atom))
-		src.throwing = 0
 		var/turf/T = hit_atom
-		T.hitby(src,speed)
-
-//decided whether a movable atom being thrown can pass through the turf it is in.
-/atom/movable/proc/hit_check(var/speed)
-	if(src.throwing)
-		for(var/atom/A in get_turf(src))
-			if(A == src)
-				continue
-			if(A.is_incorporeal())
-				continue
-			if(isliving(A))
-				var/mob/living/M = A
-				if(M.lying)
-					continue
-				src.throw_impact(A,speed)
-			if(isobj(A))
-				if(!A.density || A.throwpass)
-					continue
-				// Special handling of windows, which are dense but block only from some directions
-				if(istype(A, /obj/structure/window))
-					var/obj/structure/window/W = A
-					if (!W.is_fulltile() && !(turn(src.last_move, 180) & A.dir))
-						continue
-				// Same thing for (closed) windoors, which have the same problem
-				else if(istype(A, /obj/machinery/door/window) && !(turn(src.last_move, 180) & A.dir))
-					continue
-				src.throw_impact(A,speed)
+		T.hitby(src, throwingdatum)
 
 /atom/movable/proc/throw_at(atom/target, range, speed, mob/thrower, spin = TRUE, datum/callback/callback) //If this returns FALSE then callback will not be called.
 	. = TRUE
@@ -452,7 +443,12 @@
 	if (pulledby)
 		pulledby.stop_pulling()
 
-	var/datum/thrownthing/TT = new(src, target, range, speed, thrower, callback)
+	var/real_force = 0
+	if(isitem(src))
+		var/obj/item/thrown_item = src
+		real_force = thrown_item.throwforce
+
+	var/datum/thrownthing/TT = new(src, target, dir, range, speed, thrower, FALSE, real_force, FALSE, callback)
 	throwing = TT
 
 	pixel_z = 0
@@ -658,7 +654,7 @@
 
 /atom/movable/proc/emblocker_gc(var/datum/source)
 	SIGNAL_HANDLER
-	UnregisterSignal(source, COMSIG_PARENT_QDELETING)
+	UnregisterSignal(source, COMSIG_QDELETING)
 	cut_overlay(source)
 	if(em_block == source)
 		em_block = null
@@ -718,9 +714,6 @@
 /atom/movable/proc/show_message(msg, type, alt, alt_type)//Message, type of message (1 or 2), alternative message, alt message type (1 or 2)
 	return
 
-/atom/movable/proc/Bump_vr(var/atom/A, yes)
-	return
-
 /atom/movable/vv_get_dropdown()
 	. = ..()
 	VV_DROPDOWN_OPTION("", "---------")
@@ -746,6 +739,9 @@
 			return
 		if(QDELETED(src))
 			return
+		if(ismob(src)) // incase there was a client inside an object being yoinked
+			var/mob/M = src
+			M.reset_perspective(src) // Force reset to self before teleport
 		forceMove(get_turf(usr))
 
 	if(href_list[VV_HK_EDIT_PARTICLES] && check_rights(R_VAREDIT))

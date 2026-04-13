@@ -28,7 +28,7 @@
 	cost = 10
 	containertype = /obj/structure/closet/crate/secure/phoron
 	containername = "Phoron assembly crate"
-	access = access_tox_storage
+	access = ACCESS_TOX_STORAGE
 
 /datum/supply_pack/sci/exoticseeds
 	name = "Exotic seeds crate"
@@ -44,7 +44,7 @@
 	cost = 15
 	containertype = /obj/structure/closet/crate/carp
 	containername = "Exotic Seeds crate"
-	access = access_hydroponics
+	access = ACCESS_HYDROPONICS
 
 /datum/supply_pack/sci/integrated_circuit_printer
 	name = "Integrated circuit printer"
@@ -88,7 +88,22 @@
 	cost = 100
 	containertype = /obj/structure/closet/crate/secure/xion
 	containername = "Xenoarchaeology Tech crate"
-	access = access_research
+	access = ACCESS_RESEARCH
+
+/datum/supply_pack/sci/protolathe_boards
+	name = "Protolathe Board Crate"
+	desc = "A set of standard protolathe boards, one for every department! Locked to science."
+	contains = list(
+			/obj/item/circuitboard/machine/protolathe/department/engineering,
+			/obj/item/circuitboard/machine/protolathe/department/service,
+			/obj/item/circuitboard/machine/protolathe/department/medical,
+			/obj/item/circuitboard/machine/protolathe/department/cargo,
+			/obj/item/circuitboard/machine/protolathe/department/science,
+			/obj/item/circuitboard/machine/protolathe/department/security)
+	cost = 200 //If you're ordering this, you're doing something sus or you REALLY messed up
+	containertype = /obj/structure/closet/crate/secure/science
+	containername = "Protolathe Board crate"
+	access = ACCESS_RESEARCH
 
 /*
 /datum/supply_pack/sci/dune_buggy
@@ -107,7 +122,7 @@
 	cost = 40
 	containertype = /obj/structure/largecrate/animal/pred
 	containername = "Dangerous Predator crate"
-	access = access_xenobiology
+	access = ACCESS_XENOBIOLOGY
 
 /datum/supply_pack/sci/pred_doom
 	name = "EXTREMELY Dangerous Predator crate"
@@ -115,7 +130,7 @@
 	cost = 200
 	containertype = /obj/structure/largecrate/animal/dangerous
 	containername = "EXTREMELY Dangerous Predator crate"
-	access = access_xenobiology
+	access = ACCESS_XENOBIOLOGY
 	contraband = 1
 
 /datum/supply_pack/sci/weretiger
@@ -124,19 +139,34 @@
 	cost = 55
 	containertype = /obj/structure/largecrate/animal/weretiger
 	containername = "Weretiger crate"
-	access = access_xenobiology
+	access = ACCESS_XENOBIOLOGY
 /*
 /datum/supply_pack/sci/otie
 	name = "VARMAcorp adoptable reject (Dangerous!)"
 	cost = 100
 	containertype = /obj/structure/largecrate/animal/otie
 	containername = "VARMAcorp adoptable reject (Dangerous!)"
-	access = access_xenobiology
+	access = ACCESS_XENOBIOLOGY
 
 /datum/supply_pack/sci/phoronotie
 	name = "VARMAcorp adaptive beta subject (Experimental)"
 	cost = 200
 	containertype = /obj/structure/largecrate/animal/otie/phoron
 	containername = "VARMAcorp adaptive beta subject (Experimental)"
-	access = access_xenobiology
+	access = ACCESS_XENOBIOLOGY
 */ //VORESTATION AI TEMPORARY REMOVAL. Oties commented out cuz broke.
+
+/datum/supply_pack/sci/anomaly_harvesting
+	name = "Anomaly Harvesting crate"
+	desc = "Contains the tools to start anomaly harvesting. Requires Research access."
+	cost = 350
+	containertype = /obj/structure/largecrate/anomaly
+	access = ACCESS_RESEARCH
+
+/datum/supply_pack/sci/latent_anomaly
+	name = "Latent Anomaly crate"
+	desc = "Contains a latent anomaly core."
+	cost = 300
+	contains = list(/obj/item/assembly/signaler/anomaly/choice)
+	containertype = /obj/structure/closet/crate/secure/science
+	access = ACCESS_RESEARCH

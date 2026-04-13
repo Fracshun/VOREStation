@@ -130,6 +130,7 @@
 /datum/robot_sprite/dogborg/mining/drake
 	name = "Drake"
 	sprite_icon_state = "drake"
+	has_vore_belly_resting_sprites = TRUE
 
 // Tall sprites
 
@@ -210,6 +211,8 @@
 	has_eye_light_sprites = TRUE
 	has_rest_sprites = TRUE
 	has_vore_belly_sprites = TRUE
+	has_vore_belly_resting_sprites = TRUE
+	belly_capacity_list = list("sleeper" = 3)
 	rest_sprite_options = list("Default", "Sit")
 	sprite_decals = list("decals")
 	icon_x = 64

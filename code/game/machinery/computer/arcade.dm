@@ -61,9 +61,9 @@
 	return attack_hand(user)
 
 
-/obj/machinery/computer/arcade/emp_act(severity)
-	if(stat & (NOPOWER|BROKEN))
-		..(severity)
+/obj/machinery/computer/arcade/emp_act(severity, recursive)
+	. = ..()
+	if (. & EMP_PROTECT_SELF || (stat & (NOPOWER|BROKEN)))
 		return
 	var/empprize = null
 	var/num_of_prizes = 0
@@ -79,8 +79,6 @@
 	for(num_of_prizes; num_of_prizes > 0; num_of_prizes--)
 		empprize = pickweight(prizes)
 		new empprize(src.loc)
-
-	..(severity)
 
 ///////////////////
 //  BATTLE HERE  //
@@ -124,7 +122,6 @@
 /obj/machinery/computer/arcade/battle/attack_hand(mob/user as mob)
 	if(..())
 		return
-	user.set_machine(src)
 	tgui_interact(user)
 
 /obj/machinery/computer/arcade/battle/tgui_interact(mob/user, datum/tgui/ui)
@@ -417,7 +414,7 @@
 				if(emagged)
 					var/mob/living/M = user
 					M.adjust_fire_stacks(5)
-					M.IgniteMob() //flew into a star, so you're on fire
+					M.ignite_mob() //flew into a star, so you're on fire
 					to_chat(user,span_danger(span_large("You feel an immense wave of heat emanate from \the [src]. Your skin bursts into flames.")))
 		dat += "<br><P ALIGN=Right><a href='byond://?src=\ref[src];menu=1'>OK...</a></P>"
 
@@ -1048,6 +1045,9 @@
 			. += span_notice("There's a little switch on the bottom. It's flipped up.")
 
 /obj/item/orion_ship/attack_self(mob/user)
+	. = ..(user)
+	if(.)
+		return TRUE
 	if(active)
 		return
 

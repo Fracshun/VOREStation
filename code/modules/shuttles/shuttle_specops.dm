@@ -1,7 +1,7 @@
 /obj/machinery/computer/shuttle_control/specops
 	name = "special operations shuttle console"
 	shuttle_tag = "Special Operations"
-	req_access = list(access_cent_specops)
+	req_access = list(ACCESS_CENT_SPECOPS)
 
 /obj/machinery/computer/shuttle_control/specops/attack_ai(user as mob)
 	to_chat(user, span_warning("Access Denied."))
@@ -36,7 +36,7 @@
 		var/obj/machinery/computer/C = user
 
 		if(world.time <= reset_time)
-			C.visible_message(span_notice("[global.using_map.boss_name] will not allow the Special Operations shuttle to launch yet."))
+			C.visible_message(span_notice("[using_map.boss_name] will not allow the Special Operations shuttle to launch yet."))
 			if (((world.time - reset_time)/10) > 60)
 				C.visible_message(span_notice("[-((world.time - reset_time)/10)/60] minutes remain!"))
 			else

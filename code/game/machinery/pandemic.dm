@@ -16,7 +16,7 @@
 
 // PanDEMIC Vial
 /obj/item/reagent_containers/glass/beaker/vial/vaccine
-	possible_transfer_amounts = (list(5, 10, 15))
+	max_transfer_amount = 15
 	volume = 15
 
 /obj/item/reagent_containers/glass/beaker/vial/vaccine/Initialize(mapload)
@@ -236,7 +236,7 @@
 			traits["stealth"] = adv_disease.stealth
 			traits["stage_speed"] = adv_disease.stage_rate
 			traits["transmission"] = adv_disease.transmission
-			traits["symptom_severity"] = adv_disease.severity
+			traits["severity"] = adv_disease.severity
 
 		traits["index"] = index++
 		traits["agent"] = disease.agent

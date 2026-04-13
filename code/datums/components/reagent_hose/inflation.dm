@@ -50,7 +50,7 @@
 
 	// Check for destinations
 	var/list/options = list("Mouth")
-	if(human_owner?.vore_selected)
+	if(human_owner.vore_selected)
 		options.Add("Belly ([sanitize(human_owner.vore_selected.name)])")
 	if(!human_owner.isSynthetic()) // Results in a lot of bad behaviors...
 		options.Add("Bloodstream")
@@ -78,7 +78,7 @@
 	// Display action
 	name = "[human_owner]'s [feedback]"
 	user.visible_message("\The [user] starts to connect the hose to \the [human_owner]'s [feedback]...")
-	if(!do_after(user,7 SECONDS,human_owner))
+	if(!do_after(user, 7 SECONDS, target = human_owner))
 		to_chat(user,span_warning("You couldn't connect the hose!"))
 		return FALSE
 	if(other.get_hose() || get_hose()) // SHouldn't be connected to anything yet!
@@ -92,11 +92,13 @@
 	return TRUE
 
 /datum/component/hose_connector/inflation/connected_reagents()
+	if(!human_owner)
+		return null
 	switch(connection_mode)
 		if(CHEM_INGEST)
 			return human_owner.ingested
 		if(CHEM_VORE)
-			return human_owner?.vore_selected?.reagents
+			return human_owner.vore_selected?.reagents
 		if(CHEM_BLOOD)
 			// Inflating
 			var/datum/component/hose_connector/other = get_pairing()

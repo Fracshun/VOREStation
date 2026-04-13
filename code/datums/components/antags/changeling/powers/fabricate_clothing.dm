@@ -30,8 +30,10 @@
 	ordinary cloth, allowing us to make ourselves appear to wear almost anything."
 	origin_tech = list() //The base chameleon items have origin technology, which we will inherit if we don't null out this variable.
 	canremove = FALSE //Since this is essentially flesh impersonating clothes, tearing someone's skin off as if it were clothing isn't possible.
+	has_sensor = FALSE // Reveals ling, and doesn't make sense anyway!
 
-/obj/item/clothing/under/chameleon/changeling/emp_act(severity) //As these are purely organic, EMP does nothing to them.
+/obj/item/clothing/under/chameleon/changeling/emp_act(severity, recursive) //As these are purely organic, EMP does nothing to them.
+	. = ..()
 	return
 
 /obj/item/clothing/under/chameleon/changeling/verb/shred() //Remove individual pieces if needed.
@@ -52,8 +54,9 @@
 	origin_tech = list()
 	canremove = FALSE
 
-/obj/item/clothing/head/chameleon/changeling/emp_act(severity)
-	return
+/obj/item/clothing/head/chameleon/changeling/Initialize(mapload)
+	. = ..()
+	AddElement(/datum/element/empprotection, EMP_PROTECT_SELF)
 
 /obj/item/clothing/head/chameleon/changeling/verb/shred() //The copypasta is real.
 	set name = "Shred Helmet"
@@ -77,8 +80,9 @@
 	origin_tech = list()
 	canremove = FALSE
 
-/obj/item/clothing/suit/chameleon/changeling/emp_act(severity)
-	return
+/obj/item/clothing/suit/chameleon/changeling/Initialize(mapload)
+	. = ..()
+	AddElement(/datum/element/empprotection, EMP_PROTECT_SELF)
 
 /obj/item/clothing/suit/chameleon/changeling/verb/shred()
 	set name = "Shred Suit"
@@ -102,8 +106,9 @@
 	origin_tech = list()
 	canremove = FALSE
 
-/obj/item/clothing/shoes/chameleon/changeling/emp_act()
-	return
+/obj/item/clothing/shoes/chameleon/changeling/Initialize(mapload)
+	. = ..()
+	AddElement(/datum/element/empprotection, EMP_PROTECT_SELF)
 
 /obj/item/clothing/shoes/chameleon/changeling/verb/shred()
 	set name = "Shred Shoes"
@@ -127,8 +132,9 @@
 	origin_tech = list()
 	canremove = FALSE
 
-/obj/item/storage/backpack/chameleon/changeling/emp_act()
-	return
+/obj/item/storage/backpack/chameleon/changeling/Initialize(mapload)
+	. = ..()
+	AddElement(/datum/element/empprotection, EMP_PROTECT_SELF)
 
 /obj/item/storage/backpack/chameleon/changeling/verb/shred()
 	set name = "Shred Backpack"
@@ -155,8 +161,9 @@
 	origin_tech = list()
 	canremove = FALSE
 
-/obj/item/clothing/gloves/chameleon/changeling/emp_act()
-	return
+/obj/item/clothing/gloves/chameleon/changeling/Initialize(mapload)
+	. = ..()
+	AddElement(/datum/element/empprotection, EMP_PROTECT_SELF)
 
 /obj/item/clothing/gloves/chameleon/changeling/verb/shred()
 	set name = "Shred Gloves"
@@ -181,8 +188,9 @@
 	origin_tech = list()
 	canremove = FALSE
 
-/obj/item/clothing/mask/chameleon/changeling/emp_act()
-	return
+/obj/item/clothing/mask/chameleon/changeling/Initialize(mapload)
+	. = ..()
+	AddElement(/datum/element/empprotection, EMP_PROTECT_SELF)
 
 /obj/item/clothing/mask/chameleon/changeling/verb/shred()
 	set name = "Shred Mask"
@@ -202,8 +210,9 @@
 	origin_tech = list()
 	canremove = FALSE
 
-/obj/item/clothing/glasses/chameleon/changeling/emp_act()
-	return
+/obj/item/clothing/glasses/chameleon/changeling/Initialize(mapload)
+	. = ..()
+	AddElement(/datum/element/empprotection, EMP_PROTECT_SELF)
 
 /obj/item/clothing/glasses/chameleon/changeling/verb/shred()
 	set name = "Shred Glasses"
@@ -227,8 +236,9 @@
 	origin_tech = list()
 	canremove = FALSE
 
-/obj/item/storage/belt/chameleon/changeling/emp_act()
-	return
+/obj/item/storage/belt/chameleon/changeling/Initialize(mapload)
+	. = ..()
+	AddElement(/datum/element/empprotection, EMP_PROTECT_SELF)
 
 /obj/item/storage/belt/chameleon/changeling/verb/shred()
 	set name = "Shred Belt"

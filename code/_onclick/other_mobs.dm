@@ -2,9 +2,6 @@
 /atom/proc/attack_generic(mob/user as mob)
 	return 0
 
-/atom/proc/take_damage(var/damage)
-	return 0
-
 /*
 	Humans:
 	Adds an exception for gloves, to allow special glove types like the ninja ones.
@@ -33,19 +30,36 @@
 /mob/living/carbon/human/RestrainedClickOn(var/atom/A)
 	return
 
+/mob/proc/has_telegrip()
+	return TK in mutations
+
+/mob/living/carbon/human/has_telegrip()
+	if(istype(gloves,/obj/item/clothing/gloves/telekinetic))
+		var/obj/item/clothing/gloves/telekinetic/G = gloves
+		if(G.has_grip_power())
+			return TRUE
+	return ..()
+
 /mob/living/carbon/human/RangedAttack(var/atom/A)
 	if(!gloves && !mutations.len && !spitting)
 		return
 	var/obj/item/clothing/gloves/G = gloves
-	if((LASER in mutations) && a_intent == I_HURT)
+	if((LASER_EYES in mutations) && a_intent == I_HURT)
 		LaserEyes(A) // moved into a proc below
 
 	else if(istype(G) && G.Touch(A,0)) // for magic gloves
 		return
 
-	else if(TK in mutations)
-		A.attack_tk(src)
-
+	else if(has_telegrip())
+		if(istype(gloves,/obj/item/clothing/gloves/telekinetic))
+			var/obj/item/clothing/gloves/telekinetic/TKG = gloves
+			TKG.use_grip_power(src,TRUE)
+		if(is_remote_viewing()) // Extremely bad exploits if allowed to TK while remote viewing
+			to_chat(src, TK_DENIED_MESSAGE)
+		else if(get_dist(src, A) > TK_MAXRANGE)
+			to_chat(src, TK_OUTRANGED_MESSAGE)
+		else
+			A.attack_tk(src)
 	else if(spitting) //Only used by xenos right now, can be expanded.
 		Spit(A)
 

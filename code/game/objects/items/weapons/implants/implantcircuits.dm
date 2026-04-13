@@ -32,8 +32,11 @@
 	<b>Integrity:</b> Implant is not shielded from electromagnetic interference, otherwise it is independent of subject's status."}
 	return dat
 
-/obj/item/implant/integrated_circuit/emp_act(severity)
-	IC.emp_act(severity)
+/obj/item/implant/integrated_circuit/emp_act(severity, recursive)
+	. = ..()
+	if (. & EMP_PROTECT_SELF)
+		return
+	IC.emp_act(severity, recursive)
 
 /obj/item/implant/integrated_circuit/examine(mob/user)
 	. = ..()
@@ -46,4 +49,7 @@
 		..()
 
 /obj/item/implant/integrated_circuit/attack_self(mob/user)
+	. = ..(user)
+	if(.)
+		return TRUE
 	IC.attack_self(user)

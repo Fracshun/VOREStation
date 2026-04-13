@@ -6,8 +6,6 @@ ADMIN_VERB_AND_CONTEXT_MENU(debug_variables, (R_DEBUG|R_SERVER|R_ADMIN|R_SPAWN|R
 // This is kept as a separate proc because admins are able to show VV to non-admins
 
 /client/proc/debug_variables(datum/thing in world)
-	set category = "Debug.Investigate"
-	set name = "View Variables"
 	//set src in world
 	var/static/cookieoffset = rand(1, 9999) //to force cookies to reset after the round.
 
@@ -38,8 +36,10 @@ ADMIN_VERB_AND_CONTEXT_MENU(debug_variables, (R_DEBUG|R_SERVER|R_ADMIN|R_SPAWN|R
 	var/type = islist ? /list : thing.type
 	var/no_icon = FALSE
 
+	var/cord_line
 	if(isatom(thing))
 		var/atom/AT = thing
+		cord_line = "<A href='byond://?_src_=holder;[HrefToken()];jumpto=\ref[thing]'>x:[AT.x] y:[AT.y] z:[AT.z]</A> "
 		if(use_gfi)
 			sprite = getFlatIcon(thing)
 			if(!sprite)
@@ -265,6 +265,7 @@ ADMIN_VERB_AND_CONTEXT_MENU(debug_variables, (R_DEBUG|R_SERVER|R_ADMIN|R_SPAWN|R
 							<span id='tagged'>[tagged_line]</span>
 							<span id='varedited'>[varedited_line]</span>
 							<span id='deleted'>[deleted_line]</span>
+							<br><font size='1'>[cord_line]</font>
 						</div>
 					</td>
 					<td width='50%'>

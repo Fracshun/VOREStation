@@ -28,7 +28,7 @@
 		else
 			var/turf/playerTurf = get_turf(Player)
 			if(!playerTurf)
-				log_debug("Player [Player.name] ([Player.ckey]) playing as [Player.species] was in nullspace at round end.")
+				log_runtime("Player [Player.name] ([Player.ckey]) playing as [Player.species] was in nullspace at round end.")
 				continue
 			if(isAdminLevel(playerTurf.z))
 				// Evac'd - Next round they arrive on the shuttle.
@@ -49,19 +49,20 @@
 	// Find out of this mob is a proper mob!
 	if (persister.mind && persister.mind.loaded_from_ckey)
 		// Okay this mob has a real loaded-from-savefile mind in it!
-		var/datum/preferences/prefs = preferences_datums[persister.mind.loaded_from_ckey]
+		var/datum/preferences/prefs = GLOB.preferences_datums[persister.mind.loaded_from_ckey]
 		if(!prefs)
-			warning("Persist (P4P): [persister.mind] was loaded from ckey [persister.mind.loaded_from_ckey] but no prefs datum found.")
+			WARNING("Persist (P4P): [persister.mind] was loaded from ckey [persister.mind.loaded_from_ckey] but no prefs datum found.")
 			return
 
 		// Okay, lets do a few checks to see if we should really save tho!
 		if(!prefs.load_character(persister.mind.loaded_from_slot))
-			warning("Persist (P4P): [persister.mind] was loaded from slot [persister.mind.loaded_from_slot] but loading prefs failed.")
+			WARNING("Persist (P4P): [persister.mind] was loaded from slot [persister.mind.loaded_from_slot] but loading prefs failed.")
 			return // Failed to load character
 
 		// For now as a safety measure we will only save if the name matches.
-		if(prefs.real_name != persister.real_name)
-			log_debug("Persist (P4P): Skipping [persister] because ORIG:[persister.real_name] != CURR:[prefs.real_name].")
+		var/prefs_real_name = prefs.read_preference(/datum/preference/name/real_name)
+		if(prefs_real_name != persister.real_name)
+			NOTICE("Persist (P4P): Skipping [persister] because ORIG:[persister.real_name] != CURR:[prefs_real_name].")
 			return
 
 		return prefs
@@ -69,7 +70,7 @@
 /**
  * Called when mob despawns early (via cryopod)!
  */
-/hook/despawn/proc/persist_despawned_mob(var/mob/occupant, var/obj/machinery/cryopod/pod)
+/proc/persist_despawned_mob(var/mob/occupant, var/obj/machinery/cryopod/pod)
 	ASSERT(istype(pod))
 	ASSERT(ispath(pod.spawnpoint_type, /datum/spawnpoint))
 	persist_interround_data(occupant, pod.spawnpoint_type)
@@ -82,7 +83,7 @@
 
 	var/datum/preferences/prefs = prep_for_persist(occupant)
 	if(!prefs)
-		warning("Persist (PID): Skipping [occupant] for persisting, as they have no prefs.")
+		WARNING("Persist (PID): Skipping [occupant] for persisting, as they have no prefs.")
 		return
 
 	//This one doesn't rely on persistence prefs
@@ -162,35 +163,39 @@
 // This basically needs to be the reverse of /datum/category_item/player_setup_item/general/body/copy_to_mob() ~Leshana
 /proc/apply_organs_to_prefs(var/mob/living/carbon/human/character, var/datum/preferences/prefs)
 	if(!istype(character) || !character.species) return
+	var/list/organ_data = prefs.read_preference(/datum/preference/organ_data) || list()
+	var/list/rlimb_data = prefs.read_preference(/datum/preference/rlimb_data) || list()
 	// Checkify the limbs!
 	for(var/name in character.species.has_limbs)
-		var/obj/item/organ/external/O = character.organs_by_name[name]
-		if(!O)
+		var/obj/item/organ/external/external_organ = character.organs_by_name[name]
+		if(!external_organ)
 			if(name in GLOB.storable_amputated_organs)
-				prefs.organ_data[name] = "amputated"
+				organ_data[name] = "amputated"
 			else
-				prefs.rlimb_data.Remove(name) // Missing limb and not in the global list means default model
-		else if(O.robotic >= ORGAN_ROBOT)
-			prefs.organ_data[name] = "cyborg"
-			if(O.model)
-				prefs.rlimb_data[name] = O.model
+				rlimb_data.Remove(name) // Missing limb and not in the global list means default model
+		else if(external_organ.robotic >= ORGAN_ROBOT)
+			organ_data[name] = "cyborg"
+			if(external_organ.model)
+				rlimb_data[name] = external_organ.model
 			else
-				prefs.rlimb_data.Remove(name) // Missing rlimb_data entry means default model
+				rlimb_data.Remove(name) // Missing rlimb_data entry means default model
 		else
-			prefs.organ_data.Remove(name) // Misisng organ_data entry means normal
+			organ_data.Remove(name) // Misisng organ_data entry means normal
 
 	// Internal organs also
 	for(var/name in character.species.has_organ)
-		var/obj/item/organ/I = character.internal_organs_by_name[name]
-		if(I)
-			if(istype(I, /obj/item/organ/internal/mmi_holder/robot))
-				prefs.organ_data[name] = FBP_DIGITAL // Need a better way to detect this special type
-			else if(I.robotic == ORGAN_ASSISTED)
-				prefs.organ_data[name] = FBP_ASSISTED
-			else if(I.robotic >= ORGAN_ROBOT)
-				prefs.organ_data[name] = FBP_MECHANICAL
+		var/obj/item/organ/internal_organ = character.internal_organs_by_name[name]
+		if(internal_organ)
+			if(istype(internal_organ, /obj/item/organ/internal/mmi_holder/robot))
+				organ_data[name] = FBP_DIGITAL // Need a better way to detect this special type
+			else if(internal_organ.robotic == ORGAN_ASSISTED)
+				organ_data[name] = FBP_ASSISTED
+			else if(internal_organ.robotic >= ORGAN_ROBOT)
+				organ_data[name] = FBP_MECHANICAL
 			else
-				prefs.organ_data.Remove(name) // Missing organ_data entry means normal
+				organ_data.Remove(name) // Missing organ_data entry means normal
+	prefs.write_preference(GLOB.preference_entries[/datum/preference/organ_data], organ_data)
+	prefs.write_preference(GLOB.preference_entries[/datum/preference/rlimb_data], rlimb_data)
 
 // Saves mob's current body markings state to prefs.
 // This basically needs to be the reverse of /datum/category_item/player_setup_item/general/body/copy_to_mob() ~Leshana
@@ -238,7 +243,7 @@
 
 	var/slot = H?.mind?.loaded_from_slot
 	if(isnull(slot))
-		warning("Persist (NIF): [H] has no mind slot, skipping")
+		WARNING("Persist (NIF): [H] has no mind slot, skipping")
 		return
 
 	var/datum/json_savefile/savefile = new /datum/json_savefile(nif_savefile_path(H.ckey))

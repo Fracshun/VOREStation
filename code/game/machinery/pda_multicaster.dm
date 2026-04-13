@@ -86,11 +86,13 @@
 /obj/machinery/pda_multicaster/process()
 	update_power()
 
-/obj/machinery/pda_multicaster/emp_act(severity)
-	if(!(stat & EMPED))
-		stat |= EMPED
-		var/duration = (300 * 10)/severity
-		spawn(rand(duration - 20, duration + 20))
-			stat &= ~EMPED
+/obj/machinery/pda_multicaster/emp_act(severity, recursive)
+	. = ..()
+	if (. & EMP_PROTECT_SELF || (stat & EMPED))
+		return
+	stat |= EMPED
+	var/duration = (300 * 10)/severity
+	spawn(rand(duration - 20, duration + 20))
+		stat &= ~EMPED
 	update_icon()
 	..()

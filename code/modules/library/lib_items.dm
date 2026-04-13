@@ -46,7 +46,7 @@
 	else if(O.has_tool_quality(TOOL_SCREWDRIVER))
 		playsound(src, O.usesound, 75, 1)
 		to_chat(user, span_notice("You begin dismantling \the [src]."))
-		if(do_after(user,25 * O.toolspeed))
+		if(do_after(user, 25 * O.toolspeed, target = src))
 			to_chat(user, span_notice("You dismantle \the [src]."))
 			new /obj/item/stack/material/wood(get_turf(src), 3)
 			for(var/obj/item/book/b in contents)
@@ -182,20 +182,31 @@ Book Cart End
 	var/title		 // The real name of the book.
 	var/carved = 0	 // Has the book been hollowed out for use as a secret storage item?
 	var/obj/item/store	//What's in the book?
+	var/occult_tier = 0 //If the book is an occult book or not and how strong it is. Used for attack_self
+	///Var for attack_self chain
+	var/special_handling = FALSE
 	drop_sound = 'sound/items/drop/book.ogg'
 	pickup_sound = 'sound/items/pickup/book.ogg'
+	resistance_flags = FLAMMABLE
 
-/obj/item/book/attack_self(var/mob/user)
+/obj/item/book/attack_self(mob/user)
+	. = ..(user)
+	if(.)
+		return TRUE
+	if(occult_tier)
+		return FALSE
+	if(special_handling)
+		return FALSE
 	if(carved)
 		if(store)
 			to_chat(user, span_notice("[store] falls out of [title]!"))
-			store.loc = get_turf(src.loc)
+			store.forceMove(get_turf(src.loc))
 			store = null
 			return
 		else
 			to_chat(user, span_notice("The pages of [title] have been cut out!"))
 			return
-	if(src.dat)
+	if(dat)
 		display_content(user)
 		user.visible_message("[user] opens a book titled \"[src.title]\" and begins reading intently.")
 		playsound(src, 'sound/bureaucracy/bookopen.ogg', 50, 1)
@@ -205,9 +216,9 @@ Book Cart End
 		to_chat(user, "This book is completely blank!")
 
 /obj/item/book/proc/display_content(mob/living/user)
-	var/datum/browser/popup = new(user, "book", "<TT><I>Penned by [author].</I></TT>")
-	popup.set_content(dat)
-	popup.open()
+	if(!findtext(dat, regex("^<html")))
+		dat = "<html>[dat]</html>"
+	user << browse(replacetext(dat, "<html>", "<html><TT><I>Penned by [author].</I></TT> <BR>"), "window=book")
 
 /obj/item/book/attackby(obj/item/W, mob/user)
 	if(carved)
@@ -286,7 +297,7 @@ Book Cart End
 	else if(istype(W, /obj/item/material/knife) || W.has_tool_quality(TOOL_WIRECUTTER))
 		if(carved)	return
 		to_chat(user, span_notice("You begin to carve out [title]."))
-		if(do_after(user, 30))
+		if(do_after(user, 3 SECONDS, target = src))
 			to_chat(user, span_notice("You carve out the pages from [title]! You didn't want to read it anyway."))
 			playsound(src, 'sound/bureaucracy/papercrumple.ogg', 50, 1)
 			new /obj/item/shreddedp(get_turf(src))
@@ -309,6 +320,7 @@ Book Cart End
 /obj/item/book/bundle
 	var/page = 1 //current page
 	var/list/pages = list() //the contents of each page
+	special_handling = TRUE
 
 /obj/item/book/bundle/proc/show_content(mob/user)
 	if(!pages.len)
@@ -350,6 +362,9 @@ Book Cart End
 		user << browse(dat, "window=[name]")
 
 /obj/item/book/bundle/attack_self(mob/user)
+	. = ..(user)
+	if(.)
+		return TRUE
 	src.show_content(user)
 	add_fingerprint(user)
 	update_icon()
@@ -388,6 +403,9 @@ Book Cart End
 	var/mode = 0 					// 0 - Scan only, 1 - Scan and Set Buffer, 2 - Scan and Attempt to Check In, 3 - Scan and Attempt to Add to Inventory
 
 /obj/item/barcodescanner/attack_self(mob/user)
+	. = ..(user)
+	if(.)
+		return TRUE
 	mode += 1
 	if(mode > 3)
 		mode = 0

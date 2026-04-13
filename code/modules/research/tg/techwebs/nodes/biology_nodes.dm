@@ -8,7 +8,7 @@
 		// "healthanalyzer",
 		// "autopsyscanner",
 		// "genescanner",
-		// "medical_kiosk",
+		"medical_kiosk",
 		// "chem_master",
 		// "ph_meter",
 		// "scigoggles",
@@ -31,6 +31,7 @@
 		// "biopsy_tool",
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_2_POINTS)
+	announce_channels = list(CHANNEL_MEDICAL)
 
 /datum/techweb_node/xenobiology
 	id = TECHWEB_NODE_XENOBIOLOGY
@@ -55,6 +56,7 @@
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
 	discount_experiments = list(/datum/experiment/scanning/points/slime_scanning = TECHWEB_TIER_3_POINTS)
+	announce_channels = list(CHANNEL_MEDICAL)
 
 /datum/techweb_node/gene_engineering
 	id = TECHWEB_NODE_GENE_ENGINEERING
@@ -84,12 +86,12 @@
 	description = "Essential tools for maintaining onboard gardens, supporting plant growth in the unique environment of the space station."
 	design_ids = list(
 		"plant_analyzer",
-		// "seed_extractor",
+		"seed_extractor",
 		// "watering_can",
-		// "spade",
+		"spade",
 		// "cultivator",
 		// "secateurs",
-		// "hatchet",
+		"hatchet",
 	)
 
 /datum/techweb_node/hydroponics
@@ -113,6 +115,8 @@
 	design_ids = list(
 		"flora_gun",
 		"disk_botany",
+		"botany_extractor",
+		"botany_editor",
 		// "gene_shears",
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)

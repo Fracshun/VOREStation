@@ -16,6 +16,7 @@
 	seal_delay = 0
 	var/mob/living/myprotean
 	initial_modules = list(/obj/item/rig_module/protean/syphon, /obj/item/rig_module/protean/armor, /obj/item/rig_module/protean/healing)
+	flags = PHORONGUARD
 	item_flags = NOSTRIP
 
 	helm_type = /obj/item/clothing/head/helmet/space/rig/protean //These are important for sprite pointers
@@ -115,7 +116,7 @@
 	name = "mass"
 	desc = "A helmet-shaped clump of nanomachines."
 	light_overlay = "should not use a light overlay"
-	species_restricted = list(SPECIES_PROTEAN, SPECIES_HUMAN, SPECIES_SKRELL, SPECIES_TAJARAN, SPECIES_UNATHI, SPECIES_NEVREAN, SPECIES_AKULA, SPECIES_SERGAL, SPECIES_ZORREN_HIGH, SPECIES_VULPKANIN, SPECIES_PROMETHEAN, SPECIES_XENOHYBRID, SPECIES_VOX, SPECIES_TESHARI, SPECIES_VASILISSAN, SPECIES_XENOMORPH_HYBRID)
+	species_restricted = list(SPECIES_PROTEAN, SPECIES_HUMAN, SPECIES_SKRELL, SPECIES_TAJARAN, SPECIES_UNATHI, SPECIES_NEVREAN, SPECIES_AKULA, SPECIES_SERGAL, SPECIES_ZORREN_HIGH, SPECIES_VULPKANIN, SPECIES_PROMETHEAN, SPECIES_XENOHYBRID, SPECIES_VOX, SPECIES_TESHARI, SPECIES_VASILISSAN, SPECIES_XENOMORPH_HYBRID, SPECIES_SHADEKIN, SPECIES_SHADEKIN_CREW)
 	sprite_sheets = list(
 		SPECIES_PROTEAN			 = 'icons/mob/head.dmi',
 		SPECIES_HUMAN			 = 'icons/mob/head.dmi',
@@ -133,7 +134,8 @@
 		SPECIES_TESHARI 		 = 'icons/mob/species/teshari/helmet.dmi',
 		SPECIES_VASILISSAN		 = 'icons/mob/species/skrell/helmet.dmi',
 		SPECIES_VOX				 = 'icons/mob/species/vox/head.dmi',
-		SPECIES_XENOMORPH_HYBRID = 'icons/mob/species/xenomorph_hybrid/helmet.dmi'
+		SPECIES_XENOMORPH_HYBRID = 'icons/mob/species/xenomorph_hybrid/helmet.dmi',
+		SPECIES_SHADEKIN		 = 'icons/mob/head.dmi',
 		)
 
 	sprite_sheets_obj = list(
@@ -153,7 +155,8 @@
 		SPECIES_TESHARI 		 = 'icons/mob/head.dmi',
 		SPECIES_VASILISSAN		 = 'icons/mob/head.dmi',
 		SPECIES_VOX				 = 'icons/mob/head.dmi',
-		SPECIES_XENOMORPH_HYBRID = 'icons/mob/head.dmi'
+		SPECIES_XENOMORPH_HYBRID = 'icons/mob/head.dmi',
+		SPECIES_SHADEKIN		 = 'icons/mob/head.dmi',
 		)
 	icon = 'icons/inventory/head/item.dmi'
 	default_worn_icon = 'icons/mob/head.dmi'
@@ -164,7 +167,7 @@
 	name = "mass"
 	desc = "Glove-shaped clusters of nanomachines."
 	siemens_coefficient= 0
-	species_restricted = list(SPECIES_PROTEAN, SPECIES_HUMAN, SPECIES_SKRELL, SPECIES_TAJARAN, SPECIES_UNATHI, SPECIES_NEVREAN, SPECIES_AKULA, SPECIES_SERGAL, SPECIES_ZORREN_HIGH, SPECIES_VULPKANIN, SPECIES_PROMETHEAN, SPECIES_XENOHYBRID, SPECIES_VOX, SPECIES_TESHARI, SPECIES_VASILISSAN, SPECIES_XENOMORPH_HYBRID)
+	species_restricted = list(SPECIES_PROTEAN, SPECIES_HUMAN, SPECIES_SKRELL, SPECIES_TAJARAN, SPECIES_UNATHI, SPECIES_NEVREAN, SPECIES_AKULA, SPECIES_SERGAL, SPECIES_ZORREN_HIGH, SPECIES_VULPKANIN, SPECIES_PROMETHEAN, SPECIES_XENOHYBRID, SPECIES_VOX, SPECIES_TESHARI, SPECIES_VASILISSAN, SPECIES_XENOMORPH_HYBRID, SPECIES_SHADEKIN, SPECIES_SHADEKIN_CREW)
 	sprite_sheets = list(
 		SPECIES_PROTEAN			 = 'icons/mob/hands.dmi',
 		SPECIES_HUMAN			 = 'icons/mob/hands.dmi',
@@ -182,7 +185,8 @@
 		SPECIES_TESHARI 		 = 'icons/mob/species/teshari/hands.dmi',
 		SPECIES_VASILISSAN		 = 'icons/mob/hands.dmi',
 		SPECIES_VOX				 = 'icons/mob/species/vox/gloves.dmi',
-		SPECIES_XENOMORPH_HYBRID = 'icons/mob/species/xenomorph_hybrid/gloves.dmi'
+		SPECIES_XENOMORPH_HYBRID = 'icons/mob/species/xenomorph_hybrid/gloves.dmi',
+		SPECIES_SHADEKIN		 = 'icons/mob/hands.dmi'
 		)
 
 	sprite_sheets_obj = list(
@@ -201,7 +205,8 @@
 		SPECIES_TESHARI 		 = 'icons/mob/hands.dmi',
 		SPECIES_VASILISSAN		 = 'icons/mob/hands.dmi',
 		SPECIES_VOX				 = 'icons/mob/hands.dmi',
-		SPECIES_XENOMORPH_HYBRID = 'icons/mob/hands.dmi'
+		SPECIES_XENOMORPH_HYBRID = 'icons/mob/hands.dmi',
+		SPECIES_SHADEKIN		 = 'icons/mob/hands.dmi'
 		)
 	icon = 'icons/inventory/hands/item.dmi'
 	default_worn_icon = 'icons/mob/hands.dmi'
@@ -211,7 +216,7 @@
 /obj/item/clothing/shoes/magboots/rig/protean
 	name = "mass"
 	desc = "Boot-shaped clusters of nanomachines."
-	species_restricted = list(SPECIES_PROTEAN, SPECIES_HUMAN, SPECIES_SKRELL, SPECIES_TAJARAN, SPECIES_UNATHI, SPECIES_NEVREAN, SPECIES_AKULA, SPECIES_SERGAL, SPECIES_ZORREN_HIGH, SPECIES_VULPKANIN, SPECIES_PROMETHEAN, SPECIES_XENOHYBRID, SPECIES_VOX, SPECIES_TESHARI, SPECIES_VASILISSAN, SPECIES_XENOMORPH_HYBRID)
+	species_restricted = list(SPECIES_PROTEAN, SPECIES_HUMAN, SPECIES_SKRELL, SPECIES_TAJARAN, SPECIES_UNATHI, SPECIES_NEVREAN, SPECIES_AKULA, SPECIES_SERGAL, SPECIES_ZORREN_HIGH, SPECIES_VULPKANIN, SPECIES_PROMETHEAN, SPECIES_XENOHYBRID, SPECIES_VOX, SPECIES_TESHARI, SPECIES_VASILISSAN, SPECIES_XENOMORPH_HYBRID, SPECIES_SHADEKIN, SPECIES_SHADEKIN_CREW)
 	sprite_sheets = list(
 		SPECIES_TESHARI 		 = 'icons/mob/species/teshari/feet.dmi',
 		SPECIES_VOX				 = 'icons/mob/species/vox/shoes.dmi',
@@ -227,7 +232,7 @@
 	name = "mass"
 	desc = "A body-hugging mass of nanomachines."
 	can_breach = 0
-	species_restricted = list(SPECIES_PROTEAN, SPECIES_HUMAN, SPECIES_SKRELL, SPECIES_TAJARAN, SPECIES_UNATHI, SPECIES_NEVREAN, SPECIES_AKULA, SPECIES_SERGAL, SPECIES_ZORREN_HIGH, SPECIES_VULPKANIN, SPECIES_PROMETHEAN, SPECIES_XENOHYBRID, SPECIES_VOX, SPECIES_TESHARI, SPECIES_VASILISSAN, SPECIES_XENOMORPH_HYBRID)
+	species_restricted = list(SPECIES_PROTEAN, SPECIES_HUMAN, SPECIES_SKRELL, SPECIES_TAJARAN, SPECIES_UNATHI, SPECIES_NEVREAN, SPECIES_AKULA, SPECIES_SERGAL, SPECIES_ZORREN_HIGH, SPECIES_VULPKANIN, SPECIES_PROMETHEAN, SPECIES_XENOHYBRID, SPECIES_VOX, SPECIES_TESHARI, SPECIES_VASILISSAN, SPECIES_XENOMORPH_HYBRID, SPECIES_SHADEKIN, SPECIES_SHADEKIN_CREW)
 	allowed = list(POCKET_GENERIC, POCKET_EMERGENCY, POCKET_ALL_TANKS, POCKET_SUIT_REGULATORS, POCKET_EXPLO, /obj/item/storage/backpack)
 	sprite_sheets = list(
 		SPECIES_TESHARI 		 = 'icons/mob/species/teshari/suit.dmi',
@@ -250,13 +255,13 @@
 			if(1)
 				if(W.has_tool_quality(TOOL_SCREWDRIVER))
 					playsound(src, W.usesound, 50, 1)
-					if(do_after(user,50,src,exclusive = TASK_ALL_EXCLUSIVE))
+					if(do_after(user, 5 SECONDS, target = src))
 						to_chat(user, span_notice("You unscrew the maintenace panel on the [src]."))
 						dead +=1
 				return
 			if(2)
 				if(istype(W, /obj/item/protean_reboot))//placeholder
-					if(do_after(user,50,src,exclusive = TASK_ALL_EXCLUSIVE))
+					if(do_after(user, 5 SECONDS, target = src))
 						playsound(src, 'sound/items/Deconstruct.ogg', 50, 1)
 						to_chat(user, span_notice("You carefully slot [W] in the [src]."))
 						dead +=1
@@ -264,7 +269,7 @@
 				return
 			if(3)
 				if(istype(W, /obj/item/stack/nanopaste))
-					if(do_after(user,50,src,exclusive = TASK_ALL_EXCLUSIVE))
+					if(do_after(user, 5 SECONDS, target = src))
 						playsound(src, 'sound/effects/ointment.ogg', 50, 1)
 						to_chat(user, span_notice("You slather the interior confines of the [src] with the [W]."))
 						dead +=1
@@ -274,9 +279,9 @@
 				if(istype(W, /obj/item/shockpaddles))
 					if(W?:can_use(user))
 						to_chat(user, span_notice("You hook up the [W] to the contact points in the maintenance assembly"))
-						if(do_after(user,50,src,exclusive = TASK_ALL_EXCLUSIVE))
+						if(do_after(user, 5 SECONDS, target = src))
 							playsound(src, 'sound/machines/defib_charge.ogg', 50, 0)
-							if(do_after(user,10,src))
+							if(do_after(user, 1 SECOND, target = src))
 								playsound(src, 'sound/machines/defib_zap.ogg', 50, 1, -1)
 								playsound(src, 'sound/machines/defib_success.ogg', 50, 0)
 								new /obj/effect/gibspawner/robot(src.loc)
@@ -311,7 +316,7 @@
 
 		var/obj/item/rig_module/mod = W
 		to_chat(user, "You begin installing \the [mod] into \the [src].")
-		if(!do_after(user,40))
+		if(!do_after(user, 4 SECONDS, target = src))
 			return
 		if(!user || !W)
 			return
@@ -417,10 +422,10 @@
 
 /obj/item/rig/protean/take_hit(damage, source, is_emp=0)
 	return	//We don't do that here
-
-/obj/item/rig/protean/emp_act(severity_class)
+/*
+/obj/item/rig/protean/emp_act(severity, recursive)
 	return	//Same here
-
+*/
 /obj/item/rig/protean/cut_suit()
 	return	//nope
 
@@ -491,8 +496,8 @@
 	..()
 
 /obj/item/rig/protean/get_description_interaction()
+	var/list/results = list()
 	if(dead)
-		var/list/results = list()
 		switch(dead)
 			if(1)
 				results += "Use a screwdriver to start repairs."
@@ -502,7 +507,7 @@
 				results += "Use some Nanopaste."
 			if(4)
 				results += "Use either a defib or jumper cables to start the reboot sequence."
-		return results
+	return results
 
 //Effectively a round about way of letting a Protean wear other rigs.
 /obj/item/rig/protean/proc/AssimilateRig(mob/user, var/obj/item/rig/R)
@@ -609,7 +614,7 @@
 		if (istype(usr.loc,/obj/mecha)) // stops inventory actions in a mech. why?
 			return
 
-		if (!( istype(over_object, /obj/screen) ))
+		if (!( istype(over_object, /atom/movable/screen) ))
 			return ..()
 
 		if (!(src.loc == usr) || (src.loc && src.loc.loc == usr))
@@ -618,7 +623,7 @@
 		if (( usr.restrained() ) || ( usr.stat ))
 			return
 
-		if ((src.loc == usr) && !(istype(over_object, /obj/screen)) && !usr.unEquip(src))
+		if ((src.loc == usr) && !(istype(over_object, /atom/movable/screen)) && !usr.unEquip(src))
 			return
 
 		switch(over_object.name)

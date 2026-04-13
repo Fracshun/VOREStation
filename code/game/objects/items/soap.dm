@@ -40,12 +40,12 @@
 	if(ishuman(target) && user.zone_sel.selecting == O_MOUTH)
 		if(target == user)
 			to_chat(user, span_warning("You raise the soap to your mouth and prepare to take a bite..."))
-			if(do_after(user, 5)) //Mercy against accidental chomps
+			if(do_after(user, 5, target = target)) //Mercy against accidental chomps
 				user.visible_message(span_notice("[user] takes a bite out of [src]!"), span_notice("You gnaw on [src]! This can't be good for you..."))
 				var/mob/living/carbon/C = user
 				playsound(get_turf(C), 'sound/items/eatfood.ogg', 25, 0)
-				C.ingested.add_reagent(/datum/reagent/toxin, 0.5) //normally formaldehyde, and 2 units of it. Toxin is being subsituted and is 4 times as toxic, hence a quarter of the normal amount.
-				C.ingested.add_reagent(/datum/reagent/chloralhydrate, 3)
+				C.ingested.add_reagent(REAGENT_ID_TOXIN, 0.5) //normally formaldehyde, and 2 units of it. Toxin is being subsituted and is 4 times as toxic, hence a quarter of the normal amount.
+				C.ingested.add_reagent(REAGENT_ID_CHLORALHYDRATE, 3)
 				reagents.trans_to_holder(C.ingested, 1)
 				bites++
 				if(bites >= 5)
@@ -64,7 +64,7 @@
 	else if(istype(target,/obj/effect/decal/cleanable))
 		user.visible_message("[user] begins to scrub \the [target] out with [src].", span_warning("You begin to scrub \the [target] out with [src]..."))
 		if(do_after(user, src.cleanspeed, target = target))
-			to_chat(user, span_notice("You scrub \the [target] out."))
+			user.balloon_alert(user, "you scrub \the [target] out.")
 			qdel(target)
 	else
 		if(istype(target,/turf))
@@ -76,7 +76,7 @@
 				return
 			user.visible_message("[user] begins to scrub \the [target] out with [src].", span_warning("You begin to scrub \the [target] out with [src]..."))
 			if(do_after(user, src.cleanspeed, target = target))
-				to_chat(user, span_notice("You scrub \the [target] clean."))
+				user.balloon_alert(user, "you scrub \the [target] clean.")
 				var/turf/T = target
 				T.wash(CLEAN_SCRUB)
 				reagents.trans_to_turf(T, 1, 10)

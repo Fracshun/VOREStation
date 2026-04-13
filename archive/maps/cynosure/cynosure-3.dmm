@@ -1079,7 +1079,7 @@
 /obj/effect/floor_decal/corner/blue/border{
 	dir = 4
 	},
-/obj/structure/closet/secure_closet/RD,
+/obj/structure/closet/secure_closet/research_director,
 /obj/random_multi/single_item/hand_tele,
 /obj/structure/cable/green{
 	icon_state = "1-2"
@@ -19877,7 +19877,7 @@
 /obj/effect/map_helper/airlock/sensor/ext_sensor,
 /turf/simulated/floor/tiled/steel/sif/planetuse{
 	icon_state = "steel_dirty";
-	initial_flooring = /decl/flooring/tiling/steel_dirty;
+	initial_flooring = /datum/decl/flooring/tiling/steel_dirty;
 	outdoors = 0
 	},
 /area/surface/station/hallway/primary/secondfloor/east)
@@ -21743,7 +21743,7 @@
 /turf/simulated/floor/tiled/dark,
 /area/surface/station/security/armoury)
 "oNM" = (
-/obj/structure/closet/secure_closet/CMO,
+/obj/structure/closet/secure_closet/chief_medical_officer,
 /obj/effect/floor_decal/borderfloorwhite,
 /obj/effect/floor_decal/corner/blue/border,
 /obj/machinery/light,
@@ -30249,21 +30249,6 @@
 	},
 /turf/simulated/shuttle/wall/dark/no_join,
 /area/shuttle/large_escape_pod2/station)
-"uDG" = (
-/obj/machinery/door/firedoor/border_only,
-/obj/structure/cable/green{
-	icon_state = "0-8"
-	},
-/obj/structure/grille,
-/obj/structure/window/reinforced/full,
-/obj/machinery/door/blast/regular/open{
-	dir = 4;
-	id = "captainlockdown";
-	layer = 3.3;
-	name = "Site Manager Lockdown"
-	},
-/turf/simulated/floor/plating,
-/area/surface/station/crew_quarters/captain)
 "uDX" = (
 /obj/machinery/light{
 	dir = 1
@@ -32738,7 +32723,7 @@
 	},
 /turf/simulated/floor/tiled/steel/sif/planetuse{
 	icon_state = "steel_dirty";
-	initial_flooring = /decl/flooring/tiling/steel_dirty;
+	initial_flooring = /datum/decl/flooring/tiling/steel_dirty;
 	outdoors = 0
 	},
 /area/surface/station/hallway/primary/secondfloor/east)

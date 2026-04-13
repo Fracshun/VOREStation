@@ -10,37 +10,31 @@
 	name = T_BOARD("guestpass console")
 	build_path = /obj/machinery/computer/guestpass
 	board_type = new /datum/frame/frame_types/guest_pass_console
-	matter = list(MAT_STEEL = 50, MAT_GLASS = 50)
 
 /obj/item/circuitboard/status_display
 	name = T_BOARD("status display")
 	build_path = /obj/machinery/status_display
 	board_type = new /datum/frame/frame_types/display
-	matter = list(MAT_STEEL = 50, MAT_GLASS = 50)
 
 /obj/item/circuitboard/ai_status_display
 	name = T_BOARD("ai status display")
 	build_path = /obj/machinery/ai_status_display
 	board_type = new /datum/frame/frame_types/display
-	matter = list(MAT_STEEL = 50, MAT_GLASS = 50)
 
 /obj/item/circuitboard/newscaster
 	name = T_BOARD("newscaster")
 	build_path = /obj/machinery/newscaster
 	board_type = new /datum/frame/frame_types/newscaster
-	matter = list(MAT_STEEL = 50, MAT_GLASS = 50)
 
 /obj/item/circuitboard/atm
 	name = T_BOARD("atm")
 	build_path = /obj/machinery/atm
 	board_type = new /datum/frame/frame_types/atm
-	matter = list(MAT_STEEL = 50, MAT_GLASS = 50)
 
 /obj/item/circuitboard/request
 	name = T_BOARD("request console")
 	build_path = /obj/machinery/requests_console
 	board_type = new /datum/frame/frame_types/supply_request_console
-	matter = list(MAT_STEEL = 50, MAT_GLASS = 50)
 
 //Alarm
 
@@ -48,20 +42,16 @@
 	name = T_BOARD("fire alarm")
 	build_path = /obj/machinery/firealarm
 	board_type = new /datum/frame/frame_types/fire_alarm
-	matter = list(MAT_STEEL = 50, MAT_GLASS = 50)
 
 /obj/item/circuitboard/airalarm
 	name = T_BOARD("air alarm")
 	build_path = /obj/machinery/alarm
 	board_type = new /datum/frame/frame_types/air_alarm
-	matter = list(MAT_STEEL = 50, MAT_GLASS = 50)
 
 /obj/item/circuitboard/intercom
 	name = T_BOARD("intercom")
 	build_path = /obj/item/radio/intercom
 	board_type = new /datum/frame/frame_types/intercom
-	matter = list(MAT_STEEL = 50, MAT_GLASS = 50)
-
 
 /obj/item/circuitboard/intercom/Destroy()
 	if(istype(loc, /obj/item/radio/intercom))
@@ -73,19 +63,21 @@
 	name = T_BOARD("keycard authenticator")
 	build_path = /obj/machinery/keycard_auth
 	board_type = new /datum/frame/frame_types/keycard_authenticator
-	matter = list(MAT_STEEL = 50, MAT_GLASS = 50)
 
 /obj/item/circuitboard/geiger
 	name = T_BOARD("geiger counter")
 	build_path = /obj/item/geiger/wall
 	board_type = new /datum/frame/frame_types/geiger
-	matter = list(MAT_STEEL = 50, MAT_GLASS = 50)
 
 /obj/item/circuitboard/electrochromic
 	name = T_BOARD("electrochromic button")
 	build_path = /obj/machinery/button/windowtint
 	board_type = new /datum/frame/frame_types/button
-	matter = list(MAT_STEEL = 50, MAT_GLASS = 50)
+
+/obj/item/circuitboard/mass_driver_button
+	name = T_BOARD("mass driver button")
+	build_path = /obj/machinery/button/remote/driver
+	board_type = new /datum/frame/frame_types/button
 
 //Computer
 
@@ -93,7 +85,6 @@
 	name = T_BOARD("holopad")
 	build_path = /obj/machinery/hologram/holopad
 	board_type = new /datum/frame/frame_types/holopad
-	matter = list(MAT_STEEL = 50, MAT_GLASS = 50)
 
 /obj/item/circuitboard/scanner_console
 	name = T_BOARD("body scanner console")
@@ -113,7 +104,6 @@
 	name = T_BOARD("photocopier")
 	build_path = /obj/machinery/photocopier
 	board_type = new /datum/frame/frame_types/photocopier
-	matter = list(MAT_STEEL = 50, MAT_GLASS = 50)
 	req_components = list(
 							/obj/item/stock_parts/scanning_module = 1,
 							/obj/item/stock_parts/motor = 1,
@@ -124,7 +114,6 @@
 	name = T_BOARD("fax")
 	build_path = /obj/machinery/photocopier/faxmachine
 	board_type = new /datum/frame/frame_types/fax
-	matter = list(MAT_STEEL = 50, MAT_GLASS = 50)
 	req_components = list(
 							/obj/item/stock_parts/scanning_module = 1,
 							/obj/item/stock_parts/motor = 1,
@@ -165,7 +154,6 @@
 	name = T_BOARD("washing machine")
 	build_path = /obj/machinery/washing_machine
 	board_type = new /datum/frame/frame_types/washing_machine
-	matter = list(MAT_STEEL = 50, MAT_GLASS = 50)
 	req_components = list(
 							/obj/item/stock_parts/motor = 1,
 							/obj/item/stock_parts/gear = 2)
@@ -214,7 +202,7 @@
 	board_type = new /datum/frame/frame_types/medical_pod
 	origin_tech = list(TECH_MAGNET = 2, TECH_BIO = 2)
 	req_components = list(
-							/obj/item/stock_parts/scanning_module = 3,
+							/obj/item/stock_parts/scanning_module = 1,
 							/obj/item/stack/material/glass/reinforced = 2)
 
 /obj/item/circuitboard/medical_kiosk
@@ -292,19 +280,6 @@
 							/obj/item/stock_parts/console_screen = 1
 	)
 
-// Smart centrifuge
-/obj/item/circuitboard/smart_centrifuge
-	name = T_BOARD("smart centrifuge")
-	build_path = /obj/machinery/smart_centrifuge
-	board_type = new /datum/frame/frame_types/machine
-	matter = list(MAT_STEEL = 50, MAT_GLASS = 50)
-	origin_tech = list(TECH_MAGNET = 3, TECH_DATA = 2, TECH_MATERIAL = 3)
-	req_components = list(
-							/obj/item/stock_parts/scanning_module = 1,
-							/obj/item/stock_parts/motor = 1,
-							/obj/item/stock_parts/gear = 3,
-							/obj/item/stack/material/glass/reinforced = 1)
-
 // Refinery machines
 /obj/item/circuitboard/industrial_reagent_grinder
 	name = T_BOARD("industrial chemical grinder")
@@ -343,11 +318,29 @@
 							/obj/item/stock_parts/motor = 1,
 							/obj/item/stack/material/glass/reinforced = 1)
 
+/obj/item/circuitboard/industrial_reagent_mixer
+	name = T_BOARD("industrial chemical mixer")
+	build_path = /obj/machinery/reagent_refinery/mixer
+	board_type = new /datum/frame/frame_types/industrial_reagent_mixer
+	req_components = list(
+							/obj/item/stock_parts/motor = 2,
+							/obj/item/stock_parts/gear = 2,
+							/obj/item/stock_parts/scanning_module = 1,
+							/obj/item/stack/material/glass/reinforced = 1)
+
 /obj/item/circuitboard/industrial_reagent_pipe
 	name = T_BOARD("industrial chemical pipe")
 	build_path = /obj/machinery/reagent_refinery/pipe
 	board_type = new /datum/frame/frame_types/industrial_reagent_pipe
 	req_components = list( /obj/item/stack/material/glass/reinforced = 1)
+
+/obj/item/circuitboard/industrial_reagent_splitter
+	name = T_BOARD("industrial chemical splitter")
+	build_path = /obj/machinery/reagent_refinery/splitter
+	board_type = new /datum/frame/frame_types/industrial_reagent_splitter
+	req_components = list(
+							/obj/item/stack/material/glass/reinforced = 1,
+							/obj/item/stock_parts/motor = 1)
 
 /obj/item/circuitboard/industrial_reagent_waste_processor
 	name = T_BOARD("industrial chemical waste processor")
@@ -396,3 +389,30 @@
 	req_components = list(
 							/obj/item/stock_parts/capacitor = 1,
 							/obj/item/stock_parts/motor = 1)
+
+/obj/item/circuitboard/botany_extractor
+	name = T_BOARD("lysis-isolation centrifuge")
+	build_path = /obj/machinery/botany/extractor
+	board_type = new /datum/frame/frame_types/machine
+	req_components = list(
+							/obj/item/stock_parts/motor = 2,
+							/obj/item/stock_parts/scanning_module = 2,
+							/obj/item/stock_parts/gear = 3)
+
+/obj/item/circuitboard/botany_editor
+	name = T_BOARD("bioballistic delivery system")
+	build_path = /obj/machinery/botany/editor
+	board_type = new /datum/frame/frame_types/machine
+	req_components = list(
+							/obj/item/stock_parts/capacitor = 2,
+							/obj/item/stock_parts/scanning_module = 2,
+							/obj/item/stock_parts/manipulator = 2)
+
+/obj/item/circuitboard/botany_seedextractor
+	name = T_BOARD("seed extractor")
+	build_path = /obj/machinery/seed_extractor
+	board_type = new /datum/frame/frame_types/machine
+	req_components = list(
+							/obj/item/stock_parts/motor = 1,
+							/obj/item/stock_parts/manipulator = 2,
+							/obj/item/stock_parts/console_screen = 1)

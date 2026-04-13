@@ -9,9 +9,9 @@ type Data = {
   categories: string[];
   selected_category: {
     name: string;
-    items: any;
+    items: Record<string, unknown>;
   };
-  selected_category_static: any;
+  selected_category_static: Record<string, unknown>;
 
   saved_notification: BooleanLike;
   preview_loadout: BooleanLike;
@@ -34,7 +34,7 @@ export const CharacterPreferenceWindow = (props) => {
 
   return (
     <Window
-      width={1000}
+      width={1065}
       height={800}
       buttons={
         <Button
@@ -78,7 +78,13 @@ export const CharacterPreferenceWindow = (props) => {
                     {category}
                   </Button>
                 ))}
-                <Button onClick={() => act('game_prefs')}>Game Options</Button>
+                <Button.Confirm
+                  onClick={() => act('game_prefs')}
+                  tooltip="Switches to Game Options, make sure your character is saved before switching."
+                  confirmContent="Confirm? (Discard Unsaved)"
+                >
+                  Game Options
+                </Button.Confirm>
               </Box>
               <Box position="absolute" top={0} right={0}>
                 <Button

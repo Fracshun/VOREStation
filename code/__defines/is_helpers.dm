@@ -25,7 +25,11 @@ GLOBAL_VAR_INIT(refid_filter, TYPEID(filter(type="angular_blur")))
 
 #define isradio(A)		istype(A, /obj/item/radio)
 
+#define isclothing(A)	istype(A, /obj/item/clothing)
+
 #define isairlock(A)	istype(A, /obj/machinery/door/airlock)
+
+#define ismachinery(A)	istype(A, /obj/machinery)
 
 #define isorgan(A)		istype(A, /obj/item/organ/external)
 
@@ -34,6 +38,8 @@ GLOBAL_VAR_INIT(refid_filter, TYPEID(filter(type="angular_blur")))
 #define ismecha(A)      istype(A, /obj/mecha)
 
 #define isstructure(A)	istype(A, /obj/structure)
+
+#define isdisposalpacket(A)	istype(A,/obj/structure/disposalholder)
 
 //---------------
 //#define isarea(D)		istype(D, /area)	//Built in
@@ -74,8 +80,10 @@ GLOBAL_VAR_INIT(refid_filter, TYPEID(filter(type="angular_blur")))
 
 //---------------
 //#define isturf(D)		istype(D, /turf)	//Built in
+#define issimulatedturf(A)	istype(A, /turf/simulated)
 #define isopenspace(A)	istype(A, /turf/simulated/open)
 #define isspace(A)		istype(A, /turf/space)
+#define islava(A)		istype(A, /turf/simulated/floor/lava)
 #define isopenturf(A)	(istype(A, /turf/simulated/open) || istype(A, /turf/space))
 #define isnonsolidturf(A)	(istype(A, /turf/simulated/open) || istype(A, /turf/space) || istype(A, /turf/simulated/floor/water) || istype(A, /turf/simulated/floor/lava))
 #define ismineralturf(A) istype(A, /turf/simulated/mineral)
@@ -83,8 +91,11 @@ GLOBAL_VAR_INIT(refid_filter, TYPEID(filter(type="angular_blur")))
 #define istaurtail(A)	istype(A, /datum/sprite_accessory/tail/taur)
 #define islongtail(A)	istype(A, /datum/sprite_accessory/tail/longtail)
 
+///If a vehicle cannot pass through the turf
+#define is_vehicle_inpassable(A) (istype(A, /turf/space) || istype(A, /turf/simulated/floor/water) || istype(A, /turf/simulated/floor/lava))
+
 // Diveable water
-#define isdiveablewater(A)	istype(A, /turf/simulated/floor/water/deep/ocean/diving)
+#define isdiveablewater(A)	(istype(A, /turf/simulated/floor/water/deep/ocean/diving) || istype(A, /turf/simulated/floor/water/underwater/open) || istype(A, /turf/simulated/floor/water/underwater/indoors/open))
 
 /// NaN isn't a number, damn it. Infinity is a problem too.
 #define isnum_safe(x) ( isnum((x)) && !isnan((x)) && !isinf((x)) )
@@ -92,3 +103,5 @@ GLOBAL_VAR_INIT(refid_filter, TYPEID(filter(type="angular_blur")))
 #define ismopable(A) (A && (A.plane <= OBJ_PLANE)) //If something can be cleaned by floor-cleaning devices such as mops or clean bots
 
 #define isfloorturf(A) (istype(A, /turf/simulated/floor))
+
+#define iseffect(O) (istype(O, /obj/effect))

@@ -11,6 +11,7 @@
 	var/lstat
 	var/visor_state = "Neutral" //Separating this from lstat so that it could potentially be used for an override system or something
 	var/mob/living/carbon/maskmaster
+	resistance_flags = FIRE_PROOF | ACID_PROOF | INDESTRUCTIBLE | BOMB_PROOF |FREEZE_PROOF
 
 /obj/item/clothing/mask/synthfacemask/equipped()
 	..()
@@ -70,4 +71,4 @@
 
 /datum/gear/mask/synthface/New()
 	..()
-	gear_tweaks += list(gear_tweak_free_color_choice)
+	gear_tweaks += GLOB.gear_tweak_free_color_choice

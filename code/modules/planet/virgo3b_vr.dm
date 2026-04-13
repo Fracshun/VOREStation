@@ -1,4 +1,4 @@
-var/datum/planet/virgo3b/planet_virgo3b = null
+GLOBAL_DATUM(planet_virgo3b, /datum/planet/virgo3b)
 
 /datum/time/virgo3b
 	seconds_in_day = 6 HOURS
@@ -14,7 +14,7 @@ var/datum/planet/virgo3b/planet_virgo3b = null
 
 /datum/planet/virgo3b/New()
 	..()
-	planet_virgo3b = src
+	GLOB.planet_virgo3b = src
 	weather_holder = new /datum/weather_holder/virgo3b(src)
 
 /datum/planet/virgo3b/update_sun()
@@ -416,7 +416,6 @@ var/datum/planet/virgo3b/planet_virgo3b = null
 
 		var/target_zone = pick(BP_ALL)
 		var/amount_blocked = H.run_armor_check(target_zone, "melee")
-		var/amount_soaked = H.get_armor_soak(target_zone, "melee")
 
 		var/damage = rand(1,3)
 
@@ -424,10 +423,7 @@ var/datum/planet/virgo3b/planet_virgo3b = null
 			return // No need to apply damage. Hardhats are 30. They should probably protect you from hail on your head.
 			//Voidsuits are likewise 40, and riot, 80. Clothes are all less than 30.
 
-		if(amount_soaked >= damage)
-			return // No need to apply damage.
-
-		H.apply_damage(damage, BRUTE, target_zone, amount_blocked, amount_soaked)
+		H.apply_damage(damage, BRUTE, target_zone, amount_blocked)
 		if(show_message)
 			to_chat(H, effect_message)
 
@@ -582,7 +578,13 @@ var/datum/planet/virgo3b/planet_virgo3b = null
 		if(!T.is_outdoors())
 			return // They're indoors, so no need to irradiate them with fallout.
 
-		L.rad_act(rand(direct_rad_low, direct_rad_high))
+		radiation_pulse(
+			L,
+			max_range = 1,
+			threshold = RAD_VERY_LIGHT_INSULATION,
+			chance = rand(fallout_rad_low, fallout_rad_high),
+			strength = rand(fallout_rad_low, fallout_rad_high)
+		)
 
 // This makes random tiles near people radioactive for awhile.
 // Tiles far away from people are left alone, for performance.
@@ -594,7 +596,14 @@ var/datum/planet/virgo3b/planet_virgo3b = null
 	if(!istype(T))
 		return
 	if(T.is_outdoors())
-		SSradiation.radiate(T, rand(fallout_rad_low, fallout_rad_high))
+		radiation_pulse(
+			T,
+			max_range = 7,
+			threshold = RAD_MEDIUM_INSULATION,
+			chance = URANIUM_IRRADIATION_CHANCE,
+			minimum_exposure_time = URANIUM_RADIATION_MINIMUM_EXPOSURE_TIME,
+			strength = rand(fallout_rad_low, fallout_rad_high)
+		)
 
 /datum/weather/virgo3b/fallout/temp
 	name = "short-term fallout"

@@ -17,7 +17,7 @@ GLOBAL_VAR(bomb_set)
 	var/yes_code = 0.0
 	var/safety = 1.0
 	var/obj/item/disk/nuclear/auth = null
-	var/list/wires = list()
+	var/list/wires_list = list()
 	var/light_wire
 	var/safety_wire
 	var/timing_wire
@@ -28,13 +28,13 @@ GLOBAL_VAR(bomb_set)
 /obj/machinery/nuclearbomb/Initialize(mapload)
 	. = ..()
 	r_code = "[rand(10000, 99999.0)]"//Creates a random code upon object spawn.
-	wires["Red"] = 0
-	wires["Blue"] = 0
-	wires["Green"] = 0
-	wires["Marigold"] = 0
-	wires["Fuschia"] = 0
-	wires["Black"] = 0
-	wires["Pearl"] = 0
+	wires_list["Red"] = 0
+	wires_list["Blue"] = 0
+	wires_list["Green"] = 0
+	wires_list["Marigold"] = 0
+	wires_list["Fuschia"] = 0
+	wires_list["Black"] = 0
+	wires_list["Pearl"] = 0
 	var/list/w = list("Red","Blue","Green","Marigold","Black","Fuschia","Pearl")
 	light_wire = pick(w)
 	w -= light_wire
@@ -50,7 +50,7 @@ GLOBAL_VAR(bomb_set)
 		if(timeleft <= 0)
 			explode()
 		for(var/mob/M in viewers(1, src))
-			if((M.client && M.machine == src))
+			if((M.client && M.check_current_machine(src)))
 				attack_hand(M)
 	return ..()
 
@@ -104,7 +104,7 @@ GLOBAL_VAR(bomb_set)
 
 					user.visible_message("[user] starts cutting loose the anchoring bolt covers on [src].", "You start cutting loose the anchoring bolt covers with [O]...")
 
-					if(do_after(user,40 * WT.toolspeed))
+					if(do_after(user, 4 SECONDS * WT.toolspeed, target = src))
 						if(!src || !user || !WT.remove_fuel(5, user)) return
 						user.visible_message("[user] cuts through the bolt covers on [src].", "You cut through the bolt cover.")
 						removal_stage = 1
@@ -115,7 +115,7 @@ GLOBAL_VAR(bomb_set)
 					user.visible_message("[user] starts forcing open the bolt covers on [src].", "You start forcing open the anchoring bolt covers with [O]...")
 
 					playsound(src, O.usesound, 50, 1)
-					if(do_after(user,15 * O.toolspeed))
+					if(do_after(user,15 * O.toolspeed, target = src))
 						if(!src || !user) return
 						user.visible_message("[user] forces open the bolt covers on [src].", "You force open the bolt covers.")
 						removal_stage = 2
@@ -132,7 +132,7 @@ GLOBAL_VAR(bomb_set)
 
 					user.visible_message("[user] starts cutting apart the anchoring system sealant on [src].", "You start cutting apart the anchoring system's sealant with [O]...")
 					playsound(src, WT.usesound, 50, 1)
-					if(do_after(user,40 * WT.toolspeed))
+					if(do_after(user, 4 SECONDS * WT.toolspeed, target = src))
 						if(!src || !user || !WT.remove_fuel(5, user)) return
 						user.visible_message("[user] cuts apart the anchoring system sealant on [src].", "You cut apart the anchoring system's sealant.")
 						removal_stage = 3
@@ -143,7 +143,7 @@ GLOBAL_VAR(bomb_set)
 
 					user.visible_message("[user] begins unwrenching the anchoring bolts on [src].", "You begin unwrenching the anchoring bolts...")
 					playsound(src, O.usesound, 50, 1)
-					if(do_after(user,50 * O.toolspeed))
+					if(do_after(user, 5 SECONDS * O.toolspeed, target = src))
 						if(!src || !user) return
 						user.visible_message("[user] unwrenches the anchoring bolts on [src].", "You unwrench the anchoring bolts.")
 						removal_stage = 4
@@ -154,7 +154,7 @@ GLOBAL_VAR(bomb_set)
 
 					user.visible_message("[user] begins lifting [src] off of the anchors.", "You begin lifting the device off the anchors...")
 					playsound(src, O.usesound, 50, 1)
-					if(do_after(user,80 * O.toolspeed))
+					if(do_after(user, 8 SECONDS * O.toolspeed, target = src))
 						if(!src || !user) return
 						user.visible_message("[user] crowbars [src] off of the anchors. It can now be moved.", "You jam the crowbar under the nuclear device and lift it off its anchors. You can now move it!")
 						anchored = FALSE
@@ -201,9 +201,9 @@ GLOBAL_VAR(bomb_set)
 	return
 
 /obj/machinery/nuclearbomb/proc/nukehack_win(mob/user as mob)
-	var/dat = "<TT><B>Nuclear Fission Explosive</B><BR>\nNuclear Device Wires:</A><HR>"
-	for(var/wire in wires)
-		dat += text("[wire] Wire: <A href='byond://?src=\ref[src];wire=[wire];act=wire'>[wires[wire] ? "Mend" : "Cut"]</A> <A href='byond://?src=\ref[src];wire=[wire];act=pulse'>Pulse</A><BR>")
+	var/dat = "<TT><B>Nuclear Fission Explosive</B><BR>\nNuclear Device wires_list:</A><HR>"
+	for(var/wire in wires_list)
+		dat += text("[wire] Wire: <A href='byond://?src=\ref[src];wire=[wire];act=wire'>[wires_list[wire] ? "Mend" : "Cut"]</A> <A href='byond://?src=\ref[src];wire=[wire];act=pulse'>Pulse</A><BR>")
 	dat += text("<HR>The device is [timing ? "shaking!" : "still"]<BR>")
 	dat += text("The device is [safety ? "quiet" : "whirring"].<BR>")
 	dat += text("The lights are [lighthack ? "static" : "functional"].<BR>")
@@ -241,7 +241,7 @@ GLOBAL_VAR(bomb_set)
 				if(!istype(usr.get_active_hand(), /obj/item/multitool))
 					to_chat(usr, "You need a multitool!")
 				else
-					if(wires[temp_wire])
+					if(wires_list[temp_wire])
 						to_chat(usr, "You can't pulse a cut wire.")
 					else
 						if(light_wire == temp_wire)
@@ -265,7 +265,7 @@ GLOBAL_VAR(bomb_set)
 				if(!I.has_tool_quality(TOOL_WIRECUTTER))
 					to_chat(usr, "You need wirecutters!")
 				else
-					wires[temp_wire] = !wires[temp_wire]
+					wires_list[temp_wire] = !wires_list[temp_wire]
 					if(safety_wire == temp_wire)
 						if(timing)
 							explode()
@@ -348,7 +348,7 @@ GLOBAL_VAR(bomb_set)
 
 		add_fingerprint(usr)
 		for(var/mob/M in viewers(1, src))
-			if((M.client && M.machine == src))
+			if((M.client && M.check_current_machine(src)))
 				attack_hand(M)
 	else
 		usr << browse(null, "window=nuclearbomb")
@@ -418,18 +418,18 @@ GLOBAL_VAR(bomb_set)
 
 		if(SSticker.mode)
 			SSticker.mode.explosion_in_progress = 0
-			to_world(span_boldannounce("The station was destoyed by the nuclear blast!"))
+			to_chat(world, span_boldannounce("The station was destoyed by the nuclear blast!"))
 
 			SSticker.mode.station_was_nuked = (off_station<2)	//offstation==1 is a draw. the station becomes irradiated and needs to be evacuated.
 															//kinda shit but I couldn't  get permission to do what I wanted to do.
 
 			if(!SSticker.mode.check_finished())//If the mode does not deal with the nuke going off so just reboot because everyone is stuck as is
-				to_world(span_boldannounce("Resetting in 30 seconds!"))
+				to_chat(world, span_boldannounce("Resetting in 30 seconds!"))
 
 				feedback_set_details("end_error","nuke - unhandled ending")
 
-				if(blackbox)
-					blackbox.save_all_data_to_sql()
+				if(GLOB.blackbox)
+					GLOB.blackbox.save_all_data_to_sql()
 				sleep(300)
 				log_game("Rebooting due to nuclear detonation")
 				world.Reboot()

@@ -173,7 +173,7 @@
 
 	// We're in the middle of another move we've already decided to do
 	if(moving)
-		log_debug("Client [src] attempted to move while moving=[moving]")
+		// to_chat(world, "Client [src] attempted to move while moving=[moving]")
 		return 0
 
 	// We're still cooling down from the last move
@@ -205,13 +205,6 @@
 		if(L.is_incorporeal())//Move though walls
 			Process_Incorpmove(direct)
 			return
-		/* TODO observer unzoom
-		if(view != world.view) // If mob moves while zoomed in with device, unzoom them.
-			for(var/obj/item/item in mob.contents)
-				if(item.zoom)
-					item.zoom()
-					break
-		*/
 
 	if(Process_Grab())
 		return
@@ -221,10 +214,8 @@
 		return
 
 	// Relaymove could handle it
-	if(my_mob.machine)
-		var/result = my_mob.machine.relaymove(my_mob, direct)
-		if(result)
-			return result
+	if(SEND_SIGNAL(my_mob, COMSIG_MOB_RELAY_MOVEMENT, direct))
+		return TRUE
 
 	// Can't control ourselves when drifting
 	if((isspace(loc) || my_mob.lastarea?.get_gravity() == 0) && isturf(loc))
@@ -245,6 +236,7 @@
 			if(M.pulling == my_mob)
 				if(!M.restrained() && M.stat == 0 && M.canmove && my_mob.Adjacent(M))
 					to_chat(src, span_blue("You're restrained! You can't move!"))
+					my_mob.setMoveCooldown(my_mob.movement_delay()) //Prevent no-cooldown attempts at moving while restrained.
 					return 0
 				else
 					M.stop_pulling()
@@ -397,6 +389,8 @@
 			is_leaving_belly = FALSE
 			return
 		is_leaving_belly = FALSE
+	if(isghosttrap(mob.loc))
+		return
 	var/turf/mobloc = get_turf(mob)
 
 	if(incorporeal_speed)

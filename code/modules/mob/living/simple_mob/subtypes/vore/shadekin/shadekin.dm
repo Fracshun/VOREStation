@@ -142,7 +142,7 @@
 	B.name = vore_stomach_name ? vore_stomach_name : "stomach"
 	B.desc = vore_stomach_flavor ? vore_stomach_flavor : "Your surroundings are warm, soft, and slimy. Makes sense, considering you're inside \the [name]."
 	B.digest_mode = vore_default_mode
-	B.escapable = vore_escape_chance > 0
+	B.escapable = vore_escape_chance > 0 ? B_ESCAPABLE_DEFAULT : B_ESCAPABLE_NONE
 	B.escapechance = vore_escape_chance
 	B.digestchance = vore_digest_chance
 	B.absorbchance = vore_absorb_chance
@@ -347,11 +347,6 @@
 		return TRUE
 	return FALSE
 
-/mob/living/simple_mob/shadekin/handle_atmos()
-	if(comp.in_phase)
-		return
-	else
-		return .=..()
 /* //VOREStation AI Removal
 //Friendly ones wander towards people, maybe shy-ly if they are set to shy
 /mob/living/simple_mob/shadekin/handle_wander_movement()

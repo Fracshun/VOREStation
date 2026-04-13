@@ -75,7 +75,6 @@
 			user.drop_item()
 			O.loc = src
 			update_icon()
-			updateUsrDialog(user)
 			return 0
 
 	if(holdingitems && holdingitems.len >= limit)
@@ -106,12 +105,11 @@
 		else
 			to_chat(user, "You fill \the [src] from \the [O].")
 
-		src.updateUsrDialog(user)
 		return 0
 
 	if(istype(O,/obj/item/gripper))
 		var/obj/item/gripper/B = O	//B, for Borg.
-		var/obj/item/wrapped = B.get_current_pocket()
+		var/obj/item/wrapped = B.get_wrapped_item()
 		if(!wrapped)
 			to_chat(user, "\The [B] is not holding anything.")
 			return 0
@@ -129,7 +127,7 @@
 	holdingitems += O
 	return 0
 
-/obj/machinery/reagentgrinder/AltClick(mob/user)
+/obj/machinery/reagentgrinder/click_alt(mob/user)
 	. = ..()
 	if(user.incapacitated() || !Adjacent(user))
 		return

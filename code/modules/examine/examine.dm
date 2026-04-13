@@ -12,7 +12,9 @@
 	var/description_antag = null //Malicious red text, for the antags.
 
 //Override these if you need special behaviour for a specific type.
-/atom/proc/get_description_info()
+///What is shown to the user when something is examined. This can be overridden for specific uses.
+///The 'additional_information' list var requires creation in the proc itself. It should check to seee if(additional_information) before trying to do additional_information = list() and adding to it.
+/atom/proc/get_description_info(list/additional_information)
 	if(description_info)
 		return description_info
 	return
@@ -72,8 +74,8 @@
 	//Could be gone by the time they finally pick something
 	if(!A)
 		return 1
-
-	face_atom(A)
+	if(!is_paralyzed())
+		face_atom(A)
 	var/list/results = A.examine(src)
 	if(!results || !results.len)
 		results = list("You were unable to examine that. Tell a developer!")
@@ -96,22 +98,31 @@
 	//do pref check here
 	var/desc_info_temp = A.get_description_info()
 	if(desc_info_temp)
-		. += span_details("ℹ️ | Information",desc_info_temp)
+		. += span_details("ℹ️ | Information", desc_info_temp)
 	var/fluff_info_temp = A.get_description_fluff()
 	if(fluff_info_temp && fluff_info_temp != "")
 		var/title = "🪐 | Flavor Information"
+		var/examine_text = splittext(fluff_info_temp, "||")
+		var/index = 0
+		var/rendered_text = ""
+		for(var/part in examine_text)
+			if(index % 2)
+				rendered_text += span_spoiler("[part]")
+			else
+				rendered_text += "[part]"
+			index++
 		if(isliving(A)) //ehhh
 			var/mob/living/B = A
 			if(B.flavor_text)
 				title = "🔍 | Flavor Text"
 
-		. += span_details(title,fluff_info_temp)
+		. += span_details(title, rendered_text)
 	var/is_antagish = antag_check()
 	var/antag_info_temp = A.get_description_antag()
 	if(is_antagish && antag_info_temp)
-		. += span_details("🏴‍☠️ | Antag Information",antag_info_temp)
+		. += span_details("🏴‍☠️ | Antag Information", antag_info_temp)
 	var/list/interaction_info = A.get_description_interaction()
-	if(interaction_info.len > 0)
+	if(LAZYLEN(interaction_info))
 		var/temp = ""
 		for(var/a in interaction_info)
 			temp += a + "\n"
@@ -202,7 +213,7 @@
 	if(!B)
 		return
 	if(!isbelly(loc) && !istype(loc, /obj/item/holder) && !isAI(src))
-		if(B.z == src.z)
+		if(B.z == src.z && !is_paralyzed())
 			face_atom(B)
 	var/list/results = B.examine(src)
 	if(!results || !results.len)

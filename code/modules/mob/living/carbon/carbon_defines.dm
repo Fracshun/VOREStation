@@ -14,6 +14,8 @@
 	var/datum/surgery_status/op_stage = new/datum/surgery_status
 	//Active emote/pose
 	var/pose = null
+	var/pose_move = FALSE
+	var/image/pose_indicator
 	var/list/chem_effects = list()
 	var/datum/reagents/metabolism/bloodstream/bloodstr = null
 	var/datum/reagents/metabolism/ingested/ingested = null
@@ -30,3 +32,15 @@
 	//the second is the message in question.
 	var/last_taste_time = 0
 	var/last_taste_text = ""
+
+	///only used by humans
+	var/obj/item/gloves = null
+	///only used by humans.
+	var/obj/item/shoes = null
+	///only used by humans.
+	var/obj/item/glasses = null
+	///only used by humans.
+	var/obj/item/l_ear = null
+	var/obj/item/r_ear = null
+	///Only used by humans.
+	var/list/worn_clothing = list()	//Contains all CLOTHING items worn

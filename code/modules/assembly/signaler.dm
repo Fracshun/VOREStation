@@ -10,7 +10,7 @@
 	secured = TRUE
 
 	var/code = 30
-	var/frequency = 1457
+	var/frequency = RSD_FREQ
 	var/delay = 0
 	var/airlock_wire = null
 	var/datum/wires/connected = null
@@ -22,7 +22,7 @@
 	set_frequency(frequency)
 
 /obj/item/assembly/signaler/activate()
-	if(!process_cooldown())
+	if(!COOLDOWN_FINISHED(src, next_activate))
 		return FALSE
 	signal()
 	return TRUE
@@ -82,6 +82,8 @@
 		..()
 
 /obj/item/assembly/signaler/proc/signal()
+	if(!COOLDOWN_FINISHED(src, next_activate))
+		return FALSE
 	if(!radio_connection)
 		return
 	if(is_jammed(src))
@@ -92,6 +94,7 @@
 	signal.encryption = code
 	signal.data["message"] = "ACTIVATE"
 	radio_connection.post_signal(src, signal)
+	COOLDOWN_START(src, next_activate, activation_cooldown)
 
 /obj/item/assembly/signaler/pulse(var/radio = 0)
 	if(is_jammed(src))
@@ -144,5 +147,5 @@
 /obj/item/assembly/signaler/Destroy()
 	if(SSradio)
 		SSradio.remove_object(src,frequency)
-	frequency = 0
+	frequency = ZERO_FREQ
 	. = ..()

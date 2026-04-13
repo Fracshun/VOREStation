@@ -22,7 +22,7 @@ Nothing else in the console has ID requirements.
 	icon_screen = "rdcomp"
 	icon_keyboard = "rd_key"
 	circuit = /obj/item/circuitboard/rdconsole
-	req_access = list(access_research) // Locking and unlocking the console requires research access
+	req_access = list(ACCESS_RESEARCH) // Locking and unlocking the console requires research access
 	/// Reference to global science techweb
 	var/datum/techweb/stored_research
 	/// The stored technology disk, if present
@@ -283,10 +283,11 @@ Nothing else in the console has ID requirements.
 	for (var/design_id in SSresearch.techweb_designs)
 		var/datum/design_techweb/design = SSresearch.techweb_designs[design_id] || SSresearch.error_design
 		var/compressed_id = "[compress_id(design.id)]"
-		var/size = spritesheet.icon_size_id(design.id)
+		var/css_id = sanitize_css_class_name(design.id)
+		var/size = spritesheet.icon_size_id(css_id)
 		design_cache[compressed_id] = list(
 			design.name,
-			"[size == size32x32 ? "" : "[size] "][design.id]"
+			"[size == size32x32 ? "" : "[size] "][css_id]"
 		)
 
 	// Ensure id cache is included for decompression

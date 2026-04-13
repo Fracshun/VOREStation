@@ -1,5 +1,6 @@
+import { useBackend } from 'tgui/backend';
+import { Window } from 'tgui/layouts';
 import {
-  Box,
   Button,
   Dimmer,
   Icon,
@@ -8,10 +9,8 @@ import {
   Tooltip,
 } from 'tgui-core/components';
 import { classes } from 'tgui-core/react';
-
-import { useBackend } from '../backend';
-import { Window } from '../layouts';
 import { MaterialAccessBar } from './common/MaterialAccessBar';
+import { TechWebRecipeIcon } from './common/TechWebRecipeIcon';
 import { DesignBrowser } from './Fabrication/DesignBrowser';
 import { MaterialCostSequence } from './Fabrication/MaterialCostSequence';
 import type {
@@ -23,12 +22,19 @@ import type {
 
 export const Fabricator = (props) => {
   const { act, data } = useBackend<FabricatorData>();
-  const { fabName, onHold, designs, busy, SHEET_MATERIAL_AMOUNT } = data;
+  const {
+    fabName,
+    onHold,
+    designs,
+    busy,
+    SHEET_MATERIAL_AMOUNT = 0,
+    materials = [],
+  } = data;
 
   // Reduce the material count array to a map of actually available materials.
   const availableMaterials: MaterialMap = {};
 
-  for (const material of data.materials) {
+  for (const material of materials) {
     availableMaterials[material.name] = material.amount;
   }
 
@@ -53,7 +59,7 @@ export const Fabricator = (props) => {
           <Stack.Item>
             <Section>
               <MaterialAccessBar
-                availableMaterials={data.materials}
+                availableMaterials={materials}
                 SHEET_MATERIAL_AMOUNT={SHEET_MATERIAL_AMOUNT}
                 onEjectRequested={(mat: Material, qty: number) =>
                   act('remove_mat', {
@@ -181,34 +187,14 @@ const Recipe = (props: RecipeProps) => {
           <Icon name="question-circle" />
         </div>
       </Tooltip>
-      <Tooltip
-        content={
-          <MaterialCostSequence
-            design={design}
-            amount={1}
-            available={available}
-          />
-        }
-      >
-        <div
-          className={classes([
-            'FabricatorRecipe__Title',
-            !canPrint && 'FabricatorRecipe__Title--disabled',
-          ])}
-          onClick={() =>
-            canPrint && act('build', { ref: design.id, amount: 1 })
-          }
-        >
-          <div className="FabricatorRecipe__Icon">
-            <Box
-              width={'32px'}
-              height={'32px'}
-              className={classes(['design32x32', design.icon])}
-            />
-          </div>
-          <div className="FabricatorRecipe__Label">{design.name}</div>
-        </div>
-      </Tooltip>
+      <TechWebRecipeIcon
+        icon={design.icon}
+        name={design.name}
+        design={design}
+        availableMaterials={available}
+        canPrint={canPrint}
+        action={() => act('build', { ref: design.id, amount: 1 })}
+      />
       <PrintButton
         design={design}
         quantity={5}

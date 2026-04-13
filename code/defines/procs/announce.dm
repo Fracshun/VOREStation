@@ -1,7 +1,7 @@
 //VOREStation Edit - Most of this file has been changed to use the Eris-style PA announcements.
 //You'll need to compare externally, or use your best judgement when merging.
-/var/datum/announcement/priority/priority_announcement = new(do_log = 0)
-/var/datum/announcement/priority/command/command_announcement = new(do_log = 0, do_newscast = 1)
+GLOBAL_DATUM_INIT(priority_announcement, /datum/announcement/priority, new(do_log = 0))
+GLOBAL_DATUM_INIT(command_announcement, /datum/announcement/priority/command, new(do_log = 0, do_newscast = 1))
 
 /datum/announcement
 	var/title = "Attention"
@@ -62,14 +62,14 @@
 
 // You'll need to update these to_world usages if you want to make these z-level specific ~Aro
 /datum/announcement/minor/Message(message as text, message_title as text)
-	to_world(span_bold("[message]"))
+	to_chat(world, span_bold("[message]"))
 
 /datum/announcement/priority/Message(message as text, message_title as text)
-	to_world("<h1 class='alert'>[message_title]</h1>")
-	to_world(span_alert("[message]"))
+	to_chat(world, "<h1 class='alert'>[message_title]</h1>")
+	to_chat(world, span_alert("[message]"))
 	if(announcer)
-		to_world(span_alert(" -[html_encode(announcer)]"))
-	to_world(span_alert("<br>"))
+		to_chat(world, span_alert(" -[html_encode(announcer)]"))
+	to_chat(world, span_alert("<br>"))
 
 /datum/announcement/priority/command/Message(message as text, message_title as text, var/list/zlevels)
 	var/command
@@ -136,10 +136,10 @@
 	return I.assignment ? "[I.registered_name] ([I.assignment])" : I.registered_name
 
 /proc/level_seven_announcement()
-	command_announcement.Announce("Confirmed outbreak of level 7 biohazard aboard \the [station_name()]. All personnel must contain the outbreak.", "Biohazard Alert", new_sound = 'sound/AI/outbreak7.ogg')
+	GLOB.command_announcement.Announce("Confirmed outbreak of level 7 biohazard aboard \the [station_name()]. All personnel must contain the outbreak.", "Biohazard Alert", new_sound = 'sound/AI/outbreak7.ogg')
 
 /proc/ion_storm_announcement()
-	command_announcement.Announce("It has come to our attention that \the [station_name()] passed through an ion storm.  Please monitor all electronic equipment for malfunctions.", "Anomaly Alert")
+	GLOB.command_announcement.Announce("It has come to our attention that \the [station_name()] passed through an ion storm.  Please monitor all electronic equipment for malfunctions.", "Anomaly Alert")
 
 /proc/AnnounceArrival(var/mob/living/carbon/human/character, var/rank, var/join_message, var/channel = "Common", var/zlevel)
 	if (SSticker.current_state == GAME_STATE_PLAYING)

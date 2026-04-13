@@ -88,7 +88,7 @@
 				var/datum/disease/D = ID
 				if((D.spread_flags & DISEASE_SPREAD_SPECIAL) || (D.spread_flags & DISEASE_SPREAD_NON_CONTAGIOUS))
 					continue
-				M.ContractDisease(D)
+				D.try_infect(M)
 
 /datum/reagent/blood/affect_touch(var/mob/living/carbon/M, var/alien, var/removed)
 	if(ishuman(M))
@@ -247,6 +247,7 @@
 	taste_description = REAGENT_ID_WATER
 	description = "A ubiquitous chemical substance that is composed of hydrogen and oxygen."
 	reagent_state = LIQUID
+	scannable = SCANNABLE_BENEFICIAL
 	color = "#0064C877"
 	metabolism = REM * 10
 
@@ -307,7 +308,7 @@
 		// Then extinguish people on fire.
 		var/needed = max(0,L.fire_stacks) * 5
 		if(amount > needed)
-			L.ExtinguishMob()
+			L.extinguish_mob()
 		L.water_act(amount / 25) // Div by 25, as water_act multiplies it by 5 in order to calculate firestack modification.
 		remove_self(needed)
 		// Put out cigarettes if splashed.
@@ -347,6 +348,7 @@
 	description = "Required for welders. Flamable."
 	taste_description = "gross metal"
 	reagent_state = LIQUID
+	scannable = SCANNABLE_ADVANCED
 	color = "#660000"
 
 	glass_name = "welder fuel"

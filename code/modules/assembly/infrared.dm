@@ -15,6 +15,10 @@
 	var/visible = 0
 	var/list/i_beams = null
 
+/obj/item/assembly/infra/Initialize(mapload)
+	. = ..()
+	AddElement(/datum/element/rotatable)
+
 /obj/item/assembly/infra/activate()
 	if(!..())
 		return FALSE
@@ -93,7 +97,7 @@
 	return TRUE
 
 /obj/item/assembly/infra/proc/trigger_beam()
-	if(!process_cooldown())
+	if(!COOLDOWN_FINISHED(src, next_activate))
 		return FALSE
 	pulse(0)
 	QDEL_LIST_NULL(i_beams) //They will get recreated next process() if the situation is still appropriate
@@ -132,21 +136,6 @@
 				CHECK_TICK
 			return TRUE
 
-/obj/item/assembly/infra/verb/rotate_clockwise()
-	set name = "Rotate Infrared Laser Clockwise"
-	set category = "Object"
-	set src in usr
-
-	set_dir(turn(dir, 270))
-
-//VOREstation edit: counter-clockwise rotation
-/obj/item/assembly/infra/verb/rotate_counterclockwise()
-	set name = "Rotate Infrared Laser Counter-Clockwise"
-	set category = "Object"
-	set src in usr
-
-	set_dir(turn(dir, 90))
-//VOREstation edit end
 
 /***************************IBeam*********************************/
 

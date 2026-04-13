@@ -103,7 +103,7 @@ GLOBAL_LIST_EMPTY(light_type_cache)
 		if (src.stage == 1)
 			playsound(src, W.usesound, 75, 1)
 			to_chat(user, "You begin deconstructing [src].")
-			if (!do_after(user, 30 * W.toolspeed))
+			if (!do_after(user, 3 SECONDS * W.toolspeed, target = src))
 				return
 			new /obj/item/stack/material/steel( get_turf(src.loc), sheets_refunded )
 			user.visible_message("[user.name] deconstructs [src].", \
@@ -200,7 +200,7 @@ GLOBAL_LIST_EMPTY(light_type_cache)
 // the standard tube light fixture
 /obj/machinery/light
 	name = "light fixture"
-	icon = 'icons/obj/lighting_vr.dmi'
+	icon = 'icons/obj/lighting.dmi'
 	var/base_state = "tube"		// base description and icon_state
 	icon_state = "tube1"
 	desc = "A lighting fixture."
@@ -304,6 +304,7 @@ GLOBAL_LIST_EMPTY(light_type_cache)
 
 /obj/machinery/light/small/emergency
 	light_type = /obj/item/light/bulb/red
+	nightshift_allowed = FALSE
 
 /obj/machinery/light/small/emergency/flicker
 	auto_flicker = TRUE
@@ -779,7 +780,7 @@ GLOBAL_LIST_EMPTY(light_type_cache)
 
 	if(ishuman(user))
 		var/mob/living/carbon/human/H = user
-		if(H.species.can_shred(H))
+		if(H.species.can_shred(H, FALSE, 10))
 			user.setClickCooldown(user.get_attack_speed())
 			for(var/mob/M in viewers(src))
 				M.show_message(span_red("[user.name] smashed the light!"), 3, "You hear a tinkle of breaking glass", 2)
@@ -807,7 +808,7 @@ GLOBAL_LIST_EMPTY(light_type_cache)
 		else if(TK in user.mutations)
 			to_chat(user, "You telekinetically remove the light [get_fitting_name()].")
 		else
-			to_chat(user, "You try to remove the light [get_fitting_name()], but it's too hot and you don't want to burn your hand.")
+			to_chat(user, "You try to remove the [get_fitting_name()], but it's too hot and you don't want to burn your hand.")
 			return				// if burned, don't remove the light
 	else
 		to_chat(user, "You remove the light [get_fitting_name()].")
@@ -851,7 +852,7 @@ GLOBAL_LIST_EMPTY(light_type_cache)
 
 // break the light and make sparks if was on
 
-/obj/machinery/light/proc/broken(var/skip_sound_and_sparks = 0)
+/obj/machinery/light/proc/broken(var/skip_sound_and_sparks = FALSE)
 	if(status == LIGHT_EMPTY)
 		return
 
@@ -999,6 +1000,8 @@ GLOBAL_LIST_EMPTY(light_type_cache)
 /obj/item/light/tube/large
 	w_class = ITEMSIZE_SMALL
 	name = "large light tube"
+	icon_state = "ltube_large"
+	base_state = "ltube_large"
 	brightness_range = 15
 	brightness_power = 4
 
@@ -1032,6 +1035,8 @@ GLOBAL_LIST_EMPTY(light_type_cache)
 // For 'floor lamps' in outdoor use and such
 /obj/item/light/bulb/large
 	name = "large light bulb"
+	icon_state = "lbulb_large"
+	base_state = "lbulb_large"
 	brightness_range = 7
 	brightness_power = 1.5
 
@@ -1051,6 +1056,12 @@ GLOBAL_LIST_EMPTY(light_type_cache)
 	brightness_range = 4
 	color = "#da0205"
 	brightness_color = "#da0205"
+	init_brightness_range = 4
+
+/obj/item/light/bulb/blue
+	brightness_range = 4
+	color = "#028bda"
+	brightness_color = "#028bda"
 	init_brightness_range = 4
 
 /obj/item/light/bulb/fire
@@ -1097,7 +1108,7 @@ GLOBAL_LIST_EMPTY(light_type_cache)
 	if(isrobot(user))
 		I = user.get_active_hand()
 
-	if(istype(I,/obj/item/multitool))
+	if(I?.has_tool_quality(TOOL_MULTITOOL))
 		var/list/menu_list = list(
 		"Normal Range",
 		"Normal Brightness",

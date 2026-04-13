@@ -95,7 +95,7 @@
 			. += span_info("You can use a <b>crowbar</b> to remove it.")
 */
 /mob/living/bot/updatehealth()
-	if(SEND_SIGNAL(src, COMSIG_UPDATE_HEALTH) & COMSIG_UPDATE_HEALTH_GOD_MODE)
+	if(SEND_SIGNAL(src, COMSIG_LIVING_HEALTH_UPDATE) & COMSIG_LIVING_HEALTH_UPDATE_GOD_MODE)
 		health = getMaxHealth()
 		set_stat(CONSCIOUS)
 	else
@@ -168,7 +168,7 @@
 	else if(O.has_tool_quality(TOOL_CROWBAR))
 		if(open && paicard)
 			to_chat(user, span_notice("You are attempting to remove the pAI.."))
-			if(do_after(user,10 * O.toolspeed))
+			if(do_after(user, 1 SECOND * O.toolspeed, target = src))
 				ejectpai(user)
 	else
 		..()
@@ -433,7 +433,7 @@
 
 	for(var/dir_to_check in GLOB.alldirs) // Cardinals first.
 		var/turf/T = get_step(src, dir_to_check)
-		if(!T || !T.Adjacent(src))
+		if(!T || T.density || !T.Adjacent(src))
 			continue
 		if(!LinkBlockedWithAccess(src, T, ID))
 			L.Add(T)

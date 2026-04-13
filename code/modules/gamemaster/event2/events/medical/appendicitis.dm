@@ -23,7 +23,7 @@
 			continue
 
 		// Or antags / bellied.
-		if(player_is_antag(H.mind) || isbelly(H.loc))
+		if(SSantag_job.player_is_antag(H.mind) || isbelly(H.loc))
 			continue
 
 		// Or doctors (otherwise it could be possible for the only surgeon to need surgery).
@@ -31,6 +31,6 @@
 			continue
 
 		if(H.appendicitis())
-			log_debug("Appendicitis event gave appendicitis to \the [H].")
+			log_game("Appendicitis event gave appendicitis to \the [H].")
 			return
-	log_debug("Appendicitis event could not find a valid victim.")
+	log_game("Appendicitis event could not find a valid victim.")

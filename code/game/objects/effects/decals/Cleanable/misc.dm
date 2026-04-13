@@ -23,10 +23,40 @@
 	qdel(src)
 
 /obj/effect/decal/cleanable/greenglow
+	var/last_event = 0
+	/// Mutex to prevent infinite recursion when propagating radiation pulses
+	var/active = null
 
 /obj/effect/decal/cleanable/greenglow/Initialize(mapload, _age)
 	. = ..()
 	QDEL_IN(src, 2 MINUTES)
+	START_PROCESSING(SSobj, src)
+
+/obj/effect/decal/cleanable/greenglow/Destroy()
+	STOP_PROCESSING(SSobj, src)
+	. = ..()
+
+/obj/effect/decal/cleanable/greenglow/process()
+	radiate()
+	..()
+
+/obj/effect/decal/cleanable/greenglow/proc/radiate()
+	SIGNAL_HANDLER
+	if(active)
+		return
+	if(world.time <= last_event + 1.5 SECONDS)
+		return
+	active = TRUE
+	radiation_pulse(
+		src,
+		max_range = 5,
+		threshold = RAD_LIGHT_INSULATION,
+		chance = URANIUM_IRRADIATION_CHANCE,
+		strength = 2
+	)
+	last_event = world.time
+	active = FALSE
+
 
 /obj/effect/decal/cleanable/dirt
 	name = "dirt"
@@ -204,5 +234,5 @@
 
 /obj/effect/decal/cleanable/confetti/attack_hand(mob/user)
 	to_chat(user, span_notice("You start to meticulously pick up the confetti."))
-	if(do_after(user, 60))
+	if(do_after(user, 6 SECONDS, target = src))
 		qdel(src)

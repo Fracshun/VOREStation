@@ -115,8 +115,8 @@
 	AddElement(/datum/element/climbable)
 
 /obj/machinery/mining/drill/Destroy()
-	qdel_null(faultreporter)
-	qdel_null(cell)
+	QDEL_NULL(faultreporter)
+	QDEL_NULL(cell)
 	return ..()
 
 /obj/machinery/mining/drill/dismantle()
@@ -449,6 +449,7 @@
 	. = ..()
 	default_apply_parts()
 	AddElement(/datum/element/climbable)
+	AddElement(/datum/element/rotatable)
 
 /obj/machinery/mining/brace/RefreshParts()
 	..()
@@ -514,31 +515,3 @@
 	connected.supports -= src
 	connected.check_supports()
 	connected = null
-
-/obj/machinery/mining/brace/verb/rotate_clockwise()
-	set name = "Rotate Brace Clockwise"
-	set category = "Object"
-	set src in oview(1)
-
-	if(usr.stat) return
-
-	if (src.anchored)
-		balloon_alert(usr, "it is anchored in place!")
-		return 0
-
-	src.set_dir(turn(src.dir, 270))
-	return 1
-
-/obj/machinery/mining/brace/verb/rotate_counterclockwise()
-	set name = "Rotate Brace Counter-Clockwise"
-	set category = "Object"
-	set src in oview(1)
-
-	if(usr.stat) return
-
-	if (src.anchored)
-		to_chat(usr, "It is anchored in place!")
-		return 0
-
-	src.set_dir(turn(src.dir, 90))
-	return 1

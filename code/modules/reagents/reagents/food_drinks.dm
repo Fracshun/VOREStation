@@ -14,6 +14,7 @@
 	affects_robots = 1	//VOREStation Edit
 	wiki_flag = WIKI_FOOD
 	coolant_modifier = -1
+	scannable = SCANNABLE_BENEFICIAL
 
 	supply_conversion_value = REFINERYEXPORT_VALUE_UNWANTED
 	industrial_use = REFINERYEXPORT_REASON_FOOD
@@ -49,7 +50,7 @@
 	affect_ingest(M, alien, removed)
 	//VOREStation Edits Start
 	if(M.isSynthetic())
-		M.adjust_nutrition((nutriment_factor * removed) * M.species.synthetic_food_coeff)
+		M.adjust_nutrition((nutriment_factor * removed) * M.species?.synthetic_food_coeff)
 	//VOREStation Edits End
 	..()
 
@@ -718,6 +719,19 @@
 	supply_conversion_value = REFINERYEXPORT_VALUE_COMMON
 	industrial_use = REFINERYEXPORT_REASON_FOOD
 
+/datum/reagent/mustardpods
+	name = REAGENT_MUSTARDPODS
+	id = REAGENT_ID_MUSTARDPODS
+	description = "Densely-packed seed pods from a mustard plant. Good for making mustard. Not much use for anything else."
+	taste_description = "sharp, bitter, dry mustard"
+	reagent_state = SOLID
+	ingest_met = REM
+	color = "#B2A00D"
+	cup_prefix = "mustardy"
+	wiki_flag = WIKI_FOOD
+	supply_conversion_value = REFINERYEXPORT_VALUE_COMMON
+	industrial_use = REFINERYEXPORT_REASON_FOOD
+
 /datum/reagent/enzyme
 	name = REAGENT_ENZYME
 	id = REAGENT_ID_ENZYME
@@ -867,8 +881,10 @@
 /datum/reagent/condensedcapsaicin
 	name = REAGENT_CONDENSEDCAPSAICIN
 	id = REAGENT_ID_CONDENSEDCAPSAICIN
+	scannable = SCANNABLE_ADVANCED
 	description = "A chemical agent used for self-defense and in police work."
 	taste_description = "fire"
+	dermal_absorption = 0
 	taste_mult = 10
 	reagent_state = LIQUID
 	touch_met = 50 // Get rid of it quickly
@@ -1023,6 +1039,7 @@
 	var/adj_sleepy = 0
 	var/adj_temp = 0
 	var/water_based = TRUE
+	dermal_absorption = 0
 	wiki_flag = WIKI_DRINK
 	supply_conversion_value = REFINERYEXPORT_VALUE_COMMON
 	industrial_use = REFINERYEXPORT_REASON_FOOD
@@ -2542,7 +2559,7 @@
 /datum/reagent/drink/dry_ramen
 	name = REAGENT_DRYRAMEN
 	id = REAGENT_ID_DRYRAMEN
-	description = "Space age food, since August 25, 1958. Contains dried noodles, vegetables, and chemicals that boil in contact with water."
+	description = "Space age food, since August 25, 1958. Contains dried noodles, vegetables, boil in water before serving."
 	taste_description = "dry cheap noodles"
 	reagent_state = SOLID
 	nutrition = 1
@@ -4115,6 +4132,19 @@
 
 	allergen_type = ALLERGEN_FRUIT|ALLERGEN_GRAINS //Made from vodka(grains) and orange juice(fruit)
 
+/datum/reagent/ethanol/screwdrivercocktail/on_mob_life(mob/living/carbon/drinker, seconds_per_tick, metabolization_ratio)
+	. = ..()
+//	var/obj/item/organ/internal/liver/liver = drinker.internal_organs_by_name[O_LIVER]
+//	if(HAS_TRAIT(liver, TRAIT_ENGINEER_METABOLISM))
+	ADD_TRAIT(drinker, TRAIT_HALT_RADIATION_EFFECTS, "[type]")
+	if (HAS_TRAIT(drinker, TRAIT_IRRADIATED))
+		if(drinker.adjustToxLoss(-2 * metabolization_ratio * seconds_per_tick))
+			return //UPDATE_MOB_HEALTH
+
+/datum/reagent/ethanol/screwdrivercocktail/on_mob_end_metabolize(mob/living/drinker)
+	. = ..()
+	REMOVE_TRAIT(drinker, TRAIT_HALT_RADIATION_EFFECTS, "[type]")
+
 /datum/reagent/ethanol/silencer
 	name = REAGENT_SILENCER
 	id = REAGENT_ID_SILENCER
@@ -5091,3 +5121,14 @@
 
 	supply_conversion_value = REFINERYEXPORT_VALUE_UNWANTED
 	industrial_use = REFINERYEXPORT_REASON_FOOD
+
+
+/datum/reagent/drink/teamush
+	name = REAGENT_TEAMUSH
+	id = REAGENT_ID_TEAMUSH
+	description = "Mashed tea leaves, a bit like grass clippings. You can't make proper tea out of this now."
+	taste_description = "overwhelmingly bitter plant"
+	color = "#7db72d"
+
+	glass_name = "blended plant"
+	glass_desc = "Chunky, mashed up plant of some sort. Looks kinda gross."

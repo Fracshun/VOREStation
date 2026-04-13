@@ -2,8 +2,7 @@
 //Exists to handle a few global variables that change enough to justify this. Technically a parallax, but it exhibits a skybox effect.
 SUBSYSTEM_DEF(skybox)
 	name = "Space skybox"
-	init_stage = INITSTAGE_LAST
-	flags = SS_NO_FIRE
+	flags = SS_NO_FIRE | SS_NO_INIT
 	var/static/list/skybox_cache = list()
 
 	var/static/mutable_appearance/normal_space
@@ -89,9 +88,6 @@ SUBSYSTEM_DEF(skybox)
 
 	. = ..()
 
-/datum/controller/subsystem/skybox/Initialize()
-	return SS_INIT_SUCCESS
-
 /datum/controller/subsystem/skybox/proc/get_skybox(z)
 	if(!initialized)
 		return // WAIT
@@ -100,7 +96,7 @@ SUBSYSTEM_DEF(skybox)
 	return skybox_cache["[z]"]
 
 /datum/controller/subsystem/skybox/proc/generate_skybox(z)
-	var/datum/skybox_settings/settings = global.using_map.get_skybox_datum(z)
+	var/datum/skybox_settings/settings = using_map.get_skybox_datum(z)
 
 	var/new_overlays = list()
 
@@ -117,7 +113,7 @@ SUBSYSTEM_DEF(skybox)
 
 	new_overlays += base
 
-	if(global.using_map.use_overmap && settings.use_overmap_details)
+	if(using_map.use_overmap && settings.use_overmap_details)
 		var/obj/effect/overmap/visitable/O = get_overmap_sector(z)
 		if(istype(O))
 			var/image/self_image = O.generate_skybox(z)

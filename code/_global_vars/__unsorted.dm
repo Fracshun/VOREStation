@@ -17,16 +17,6 @@ GLOBAL_LIST(global_map)
 // Noises made when hit while typing.
 GLOBAL_LIST_INIT(hit_appends, list("-OOF", "-ACK", "-UGH", "-HRNK", "-HURGH", "-GLORF"))
 
-// var/station_name		= "Northern Star"
-// var/const/station_orig	= "Northern Star" //station_name can't be const due to event prefix/suffix
-// var/const/station_short	= "Northern Star"
-// var/const/dock_name		= "Vir Interstellar Spaceport"
-// var/const/boss_name		= "Central Command"
-// var/const/boss_short	= "CentCom"
-// var/const/company_name	= "NanoTrasen"
-// var/const/company_short	= "NT"
-// var/const/star_name		= "Vir"
-// var/const/starsys_name	= "Vir"
 GLOBAL_VAR_INIT(game_year, (text2num(time2text(world.realtime, "YYYY")) + 300))
 GLOBAL_VAR_INIT(round_progressing, TRUE)
 
@@ -62,10 +52,13 @@ GLOBAL_LIST_INIT(shell_module_types, list(
 	"Janitor", "Service", "Clown", "Clerical", "Security",
 	"Research", "Command" //"Exploration"
 ))
+// List of modules available malf borgs
+GLOBAL_LIST_INIT(malf_module_types, list("Lost", "Gravekeeper"))
+// List of modules available toantags
+GLOBAL_LIST_INIT(antag_module_types, list("Protector", "Mechanist", "Combat Medic", "Ninja"))
+
 // List of whitelisted modules
-GLOBAL_LIST_INIT(whitelisted_module_types, list(
-	"Lost"
-))
+GLOBAL_LIST_INIT(whitelisted_module_types, list("Combat", "Lost", "Gravekeeper", "Protector", "Mechanist", "Combat Medic", "Ninja"))
 
 // Bomb cap!
 GLOBAL_VAR_INIT(max_explosion_range, 14)

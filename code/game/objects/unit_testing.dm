@@ -16,8 +16,8 @@
 /obj/distilling_tester/return_air()
 	return GM
 
-/obj/distilling_tester/proc/test_distilling(var/decl/chemical_reaction/distilling/D, var/temp_prog)
-	qdel_swap(GM,new())
+/obj/distilling_tester/proc/test_distilling(var/datum/decl/chemical_reaction/distilling/D, var/temp_prog)
+	QDEL_SWAP(GM,new())
 	if(D.require_xgm_gas)
 		GM.gas[D.require_xgm_gas] = 100
 	else
@@ -34,5 +34,5 @@
 	reagents.handle_reactions()
 
 /obj/distilling_tester/Destroy(force, ...)
-	qdel_null(GM)
+	QDEL_NULL(GM)
 	. = ..()

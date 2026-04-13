@@ -37,16 +37,16 @@ GLOBAL_VAR_INIT(universe_has_ended, 0)
 // Apply changes when entering state
 /datum/universal_state/supermatter_cascade/OnEnter()
 	set background = 1
-	to_world(span_sinister(span_cascade("You are blinded by a brilliant flash of energy.")))
+	to_chat(world, span_sinister(span_cascade("You are blinded by a brilliant flash of energy.")))
 
 	world << sound('sound/effects/cascade.ogg')
 
 	for(var/mob/M in GLOB.player_list)
 		M.flash_eyes()
 
-	if(emergency_shuttle.can_recall())
-		priority_announcement.Announce("The emergency shuttle has returned due to bluespace distortion.")
-		emergency_shuttle.recall()
+	if(SSemergency_shuttle.can_recall())
+		GLOB.priority_announcement.Announce("The emergency shuttle has returned due to bluespace distortion.")
+		SSemergency_shuttle.recall()
 
 	AreaSet()
 	MiscSet()
@@ -54,11 +54,13 @@ GLOBAL_VAR_INIT(universe_has_ended, 0)
 	OverlayAndAmbientSet()
 
 	// Disable Nar-Sie.
-	cult.allow_narsie = 0
+	GLOB.cult.allow_narsie = 0
 
 	PlayerSet()
 
-	new /obj/singularity/narsie/large/exit(pick(GLOB.endgame_exits))
+	if(GLOB.endgame_exits?.len)
+		new /obj/singularity/narsie/large/exit(pick(GLOB.endgame_exits))
+
 	spawn(rand(30,60) SECONDS)
 		var/txt = {"
 					There's been a galaxy-wide electromagnetic pulse.  All of our systems are heavily damaged and many personnel are dead or dying. We are seeing increasing indications of the universe itself beginning to unravel.
@@ -70,7 +72,7 @@ GLOBAL_VAR_INIT(universe_has_ended, 0)
 
 					The access requirements on the Asteroid Shuttles' consoles have now been revoked.
 				"}
-		priority_announcement.Announce(txt,"SUPERMATTER CASCADE DETECTED")
+		GLOB.priority_announcement.Announce(txt,"SUPERMATTER CASCADE DETECTED")
 
 		for(var/obj/machinery/computer/shuttle_control/C in GLOB.machines)
 			if(istype(C, /obj/machinery/computer/shuttle_control/research) || istype(C, /obj/machinery/computer/shuttle_control/mining))
@@ -136,4 +138,4 @@ GLOBAL_VAR_INIT(universe_has_ended, 0)
 			M.current.Weaken(10)
 			M.current.flash_eyes()
 
-		clear_antag_roles(M)
+		SSantag_job.clear_antag_roles(M)

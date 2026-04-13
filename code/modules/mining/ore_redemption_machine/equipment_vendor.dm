@@ -25,8 +25,10 @@
 			inserted_id.forceMove(T)
 			inserted_id = null
 		else
-			qdel_null(inserted_id)
-	QDEL_NULL_LIST(prize_list)
+			QDEL_NULL(inserted_id)
+	for(var/key, value in prize_list)
+		var/list/item_list = value
+		QDEL_LIST_ASSOC_VAL(item_list)
 	. = ..()
 
 /datum/data/mining_equipment
@@ -67,7 +69,7 @@
 		EQUIPMENT("Jump Boots",									/obj/item/clothing/shoes/bhop,								2500),
 		EQUIPMENT("Mini-Translocator",							/obj/item/perfect_tele/one_beacon,							1200),
 		EQUIPMENT("Survival Equipment - Insulated Poncho",		/obj/random/thermalponcho,									750),
-		EQUIPMENT("Mining Satchel of Holding",					/obj/item/storage/bag/ore/holding,							1500),
+		EQUIPMENT("Mining Satchel of Holding",					/obj/item/ore_bag/holding,							1500),
 		EQUIPMENT("Industrial Equipment - Sheet-Snatcher",		/obj/item/storage/bag/sheetsnatcher,						500),
 		EQUIPMENT("Sheet Snatcher of Holding",					/obj/item/storage/bag/sheetsnatcher/holding,				1000),
 		EQUIPMENT("Advanced Ore Scanner",						/obj/item/mining_scanner/advanced,							500),
@@ -83,7 +85,6 @@
 		EQUIPMENT("Injector (L) - Trauma",	/obj/item/reagent_containers/hypospray/autoinjector/biginjector/brute,			500),
 		EQUIPMENT("Nanopaste Tube",			/obj/item/stack/nanopaste,														1000),
 		EQUIPMENT("Point Transfer Card",	/obj/item/card/mining_point_card,												500),
-		EQUIPMENT("Shelter Capsule",		/obj/item/survivalcapsule,														500),
 		EQUIPMENT("Burn Medipen",			/obj/item/reagent_containers/hypospray/autoinjector/burn,						250),
 		EQUIPMENT("Detox Medipen",			/obj/item/reagent_containers/hypospray/autoinjector/detox,						250),
 		EQUIPMENT("Oxy Medipen",			/obj/item/reagent_containers/hypospray/autoinjector/oxy,						250),
@@ -132,14 +133,26 @@
 		EQUIPMENT("Hardsuit - Smoke Bomb Deployer",			/obj/item/rig_module/grenade_launcher/smoke,					2000),
 		EQUIPMENT("Hardsuit - Proto-Kinetic Gauntlets",		/obj/item/rig_module/gauntlets,									2000),
 	)
+	prize_list["Shelter Capsules"] = list(
+		EQUIPMENT("Shelter Capsule - Shelter (5x5)",				/obj/item/survivalcapsule,									500),
+		EQUIPMENT("Shelter Capsule - Pocket Dorm (5x5)",			/obj/item/survivalcapsule/pocketdorm,						500),
+		EQUIPMENT("Shelter Capsule - Kitchen (7x7)",				/obj/item/survivalcapsule/kitchen,							3100),
+		EQUIPMENT("Shelter Capsule - Luxury Shelter (7x7)",			/obj/item/survivalcapsule/luxury,							3100),
+		EQUIPMENT("Shelter Capsule - Alt. Luxury Shelter (7x7)",	/obj/item/survivalcapsule/luxuryalt,						3100),
+		EQUIPMENT("Shelter Capsule - Redspace (7x7)",				/obj/item/survivalcapsule/randomized,						5000),
+		EQUIPMENT("Shelter Capsule - Sauna (7x7)",					/obj/item/survivalcapsule/sauna,							3100),
+		EQUIPMENT("Shelter Capsule - Rec Room + Cards Table (9x9)",	/obj/item/survivalcapsule/recroom,							5000),
+		EQUIPMENT("Shelter Capsule - Luxury Rec Room (11x11)",		/obj/item/survivalcapsule/luxuryrecroom,					10000),
+		EQUIPMENT("Shelter Capsule - Bar (11x11)",					/obj/item/survivalcapsule/luxurybar,						10000),
+		EQUIPMENT("Shelter Capsule - Deluxe Cabin (11x11)",			/obj/item/survivalcapsule/luxurycabin,						10000),
+		EQUIPMENT("Shelter Capsule - Cafe (11x11)",					/obj/item/survivalcapsule/cafe,								10000),
+	)
 	prize_list["Miscellaneous"] = list(
 		EQUIPMENT(REAGENT_ABSINTHE,				/obj/item/reagent_containers/food/drinks/bottle/absinthe,					125),
 		EQUIPMENT("Cigar",						/obj/item/clothing/mask/smokable/cigarette/cigar/havana,					150),
 		EQUIPMENT("Digital Tablet - Standard",	/obj/item/modular_computer/tablet/preset/custom_loadout/standard,			500),
 		EQUIPMENT("Digital Tablet - Advanced",	/obj/item/modular_computer/tablet/preset/custom_loadout/advanced,			1000),
 		EQUIPMENT("Laser Pointer",				/obj/item/laser_pointer,													900),
-		EQUIPMENT("Luxury Shelter Capsule",		/obj/item/survivalcapsule/luxury,											3100),
-		EQUIPMENT("Bar Shelter Capsule",		/obj/item/survivalcapsule/luxurybar,										10000),
 		EQUIPMENT("Plush Toy",					/obj/random/plushie,														300),
 		EQUIPMENT("Soap",						/obj/item/soap/nanotrasen,													200),
 		EQUIPMENT("Thalers - 100",				/obj/item/spacecash/c100,													1000),
@@ -157,6 +170,7 @@
 	if(inserted_id && !powered())
 		visible_message(span_notice("The ID slot indicator light flickers on \the [src] as it spits out a card before powering down."))
 		inserted_id.forceMove(get_turf(src))
+		inserted_id = null
 
 /obj/machinery/mineral/equipment_vendor/update_icon()
 	if(panel_open)
@@ -262,8 +276,9 @@
 				return
 
 			remove_points(inserted_id, prize.cost)
-			var/obj/I = new prize.equipment_path(loc)
-			I.persist_storable = FALSE
+			var/obj/item/I = new prize.equipment_path(loc)
+			if(isitem(I))
+				I.persist_storable = FALSE
 			flick(icon_vend, src)
 		else
 			flick(icon_deny, src)
@@ -296,6 +311,7 @@
 /obj/machinery/mineral/equipment_vendor/dismantle()
 	if(inserted_id)
 		inserted_id.forceMove(loc) //Prevents deconstructing the ORM from deleting whatever ID was inside it.
+		inserted_id = null
 	. = ..()
 
 /**

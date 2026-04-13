@@ -69,21 +69,20 @@
 		riding_datum.restore_position(buckled_mob)
 		riding_datum.handle_vehicle_offsets() // So the person in back goes to the front.
 
-/obj/vehicle/Move(var/newloc, var/direction, var/movetime)
-	// VOREstation edit - Zmoving for falling
+/obj/vehicle/Move(atom/newloc, direct = 0, movetime)
 	var/turf/newturf = newloc
 	var/zmove = (newturf && z != newturf.z)
 
-	if(!zmove && world.time < l_move_time + move_delay) //This AND the riding datum move speed limit? // VOREstation edit end
-		return
+	if(!zmove && world.time < l_move_time + move_delay) //This AND the riding datum move speed limit?
+		return FALSE
 
-	if(!zmove && mechanical && on && powered && cell.charge < charge_use) // VOREstation edit - zmove doesn't run this
+	if(!zmove && mechanical && on && powered && cell.charge < charge_use)
 		turn_off()
-		return
+		return FALSE
 
 	. = ..()
 
-	if(!zmove && mechanical && on && powered) // VOREstation edit - zmove doesn't run this
+	if(!zmove && mechanical && on && powered)
 		cell.use(charge_use)
 
 	//Dummy loads do not have to be moved as they are just an overlay
@@ -123,12 +122,12 @@
 			else
 				to_chat(user, span_notice("Unable to repair while [src] is off."))
 
-	else if(hasvar(W,"force") && hasvar(W,"damtype"))
+	else if(W.force && W.damtype)
 		user.setClickCooldown(user.get_attack_speed(W))
 		switch(W.damtype)
-			if("fire")
+			if(BURN)
 				health -= W.force * fire_dam_coeff
-			if("brute")
+			if(BRUTE)
 				health -= W.force * brute_dam_coeff
 		..()
 		healthcheck()
@@ -162,8 +161,9 @@
 				return
 	return
 
-/obj/vehicle/emp_act(severity)
-	if(!mechanical)
+/obj/vehicle/emp_act(severity, recursive)
+	. = ..()
+	if (. & EMP_PROTECT_SELF || !mechanical)
 		return
 
 	var/was_on = on
@@ -406,7 +406,7 @@
 	if(!damage)
 		return
 	visible_message(span_danger("[user] [attack_message] the [src]!"))
-	user.attack_log += text("\[[time_stamp()]\] [span_red("attacked [src.name]")]")
+	add_attack_logs(user, src, "attacked")
 	user.do_attack_animation(src)
 	src.health -= damage
 	if(mechanical && prob(10))

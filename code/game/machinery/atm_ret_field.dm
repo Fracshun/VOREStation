@@ -74,7 +74,7 @@
 			return
 		user.visible_message("[user] starts to disassemble \the [src].", "You start to disassemble \the [src].")
 		playsound(src, WT.usesound, 50, 1)
-		if(do_after(user,15 * W.toolspeed))
+		if(do_after(user,15 * W.toolspeed, target = src))
 			if(!src || !user || !WT.remove_fuel(5, user)) return
 			to_chat(user, span_notice("You fully disassemble \the [src]. There were no salvageable parts."))
 			qdel(src)
@@ -109,15 +109,16 @@
 		disable_field()
 		update_icon()
 
-/obj/machinery/atmospheric_field_generator/emp_act()
-	if(!(stat & EMPED))
-		stat |= EMPED
-		disable_field() //shutting dowwwwwwn
-		spawn(rand(reboot_delay_min,reboot_delay_max))
-			stat &= ~EMPED
-			if(alwaysactive || wasactive) //reboot after a short delay if we were online before
-				generate_field()
-	..()
+/obj/machinery/atmospheric_field_generator/emp_act(severity, recursive)
+	. = ..()
+	if (. & EMP_PROTECT_SELF || (stat & EMPED))
+		return
+	stat |= EMPED
+	disable_field() //shutting dowwwwwwn
+	spawn(rand(reboot_delay_min,reboot_delay_max))
+		stat &= ~EMPED
+		if(alwaysactive || wasactive) //reboot after a short delay if we were online before
+			generate_field()
 
 /obj/machinery/atmospheric_field_generator/ex_act(severity)
 	switch(severity)
@@ -164,7 +165,7 @@
 	//Delete ourselves if we find extra mapped in arfgs
 	for(var/obj/machinery/atmospheric_field_generator/F in loc)
 		if(F != src)
-			log_debug("Duplicate ARFGS at [x],[y],[z]")
+			log_mapping("Duplicate ARFGS at [x],[y],[z]")
 			return INITIALIZE_HINT_QDEL
 
 	var/area/A = get_area(src)
@@ -197,6 +198,7 @@
 	light_power = 1
 	light_color = "#FFFFFF"
 	light_on = TRUE
+	rad_insulation = RAD_LIGHT_INSULATION
 
 /obj/structure/atmospheric_retention_field/update_icon()
 	cut_overlays() //overlays.Cut()

@@ -50,10 +50,9 @@ circuitry. Resulting faults can cause damage to the host's brain.<HR>
 Implant Specifics:<BR>"}
 	return dat
 
-/obj/item/implant/neural/emp_act(severity)
-	if(!my_brain)
-		return
-	if(malfunction)	//Don't malfunction while malfunctioning.
+/obj/item/implant/neural/emp_act(severity, recursive)
+	. = ..()
+	if (. & EMP_PROTECT_SELF || !my_brain || malfunction)
 		return
 	malfunction = MALFUNCTION_TEMPORARY
 

@@ -85,7 +85,7 @@ GLOBAL_LIST_EMPTY(additional_antag_types)
 		if(href_list["debug_antag"] == "self")
 			usr.client.debug_variables(src)
 			return
-		var/datum/antagonist/antag = GLOB.all_antag_types[href_list["debug_antag"]]
+		var/datum/antagonist/antag = SSantag_job.all_antag_types[href_list["debug_antag"]]
 		if(antag)
 			usr.client.debug_variables(antag)
 			message_admins("Admin [key_name_admin(usr)] is debugging the [antag.role_text] template.")
@@ -93,35 +93,30 @@ GLOBAL_LIST_EMPTY(additional_antag_types)
 		if(antag_tags && (href_list["remove_antag_type"] in antag_tags))
 			to_chat(usr, "Cannot remove core mode antag type.")
 			return
-		var/datum/antagonist/antag = GLOB.all_antag_types[href_list["remove_antag_type"]]
+		var/datum/antagonist/antag = SSantag_job.all_antag_types[href_list["remove_antag_type"]]
 		if(antag_templates && antag_templates.len && antag && (antag in antag_templates) && (antag.id in GLOB.additional_antag_types))
 			antag_templates -= antag
 			GLOB.additional_antag_types -= antag.id
 			message_admins("Admin [key_name_admin(usr)] removed [antag.role_text] template from game mode.")
 	else if(href_list["add_antag_type"])
-		var/choice = tgui_input_list(usr, "Which type do you wish to add?", "Select Antag Type", GLOB.all_antag_types)
+		var/choice = tgui_input_list(usr, "Which type do you wish to add?", "Select Antag Type", SSantag_job.all_antag_types)
 		if(!choice)
 			return
-		var/datum/antagonist/antag = GLOB.all_antag_types[choice]
+		var/datum/antagonist/antag = SSantag_job.all_antag_types[choice]
 		if(antag)
 			if(!islist(SSticker.mode.antag_templates))
 				SSticker.mode.antag_templates = list()
 			SSticker.mode.antag_templates |= antag
 			message_admins("Admin [key_name_admin(usr)] added [antag.role_text] template to game mode.")
 
-	// I am very sure there's a better way to do this, but I'm not sure what it might be. ~Z
-	spawn(1)
-		for(var/datum/admins/admin in world)
-			if(usr.client == admin.owner)
-				admin.show_game_mode(usr)
-				return
+	SSadmin_verbs.dynamic_invoke_verb(usr.client, /datum/admin_verb/show_game_mode)
 
 /datum/game_mode/proc/announce() //to be called when round starts
-	to_world(span_world("The current game mode is [capitalize(name)]!"))
+	to_chat(world, span_world("The current game mode is [capitalize(name)]!"))
 	if(round_description)
-		to_world(span_filter_system("[round_description]"))
+		to_chat(world, span_filter_system("[round_description]"))
 	if(round_autoantag)
-		to_world(span_filter_system("Antagonists will be added to the round automagically as needed."))
+		to_chat(world, span_filter_system("Antagonists will be added to the round automagically as needed."))
 	if(antag_templates && antag_templates.len)
 		var/antag_summary = span_bold("Possible antagonist types:") + " "
 		var/i = 1
@@ -135,7 +130,7 @@ GLOBAL_LIST_EMPTY(additional_antag_types)
 			i++
 		antag_summary += "."
 		if(antag_templates.len > 1 && GLOB.master_mode != "secret")
-			to_world(span_filter_system("[antag_summary]"))
+			to_chat(world, span_filter_system("[antag_summary]"))
 		else
 			message_admins("[antag_summary]")
 
@@ -160,7 +155,7 @@ GLOBAL_LIST_EMPTY(additional_antag_types)
 	var/enemy_count = 0
 	if(antag_tags && antag_tags.len)
 		for(var/antag_tag in antag_tags)
-			var/datum/antagonist/antag = GLOB.all_antag_types[antag_tag]
+			var/datum/antagonist/antag = SSantag_job.all_antag_types[antag_tag]
 			if(!antag)
 				continue
 			var/list/potential = list()
@@ -214,8 +209,8 @@ GLOBAL_LIST_EMPTY(additional_antag_types)
 		if(antag.is_latejoin_template())
 			latejoin_templates |= antag
 
-	if(emergency_shuttle && auto_recall_shuttle)
-		emergency_shuttle.auto_recall = 1
+	if(SSemergency_shuttle && auto_recall_shuttle)
+		SSemergency_shuttle.auto_recall = TRUE
 
 	feedback_set_details("round_start","[time2text(world.realtime)]")
 	INVOKE_ASYNC(SSdbcore, TYPE_PROC_REF(/datum/controller/subsystem/dbcore, SetRoundStart))
@@ -264,17 +259,17 @@ GLOBAL_LIST_EMPTY(additional_antag_types)
 		"radical Skrellian transevolutionaries",
 		"classified security operations"
 		)
-	command_announcement.Announce("The presence of [pick(reasons)] in the region is tying up all available local emergency resources; emergency response teams cannot be called at this time, and post-evacuation recovery efforts will be substantially delayed.","Emergency Transmission")
+	GLOB.command_announcement.Announce("The presence of [pick(reasons)] in the region is tying up all available local emergency resources; emergency response teams cannot be called at this time, and post-evacuation recovery efforts will be substantially delayed.","Emergency Transmission")
 
 /datum/game_mode/proc/check_finished()
-	if(emergency_shuttle.returned() || station_was_nuked)
+	if(SSemergency_shuttle.returned() || station_was_nuked)
 		return 1
 	if(end_on_antag_death && antag_templates && antag_templates.len)
 		for(var/datum/antagonist/antag in antag_templates)
 			if(!antag.antags_are_dead())
 				return 0
 		if(CONFIG_GET(flag/continuous_rounds))
-			emergency_shuttle.auto_recall = 0
+			SSemergency_shuttle.auto_recall = FALSE
 			return 0
 		return 1
 	return 0
@@ -282,18 +277,22 @@ GLOBAL_LIST_EMPTY(additional_antag_types)
 /datum/game_mode/proc/cleanup()	//This is called when the round has ended but not the game, if any cleanup would be necessary in that case.
 	return
 
-/datum/game_mode/proc/declare_completion()
+/datum/game_mode/proc/declare_antag_goals()
+	for(var/datum/antagonist/antag in antag_templates)
+		sleep(10)
+		antag.check_victory()
+		antag.print_player_summary()
+	addtimer(CALLBACK(src, PROC_REF(finish_completion_declatration)), 1 SECOND)
 
-	var/is_antag_mode = (antag_templates && antag_templates.len)
+/datum/game_mode/proc/declare_completion()
+	var/is_antag_mode = LAZYLEN(antag_templates)
 	check_victory()
 	if(is_antag_mode)
-		sleep(10)
-		for(var/datum/antagonist/antag in antag_templates)
-			sleep(10)
-			antag.check_victory()
-			antag.print_player_summary()
-		sleep(10)
+		is_antag_mode += 2
+		addtimer(CALLBACK(src, PROC_REF(declare_antag_goals)), 1 SECOND)
+	return is_antag_mode SECONDS
 
+/datum/game_mode/proc/finish_completion_declatration()
 	var/clients = 0
 	var/surviving_humans = 0
 	var/surviving_total = 0
@@ -340,11 +339,11 @@ GLOBAL_LIST_EMPTY(additional_antag_types)
 	var/text = ""
 	if(surviving_total > 0)
 		text += "<br>There [surviving_total>1 ? ("were " + span_bold("[surviving_total] survivors")) : ("was " + span_bold("one survivor"))] ("
-		text += span_bold("[escaped_total>0 ? escaped_total : "none"] [emergency_shuttle.evac ? "escaped" : "transferred"]") + ") and " + span_bold("[ghosts] ghosts")
+		text += span_bold("[escaped_total>0 ? escaped_total : "none"] [SSemergency_shuttle.evac ? "escaped" : "transferred"]") + ") and " + span_bold("[ghosts] ghosts")
 		text += ".<br>"
 	else
 		text += "There were " + span_bold("no survivors") + " (" + span_bold("[ghosts] ghosts") + ")."
-	to_world(span_filter_system(text))
+	to_chat(world, span_filter_system(text))
 
 	if(clients > 0)
 		feedback_set("round_end_clients",clients)
@@ -369,19 +368,6 @@ GLOBAL_LIST_EMPTY(additional_antag_types)
 	if(escaped_on_pod_5 > 0)
 		feedback_set("escaped_on_pod_5",escaped_on_pod_5)
 
-	send2mainirc("A round of [src.name] has ended - [surviving_total] survivors, [ghosts] ghosts.")
-	SSwebhooks.send(
-		WEBHOOK_ROUNDEND,
-		list(
-			"survivors" = surviving_total,
-			"escaped" = escaped_total,
-			"ghosts" = ghosts,
-			"clients" = clients
-		)
-	)
-
-	return 0
-
 /datum/game_mode/proc/check_win() //universal trigger to be called at mob death, nuke explosion, etc. To be called from everywhere.
 	return 0
 
@@ -389,7 +375,7 @@ GLOBAL_LIST_EMPTY(additional_antag_types)
 	var/list/players = list()
 	var/list/candidates = list()
 
-	var/datum/antagonist/antag_template = GLOB.all_antag_types[antag_id]
+	var/datum/antagonist/antag_template = SSantag_job.all_antag_types[antag_id]
 	if(!antag_template)
 		return candidates
 
@@ -403,7 +389,7 @@ GLOBAL_LIST_EMPTY(additional_antag_types)
 			if(isobserver(player) && !ghosts_only)
 				continue
 			if(!role || (player.client.prefs.be_special & role))
-				log_debug("[player.key] had [antag_id] enabled, so we are drafting them.")
+				log_game("[player.key] had [antag_id] enabled, so we are drafting them.")
 				candidates |= player.mind
 	else
 		// Assemble a list of active players without jobbans.
@@ -414,7 +400,7 @@ GLOBAL_LIST_EMPTY(additional_antag_types)
 		// Get a list of all the people who want to be the antagonist for this round
 		for(var/mob/new_player/player in players)
 			if(!role || (player.client.prefs.be_special & role))
-				log_debug("[player.key] had [antag_id] enabled, so we are drafting them.")
+				log_game("[player.key] had [antag_id] enabled, so we are drafting them.")
 				candidates += player.mind
 				players -= player
 
@@ -424,7 +410,7 @@ GLOBAL_LIST_EMPTY(additional_antag_types)
 		if(candidates.len < required_enemies)
 			for(var/mob/new_player/player in players)
 				if(player.ckey in round_voters)
-					log_debug("[player.key] voted for this round, so we are drafting them.")
+					log_game("[player.key] voted for this round, so we are drafting them.")
 					candidates += player.mind
 					players -= player
 					break
@@ -451,7 +437,7 @@ GLOBAL_LIST_EMPTY(additional_antag_types)
 	if(antag_tags && antag_tags.len)
 		antag_templates = list()
 		for(var/antag_tag in antag_tags)
-			var/datum/antagonist/antag = GLOB.all_antag_types[antag_tag]
+			var/datum/antagonist/antag = SSantag_job.all_antag_types[antag_tag]
 			if(antag)
 				antag_templates |= antag
 
@@ -459,7 +445,7 @@ GLOBAL_LIST_EMPTY(additional_antag_types)
 		if(!antag_templates)
 			antag_templates = list()
 		for(var/antag_type in GLOB.additional_antag_types)
-			var/datum/antagonist/antag = GLOB.all_antag_types[antag_type]
+			var/datum/antagonist/antag = SSantag_job.all_antag_types[antag_type]
 			if(antag)
 				antag_templates |= antag
 
@@ -502,21 +488,23 @@ GLOBAL_LIST_EMPTY(additional_antag_types)
 
 			continue //Happy connected client
 		for(var/mob/observer/dead/D in GLOB.dead_mob_list)
-			if(D.mind && (D.mind.original == L || D.mind.current == L))
-				if(L.stat == DEAD)
-					if(L.suiciding)	//Suicider
-						msg += "[span_bold(L.name)] ([ckey(D.mind.key)]), the [L.job] ([span_red(span_bold("Suicide"))])<br>"
-						continue //Disconnected client
+			if(D.mind)
+				var/mob/living/original = D.mind.original_character?.resolve()
+				if((original && original == L) || D.mind.current == L)
+					if(L.stat == DEAD)
+						if(L.suiciding)	//Suicider
+							msg += "[span_bold(L.name)] ([ckey(D.mind.key)]), the [L.job] ([span_red(span_bold("Suicide"))])<br>"
+							continue //Disconnected client
+						else
+							msg += "[span_bold(L.name)] ([ckey(D.mind.key)]), the [L.job] (Dead)<br>"
+							continue //Dead mob, ghost abandoned
 					else
-						msg += "[span_bold(L.name)] ([ckey(D.mind.key)]), the [L.job] (Dead)<br>"
-						continue //Dead mob, ghost abandoned
-				else
-					if(D.can_reenter_corpse)
-						msg += "[span_bold(L.name)] ([ckey(D.mind.key)]), the [L.job] ([span_red(span_bold("Adminghosted"))])<br>"
-						continue //Lolwhat
-					else
-						msg += "[span_bold(L.name)] ([ckey(D.mind.key)]), the [L.job] ([span_red(span_bold("Ghosted"))])<br>"
-						continue //Ghosted while alive
+						if(D.can_reenter_corpse)
+							msg += "[span_bold(L.name)] ([ckey(D.mind.key)]), the [L.job] ([span_red(span_bold("Adminghosted"))])<br>"
+							continue //Lolwhat
+						else
+							msg += "[span_bold(L.name)] ([ckey(D.mind.key)]), the [L.job] ([span_red(span_bold("Ghosted"))])<br>"
+							continue //Ghosted while alive
 
 	msg = span_notice(msg)// close the span from right at the top
 
@@ -528,7 +516,7 @@ GLOBAL_LIST_EMPTY(additional_antag_types)
 	var/list/dudes = list()
 	for(var/mob/living/carbon/human/man in GLOB.player_list)
 		if(man.client)
-			if(man.client.prefs.economic_status == CLASS_LOWER)
+			if((man.client.prefs.economic_status == CLASS_LOWER) || (man.client.prefs.economic_status == CLASS_BROKE))
 				dudes += man
 			else if(man.client.prefs.economic_status == CLASS_LOWMID && prob(50))
 				dudes += man

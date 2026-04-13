@@ -19,6 +19,7 @@
 	allow_quick_gather = 1
 	collection_mode = 1
 	var/linked
+	resistance_flags = FLAMMABLE
 
 
 /obj/item/storage/laundry_basket/attack_hand(mob/living/user as mob)
@@ -34,11 +35,6 @@
 	if(user.get_inactive_hand())
 		to_chat(user, span_warning("You need your other hand to be empty"))
 		return
-	return ..()
-
-/obj/item/storage/laundry_basket/attack_self(mob/user as mob)
-	var/turf/T = get_turf(user)
-	to_chat(user, span_notice("You dump the [src]'s contents onto \the [T]."))
 	return ..()
 
 /obj/item/storage/laundry_basket/pickup(mob/user)

@@ -6,7 +6,7 @@
 	icon_keyboard = "security_key"
 	icon_screen = "explosive"
 	light_color = "#a91515"
-	req_access = list(access_armory)
+	req_access = list(ACCESS_ARMORY)
 	circuit = /obj/item/circuitboard/prisoner
 	var/id = 0.0
 	var/temp = null
@@ -56,6 +56,8 @@
 				loc_display = T.loc
 			if(track.malfunction)
 				loc_display = pick(GLOB.teleportlocs)
+			if(is_vore_jammed(track))
+				loc_display = "E4R@4"
 			trackImplants.Add(list(list(
 				"host" = L,
 				"ref" = "\ref[track]",

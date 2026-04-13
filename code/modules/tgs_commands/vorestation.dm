@@ -30,7 +30,7 @@
 	admin_only = FALSE
 
 /datum/tgs_chat_command/parsetest/Run(datum/tgs_chat_user/sender, params)
-	return "```You passed:[params]```"
+	return new /datum/tgs_message_content("```You passed:[params]```")
 
 /datum/tgs_chat_command/staffwho
 	name = "staffwho"
@@ -191,8 +191,9 @@ GLOBAL_LIST_EMPTY(pending_discord_registrations)
 		for(var/list/item in GLOB.PDA_Manifest)
 			outp += "\n__**[item["cat"]]:**__"
 			for(var/list/person in item["elems"])
-				total |= person
-				outp += "\n[person["name"]] -:- [person["rank"]]"
+				var/output_string = "[person["name"]] -:- [person["rank"]]"
+				total |= output_string
+				outp += "\n[output_string]"
 
 		return "**Total crew members:** [total.len]\n" + outp
 
@@ -263,8 +264,8 @@ GLOBAL_LIST_EMPTY(pending_discord_registrations)
 		return "```Invalid command, missing fax id```"
 	var/faxid = all_params[1]
 	if(!all_params[1] || !fexists("[CONFIG_GET(string/fax_export_dir)]/fax_[faxid].html"))
-		return "I’m sorry Dave, I’m afraid I can’t do that"
-	var/faxmsg = return_file_text("[CONFIG_GET(string/fax_export_dir)]/fax_[faxid].html")
+		return "I'm sorry Dave, I'm afraid I can't do that"
+	var/faxmsg = file2text("[CONFIG_GET(string/fax_export_dir)]/fax_[faxid].html")
 	return "FAX: ```[strip_html_properly(faxmsg)]```"
 
 // Reply to admin tickets
@@ -378,3 +379,210 @@ GLOBAL_LIST_EMPTY(pending_discord_registrations)
 		if("dust")
 			real_target.dust()
 	return "Smite [smite_name] sent!"
+
+#define VALID_ACTIONS list("add", "remove", "list", "help")
+#define VALID_KINDS list("job", "species", "language", "robot")
+#define VALID_USAGE "whitelist \[[list2text(VALID_ACTIONS, ", ")]\] \[[list2text(VALID_KINDS, ", ")]\] <ckey> (role)"
+/datum/tgs_chat_command/whitelist
+	name = "whitelist"
+	help_text = "allows the management of player whitelists.\nUsage: whitelist \[add, remove, list\] \[job, species, language, robot\] <ckey> (role)"
+	admin_only = TRUE
+
+/datum/tgs_chat_command/whitelist/Run(datum/tgs_chat_user/sender, params)
+	var/list/message_as_list = splittext(params, " ")
+	var/datum/tgs_message_content/message = new("Invalid return message.")
+
+	// Check if the command is valid
+	if(!CONFIG_GET(flag/sql_enabled))
+		message.text = "```A database is required to be set up for this feature.```"
+		return message
+
+	if(!LAZYLEN(message_as_list))
+		message.text = "```Invalid command usage: [VALID_USAGE]```"
+		return message
+
+	var/action = message_as_list[1]
+	if(!(action in VALID_ACTIONS))
+		message.text = "```First param must be a valid action.```"
+		return message
+
+	if(action == "help")
+		var/list/whitelist_jobs = list()
+		for(var/datum/job/our_job in SSjob.occupations)
+			if(our_job.whitelist_only)
+				whitelist_jobs += our_job.title
+		var/list/whitelisted_language = list()
+		for(var/language, value in GLOB.all_languages)
+			var/datum/language/current_lang = value
+			if(current_lang.flags & WHITELISTED)
+				whitelisted_language += language
+		message.text = "The following jobs, species, languages and robot modules have a whitelist:\nJobs: [english_list(whitelist_jobs)]\nSpecies: [english_list(GLOB.whitelisted_species)]\nLanguages: [english_list(whitelisted_language)]\nRobot Modules: [english_list(GLOB.whitelisted_module_types)]"
+		return message
+
+	message_as_list.Cut(1, 2)
+	if(!LAZYLEN(message_as_list))
+		message.text = "```Invalid command usage: [VALID_USAGE]```"
+		return message
+
+	var/kind = message_as_list[1]
+	if(!(kind in VALID_KINDS))
+		message.text = "```Second param must be a valid whitelist kind.```"
+		return message
+	message_as_list.Cut(1, 2)
+	if(!LAZYLEN(message_as_list))
+		message.text = "```Invalid command usage: [VALID_USAGE]```"
+		return message
+
+	var/ckey = message_as_list[1]
+	if(ckey != ckey(ckey))
+		message.text = "```Third param must be a valid ckey.```"
+		return message
+
+	// Role is not required for listing the roles of a ckey
+	var/role
+	if(action != "list")
+		message_as_list.Cut(1, 2)
+		if(!LAZYLEN(message_as_list))
+			message.text = "```Invalid command usage: [VALID_USAGE]```"
+			return message
+
+		role = message_as_list.Join(" ")
+		if(!istext(role))
+			message.text = "```Fourth param must be a valid whitelist role.```"
+			return message
+
+	// Resolve the action
+	switch(action)
+		if("add")
+			switch(kind)
+				if("job")
+					var/datum/job/job = SSjob.get_job(role)
+					if(!job)
+						message.text = "Error, invalid job entered. Check spelling and capitalization."
+						return message
+					if(!job.whitelist_only)
+						message.text = "Error, job \"[role]\" is not a whitelist job."
+						return message
+				if("species")
+					if(!(role in GLOB.playable_species))
+						message.text = "Error, invalid species entered. Check spelling and capitalization."
+						return message
+					if(!(role in GLOB.whitelisted_species))
+						message.text = "Error, species \"[role]\" is not a whitelist species."
+						return message
+				if("language")
+					var/datum/language/chosen_language = GLOB.all_languages[role]
+					if(!chosen_language)
+						message.text = "Error, invalid language entered. Check spelling and capitalization."
+						return message
+					if(!(chosen_language.flags & WHITELISTED))
+						message.text = "Error, language \"[role]\" is not a whitelist language."
+						return message
+				if("robot")
+					if(!(role in GLOB.robot_modules))
+						message.text = "Error, invalid robot module entered. Check spelling and capitalization."
+						return message
+					if(!(role in GLOB.whitelisted_module_types))
+						message.text = "Error, robot module \"[role]\" is not a whitelist robot module."
+						return message
+
+			var/datum/db_query/command_add = SSdbcore.NewQuery(
+				"INSERT INTO [format_table_name("whitelist")] (ckey, kind, entry) VALUES (:ckey, :kind, :entry)",
+				list("ckey" = ckey, "kind" = kind, "entry" = role)
+			)
+			if(!command_add.Execute())
+				log_sql("Error while trying to add [ckey] to the [role] [kind] whitelist.")
+				message.text = "Error while trying to add [ckey] to the [role] [kind] whitelist. Please review SQL logs."
+				qdel(command_add)
+				return message
+			qdel(command_add)
+
+			switch(kind)
+				if("job")
+					LAZYOR(GLOB.job_whitelist[ckey], role)
+
+				if("species")
+					LAZYOR(GLOB.alien_whitelist[ckey], role)
+
+				if("language")
+					LAZYOR(GLOB.language_whitelist[ckey], role)
+
+				if("robot")
+					LAZYOR(GLOB.robot_whitelist[ckey], role)
+
+		if("remove")
+			var/datum/db_query/command_remove = SSdbcore.NewQuery(
+				"DELETE FROM [format_table_name("whitelist")] WHERE ckey = :ckey AND kind = :kind AND entry = :entry",
+				list("ckey" = ckey, "kind" = kind, "entry" = role)
+			)
+			if(!command_remove.Execute())
+				log_sql("Error while trying to remove [ckey] from the [role] [kind] whitelist.")
+				message.text = "Error while trying to remove [ckey] from the [role] [kind] whitelist. Please review SQL logs."
+				qdel(command_remove)
+				return message
+			qdel(command_remove)
+
+			switch(kind)
+				if("job")
+					LAZYREMOVE(GLOB.job_whitelist[ckey], role)
+
+				if("species")
+					LAZYREMOVE(GLOB.alien_whitelist[ckey], role)
+
+				if("language")
+					LAZYREMOVE(GLOB.language_whitelist[ckey], role)
+
+				if("robot")
+					LAZYREMOVE(GLOB.robot_whitelist[ckey], role)
+
+		// Listing all whitelists for a specific ckey
+		if("list")
+			var/datum/tgs_chat_embed/structure/embed = new()
+			var/found = FALSE
+
+			message.text = ""
+			message.embed = embed
+			embed.title = "Whitelists for [ckey]"
+
+			var/datum/db_query/query_list = SSdbcore.NewQuery(
+				"SELECT kind, entry FROM [format_table_name("whitelist")] WHERE ckey = :ckey",
+				list("ckey" = ckey)
+			)
+			if(!query_list.Execute())
+				log_sql("Error while trying to query whitelists for [ckey].")
+				embed.description = "Error while trying to query whitelists for [ckey]. Please review SQL logs."
+				embed.colour = "#FF0000"
+				qdel(query_list)
+				return message
+			while(query_list.NextRow())
+				var/kind_query_result = query_list.item[1]
+				var/entry_query_result = query_list.item[2]
+
+				embed.description += "- [kind_query_result] - [entry_query_result]\n"
+				found = TRUE
+			qdel(query_list)
+
+			if(!found)
+				embed.description += "No whitelist entries found for [ckey]"
+
+			return message
+
+	// Notify the player of the change
+	var/key_to_find = "[ckey(ckey)]"
+	if(length(key_to_find))
+		var/client/user
+		for(var/client/C in GLOB.clients)
+			if(C.ckey == key_to_find)
+				user = C
+				break
+		to_chat(user, span_info("You have been [action][action == "remove" ? "d" : "ed"] to the [kind] whitelist of [role] by an administrator."))
+
+	// Notify the admins on discord that it was successful
+	message.text = "\[Whitelist Edit\] [ckey] has been [action][action == "remove" ? "d" : "ed"] to [kind] whitelist: [role]"
+	log_admin(message.text)
+	message_admins(message.text)
+
+	return message
+#undef VALID_USAGE
+#undef VALID_KINDS
+#undef VALID_ACTIONS

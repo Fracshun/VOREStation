@@ -7,7 +7,7 @@
 /atom
 	layer = TURF_LAYER //This was here when I got here. Why though?
 	var/level = 2
-	var/flags = 0
+	var/flags = NONE
 	var/was_bloodied
 	var/blood_color
 	var/pass_flags = 0
@@ -60,6 +60,11 @@
 	/// You will need to manage adding/removing from this yourself, but I'll do the updating for you
 	var/list/image/update_on_z
 
+	/// Radiation insulation types
+	var/rad_insulation = RAD_NO_INSULATION
+
+	var/datum/wires/wires = null
+
 /atom/Destroy()
 	if(reagents)
 		QDEL_NULL(reagents)
@@ -67,6 +72,17 @@
 		QDEL_NULL(light)
 	if(forensic_data)
 		QDEL_NULL(forensic_data)
+	// Checking length(overlays) before cutting has significant speed benefits
+	if (length(overlays))
+		overlays.Cut()
+	if (length(our_overlays))
+		our_overlays.Cut()
+	if (length(priority_overlays))
+		priority_overlays.Cut()
+	if (length(managed_vis_overlays))
+		managed_vis_overlays.Cut()
+	if (length(original_atom))
+		original_atom.Cut()
 	return ..()
 
 /atom/proc/reveal_blood()
@@ -83,13 +99,6 @@
 		return loc.return_air()
 	else
 		return null
-
-//return flags that should be added to the viewer's sight var.
-//Otherwise return a negative number to indicate that the view should be cancelled.
-/atom/proc/check_eye(user as mob)
-	if (isAI(user)) // WHYYYY
-		return 0
-	return -1
 
 /atom/proc/Bumped(AM as mob|obj)
 	set waitfor = FALSE
@@ -134,8 +143,21 @@
 		UnregisterSignal(T, COMSIG_OBSERVER_TURF_ENTERED)
 
 
-/atom/proc/emp_act(var/severity)
-	return
+/atom/proc/emp_act(severity, recursive)
+	SHOULD_CALL_PARENT(TRUE)
+	recursive++
+	if(recursive > 5) //After a certain depth, we're just going to assume that it's too insulated to be EMP'd.
+		return
+	var/protection = SEND_SIGNAL(src, COMSIG_ATOM_PRE_EMP_ACT, severity)
+	if(!(protection & EMP_PROTECT_WIRES) && istype(wires))
+		wires.emp_pulse()
+
+	if(!(protection & EMP_PROTECT_CONTENTS))
+		for(var/atom/A in contents)
+			A.emp_act(severity, recursive)
+
+	SEND_SIGNAL(src, COMSIG_ATOM_EMP_ACT, severity, protection)
+	return protection
 
 /atom/proc/bullet_act(obj/item/projectile/P, def_zone)
 	if(SEND_SIGNAL(src, COMSIG_ATOM_BULLET_ACT, P, def_zone) & COMPONENT_CANCEL_ATTACK_CHAIN)
@@ -209,10 +231,9 @@
 					borg = span_boldnotice("\The [G]") + span_notice(" can hold this.")
 					break
 
-	var/examine_text = replacetext(get_examine_desc(), "||", "")
-	var/list/output = list("[icon2html(src,user.client)] That's [f_name] [suffix] [borg]", examine_text)
+	var/list/output = list("[icon2html(src,user.client)] That's [f_name] [suffix] [borg]", get_examine_desc())
 
-	SEND_SIGNAL(src, COMSIG_PARENT_EXAMINE, user, output)
+	SEND_SIGNAL(src, COMSIG_ATOM_EXAMINE, user, output)
 	return output
 
 // Don't make these call bicon or anything, these are what bicon uses. They need to return an icon.
@@ -250,9 +271,23 @@
 /atom/proc/emag_act(var/remaining_charges, var/mob/user, var/emag_source)
 	return -1
 
-/atom/proc/fire_act()
-	return
+/**
+ * Respond to fire being used on our atom
+ *
+ * Default behaviour is to send [COMSIG_ATOM_FIRE_ACT] and return
+ */
+/atom/proc/fire_act(datum/gas_mixture/air, exposed_temperature, exposed_volume)
+	SEND_SIGNAL(src, COMSIG_ATOM_FIRE_ACT, air, exposed_temperature, exposed_volume)
+	return FALSE
 
+/**
+ * Sends [COMSIG_ATOM_EXTINGUISH] signal, which properly removes burning component if it is present.
+ *
+ * Default behaviour is to send [COMSIG_ATOM_ACID_ACT] and return
+ */
+/atom/proc/extinguish()
+	SHOULD_CALL_PARENT(TRUE)
+	return SEND_SIGNAL(src, COMSIG_ATOM_EXTINGUISH)
 
 // Returns an assoc list of RCD information.
 // Example would be: list(RCD_VALUE_MODE = RCD_DECONSTRUCT, RCD_VALUE_DELAY = 50, RCD_VALUE_COST = RCD_SHEETS_PER_MATTER_UNIT * 4)
@@ -274,9 +309,8 @@
 	return
 
 
-/atom/proc/hitby(atom/movable/AM as mob|obj)
-	if (density)
-		AM.throwing = 0
+/atom/proc/hitby(atom/movable/source, datum/thrownthing/throwingdatum)
+	SEND_SIGNAL(src, COMSIG_ATOM_HITBY, source)
 	return
 
 //returns 1 if made bloody, returns 0 otherwise
@@ -446,7 +480,7 @@
 
 /atom/Entered(atom/movable/AM, atom/old_loc)
 	. = ..()
-	SEND_SIGNAL(AM, COMSIG_OBSERVER_MOVED, old_loc, AM.loc)
+	SEND_SIGNAL(AM, COMSIG_MOVABLE_ATTEMPTED_MOVE, old_loc, AM.loc)
 	SEND_SIGNAL(src, COMSIG_ATOM_ENTERED, AM, old_loc)
 	SEND_SIGNAL(AM, COMSIG_ATOM_ENTERING, src, old_loc)
 
@@ -458,9 +492,6 @@
 /atom/Exited(atom/movable/AM, atom/new_loc)
 	. = ..()
 	SEND_SIGNAL(src, COMSIG_ATOM_EXITED, AM, new_loc)
-
-/atom/proc/get_visible_gender(mob/user, force)
-	return gender
 
 /atom/proc/interact(mob/user)
 	return
@@ -564,19 +595,6 @@ GLOBAL_LIST_EMPTY(icon_dimensions)
 		"y" = icon_height > world.icon_size /*&& pixel_y != 0*/ ? (icon_height - world.icon_size) * 0.5 : 0, // we don't have pixel_y in use
 	)
 
-/// Returns a list containing the width and height of an icon file
-/proc/get_icon_dimensions(icon_path)
-	// Icons can be a real file(), a rsc backed file(), a dynamic rsc (dyn.rsc) reference (known as a cache reference in byond docs), or an /icon which is pointing to one of those.
-	// Runtime generated dynamic icons are an unbounded concept cache identity wise, the same icon can exist millions of ways and holding them in a list as a key can lead to unbounded memory usage if called often by consumers.
-	// Check distinctly that this is something that has this unspecified concept, and thus that we should not cache.
-	if (!isfile(icon_path) || !length("[icon_path]"))
-		var/icon/my_icon = icon(icon_path)
-		return list("width" = my_icon.Width(), "height" = my_icon.Height())
-	if (isnull(GLOB.icon_dimensions[icon_path]))
-		var/icon/my_icon = icon(icon_path)
-		GLOB.icon_dimensions[icon_path] = list("width" = my_icon.Width(), "height" = my_icon.Height())
-	return GLOB.icon_dimensions[icon_path]
-
 /// Returns the src and all recursive contents as a list.
 /atom/proc/get_all_contents(ignore_flag_1)
 	. = list(src)
@@ -628,9 +646,12 @@ GLOBAL_LIST_EMPTY(icon_dimensions)
 	// Basically "if has washable coloration"
 	if(length(atom_colours) >= WASHABLE_COLOUR_PRIORITY && atom_colours[WASHABLE_COLOUR_PRIORITY])
 		remove_atom_colour(WASHABLE_COLOUR_PRIORITY)
-		return TRUE
 
 	forensic_data?.wash(clean_types)
 	blood_color = null
 	germ_level = 0
 	fluorescent = 0
+
+/// Sets the wire datum of an atom
+/atom/proc/set_wires(datum/wires/new_wires)
+	wires = new_wires

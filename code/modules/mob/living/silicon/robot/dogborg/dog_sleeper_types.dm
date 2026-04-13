@@ -42,15 +42,34 @@
 	delivery = TRUE
 	recycles = FALSE
 */
+
 /obj/item/dogborg/sleeper/compactor/supply //Miner borg belly
 	name = "Supply Storage"
 	desc = "A mounted survival unit with fuel processor, helpful with both deliveries and assisting injured miners."
 	icon_state = "sleeperc"
 	injection_chems = list(REAGENT_ID_GLUCOSE,REAGENT_ID_INAPROVALINE,REAGENT_ID_TRICORDRAZINE)
-	max_item_count = 10
-	recycles = FALSE
-	stabilizer = TRUE
+	max_item_count = 20
+	ore_storage = TRUE
 	medsensor = FALSE
+
+/obj/item/dogborg/sleeper/compactor/supply/afterattack(atom/movable/target, mob/living/silicon/user, proximity_flag, click_parameters)
+	if(!proximity_flag)
+		return
+
+	if(isturf(target))
+		if(ore_bag.gather_all(target, user, TRUE))
+			user.visible_message(span_warning("[hound.name]'s [src.name] groans lightly as ore slips inside."), span_notice("Your [src.name] groans lightly as ore slips inside."))
+			playsound(src, gulpsound, vol = 60, vary = 1, falloff = 0.1, preference = /datum/preference/toggle/eating_noises)
+			return
+	if(istype(target, /obj/item/ore) && !istype(target, /obj/item/ore/slag) && !istype(target, /obj/item/ore/archeology_debris))
+		var/turf_check = isturf(target.loc) //get_turf intentionally not used here due to clicking ore in a backpack or other weirdness.
+		if(turf_check)
+			if(ore_bag.gather_all(target.loc, user, TRUE))
+				user.visible_message(span_warning("[hound.name]'s [src.name] groans lightly as ore slips inside."), span_notice("Your [src.name] groans lightly as ore slips inside."))
+				playsound(src, gulpsound, vol = 60, vary = 1, falloff = 0.1, preference = /datum/preference/toggle/eating_noises)
+				return
+	. = ..()
+
 
 /obj/item/dogborg/sleeper/compactor/brewer
 	name = "Brew Belly"
@@ -68,6 +87,20 @@
 	icon_state = "sleeperd"
 	max_item_count = 10
 	recycles = FALSE
+
+/obj/item/dogborg/sleeper/compactor/brewer/inject_chem(mob/user, chem)
+	if(patient && patient.reagents)
+		if((chem in injection_chems) + REAGENT_ID_INAPROVALINE)
+			if(hound.cell.charge < 200) //This is so borgs don't kill themselves with it.
+				to_chat(hound, span_notice("You don't have enough power to synthesize fluids."))
+				return
+			else if(patient.reagents.get_reagent_amount(chem) + 10 >= 50) //Preventing people from accidentally killing themselves by trying to inject too many chemicals!
+				to_chat(hound, span_notice("Your stomach is currently too full of fluids to secrete more fluids of this kind."))
+			else if(patient.reagents.get_reagent_amount(chem) + 10 <= 50) //No overdoses for you
+				patient.reagents.add_reagent(chem, inject_amount)
+				drain(100) //-100 charge per injection
+			var/units = round(patient.reagents.get_reagent_amount(chem))
+			to_chat(hound, span_notice("Injecting [units] unit\s into occupant.")) //If they were immersed, the reagents wouldn't leave with them.
 
 /obj/item/dogborg/sleeper/K9/ert
 	name = "Emergency Storage"

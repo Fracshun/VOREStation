@@ -76,11 +76,12 @@
 	power_channel = ENVIRON
 	density = FALSE
 	unacidable = TRUE
+	flags = WALL_ITEM
 
 	var/id_tag
 	//var/radio_power_use = 50 //power used to xmit signals
 
-	var/frequency = 1379
+	var/frequency = AIRLOCK_FREQ
 	var/radio_filter = null
 	var/datum/radio_frequency/radio_connection
 

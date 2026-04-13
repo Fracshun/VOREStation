@@ -21,7 +21,7 @@
 	desc = "A specialised, complex scanner for gleaning information on all manner of small things."
 	anchored = TRUE
 	density = TRUE
-	icon = 'icons/obj/virology_vr.dmi' //VOREStation Edit
+	icon = 'icons/obj/virology.dmi'
 	icon_state = "analyser"
 
 	use_power = USE_POWER_IDLE
@@ -242,8 +242,8 @@
 	var/data = " - Mundane object: [scanned_item.desc ? scanned_item.desc : "No information on record."]<br>"
 	var/datum/geosample/G
 	switch(scanned_item.type)
-		if(/obj/item/ore)
-			var/obj/item/ore/O = scanned_item
+		if(/obj/item/ore/archeology_debris)
+			var/obj/item/ore/archeology_debris/O = scanned_item
 			if(O.geologic_data)
 				G = O.geologic_data
 

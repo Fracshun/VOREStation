@@ -7,7 +7,10 @@
 	description_info = "Use in your hand to attempt to create a Promethean.  It functions similarly to a positronic brain, in that a ghost is needed to become the Promethean."
 	var/searching = 0
 
-/obj/item/slime_cube/attack_self(mob/user as mob)
+/obj/item/slime_cube/attack_self(mob/user)
+	. = ..(user)
+	if(.)
+		return TRUE
 	if(!searching)
 		to_chat(user, span_warning("You stare at the slimy cube, watching as some activity occurs."))
 		icon_state = "slime cube active"
@@ -85,6 +88,9 @@
 	qdel(src)
 
 /obj/item/slime_crystal/attack_self(mob/user)
+	. = ..(user)
+	if(.)
+		return TRUE
 	user.visible_message(span_warning("\The [user] teleports themselves with \the [src]!"))
 	safe_blink(user, 14)
 	qdel(src)
@@ -142,6 +148,7 @@
 	light_range = 6
 	on = 1 //Bio-luminesence has one setting, on.
 	power_use = 0
+	special_handling = TRUE
 
 /obj/item/flashlight/slime/Initialize(mapload)
 	. = ..()
@@ -149,10 +156,6 @@
 
 /obj/item/flashlight/slime/update_brightness()
 	return
-
-/obj/item/flashlight/slime/attack_self(mob/user)
-	return //Bio-luminescence does not toggle.
-
 
 //Radiation Emitter
 
@@ -165,6 +168,9 @@
 	light_power = 0.4
 	light_range = 2
 	w_class = ITEMSIZE_TINY
+	var/last_event = 0
+	/// Mutex to prevent infinite recursion when propagating radiation pulses
+	var/active = null
 
 /obj/item/slime_irradiator/Initialize(mapload)
 	. = ..()
@@ -172,7 +178,25 @@
 	set_light(light_range, light_power, light_color)
 
 /obj/item/slime_irradiator/process()
-	SSradiation.radiate(src, 5)
+	radiate()
+
+/obj/item/slime_irradiator/proc/radiate()
+	SIGNAL_HANDLER
+	if(active)
+		return
+	if(world.time <= last_event + 1.5 SECONDS)
+		return
+	active = TRUE
+	radiation_pulse(
+		src,
+		max_range = 5,
+		threshold = RAD_MEDIUM_INSULATION,
+		chance = URANIUM_IRRADIATION_CHANCE,
+		minimum_exposure_time = URANIUM_RADIATION_MINIMUM_EXPOSURE_TIME,
+		strength = 25
+	)
+	last_event = world.time
+	active = FALSE
 
 /obj/item/slime_irradiator/Destroy()
 	STOP_PROCESSING(SSobj, src)

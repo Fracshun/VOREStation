@@ -80,6 +80,9 @@
 	return
 
 /obj/item/integrated_electronics/wirer/attack_self(mob/user)
+	. = ..(user)
+	if(.)
+		return TRUE
 	switch(mode)
 		if(WIRE)
 			mode = UNWIRE
@@ -109,11 +112,14 @@
 	settings to specific circuits, or for debugging purposes. It can also pulse activation pins."
 	icon = 'icons/obj/integrated_electronics/electronic_tools.dmi'
 	icon_state = "debugger"
-	w_class = 2
+	w_class = ITEMSIZE_SMALL
 	var/data_to_write = null
 	var/accepting_refs = 0
 
 /obj/item/integrated_electronics/debugger/attack_self(mob/user)
+	. = ..(user)
+	if(.)
+		return TRUE
 	var/type_to_use = tgui_input_list(user, "Please choose a type to use.","[src] type setting", list("string","number","ref", "null"))
 	if(!CanInteract(user, GLOB.tgui_physical_state))
 		return
@@ -122,7 +128,7 @@
 	switch(type_to_use)
 		if("string")
 			accepting_refs = 0
-			new_data = tgui_input_text(user, "Now type in a string.","[src] string writing", null, MAX_MESSAGE_LEN)
+			new_data = tgui_input_text(user, "Now type in a string.","[src] string writing", null, MAX_MESSAGE_LEN, encode = FALSE)
 			new_data = sanitizeSafe(new_data, MAX_MESSAGE_LEN, 0, 0)
 			if(istext(new_data) && CanInteract(user, GLOB.tgui_physical_state))
 				data_to_write = new_data
@@ -171,14 +177,6 @@
 	var/accepting_refs
 	var/datum/integrated_io/selected_io = null
 	var/mode = 0
-
-/obj/item/multitool/attack_self(mob/user)
-	if(selected_io)
-		selected_io = null
-		to_chat(user, span_notice("You clear the wired connection from the multitool."))
-	else
-		..()
-	update_icon()
 
 /obj/item/multitool/update_icon()
 	if(selected_io)
@@ -250,20 +248,12 @@
 		now off."))
 		accepting_refs = 0
 
-
-
-
-
-
-
-
-
 /obj/item/storage/bag/circuits
 	name = "circuit kit"
 	desc = "This kit's essential for any circuitry projects."
 	icon = 'icons/obj/integrated_electronics/electronic_misc.dmi'
 	icon_state = "circuit_kit"
-	w_class = 3
+	w_class = ITEMSIZE_NORMAL
 	display_contents_with_number = 0
 	can_hold = list(
 		/obj/item/integrated_circuit,
@@ -324,7 +314,7 @@
 /obj/item/storage/bag/circuits/mini
 	name = "circuit box"
 	desc = "Used to partition categories of circuits, for a neater workspace."
-	w_class = 2
+	w_class = ITEMSIZE_SMALL
 	display_contents_with_number = 1
 	can_hold = list(/obj/item/integrated_circuit)
 	var/spawn_flags_to_use = IC_SPAWN_DEFAULT

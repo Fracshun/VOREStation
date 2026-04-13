@@ -187,13 +187,13 @@
 		)
 
 	default_emotes = list(
-		/decl/emote/human/swish,
-		/decl/emote/human/wag,
-		/decl/emote/human/sway,
-		/decl/emote/human/qwag,
-		/decl/emote/human/fastsway,
-		/decl/emote/human/swag,
-		/decl/emote/human/stopsway
+		/datum/decl/emote/human/swish,
+		/datum/decl/emote/human/wag,
+		/datum/decl/emote/human/sway,
+		/datum/decl/emote/human/qwag,
+		/datum/decl/emote/human/fastsway,
+		/datum/decl/emote/human/swag,
+		/datum/decl/emote/human/stopsway
 	)
 
 	footstep = FOOTSTEP_MOB_CLAW
@@ -307,17 +307,17 @@
 
 	default_emotes = list(
 		//VOREStation Add
-		/decl/emote/audible/gnarl,
-		/decl/emote/audible/purr,
-		/decl/emote/audible/purrlong,
+		/datum/decl/emote/audible/gnarl,
+		/datum/decl/emote/audible/purr,
+		/datum/decl/emote/audible/purrlong,
 		//VOREStation Add End
-		/decl/emote/human/swish,
-		/decl/emote/human/wag,
-		/decl/emote/human/sway,
-		/decl/emote/human/qwag,
-		/decl/emote/human/fastsway,
-		/decl/emote/human/swag,
-		/decl/emote/human/stopsway
+		/datum/decl/emote/human/swish,
+		/datum/decl/emote/human/wag,
+		/datum/decl/emote/human/sway,
+		/datum/decl/emote/human/qwag,
+		/datum/decl/emote/human/fastsway,
+		/datum/decl/emote/human/swag,
+		/datum/decl/emote/human/stopsway
 	)
 	inherent_verbs = list(/mob/living/carbon/human/proc/lick_wounds, /mob/living/carbon/human/proc/tie_hair)
 
@@ -424,10 +424,10 @@
 		)
 
 	default_emotes = list(
-		/decl/emote/audible/warble,
-		/decl/emote/audible/lwarble,
-		/decl/emote/audible/croon,
-		/decl/emote/audible/croak
+		/datum/decl/emote/audible/warble,
+		/datum/decl/emote/audible/lwarble,
+		/datum/decl/emote/audible/croon,
+		/datum/decl/emote/audible/croak
 	)
 	inherent_verbs = list(/mob/living/carbon/human/proc/tie_hair, /mob/living/carbon/human/proc/water_stealth, /mob/living/carbon/human/proc/underwater_devour)
 
@@ -490,7 +490,7 @@
 
 	reagent_tag = IS_ZADDAT
 
-	species_component = /datum/component/burninlight // Until a parent component like xenochimera have is needed, only handles burning in light.
+	species_component = list(/datum/component/burninlight) // Until a parent component like xenochimera have is needed, only handles burning in light.
 
 	heat_discomfort_strings = list(
 		"Your joints itch.",
@@ -519,7 +519,7 @@
 
 
 	default_emotes = list(
-		/decl/emote/audible/chirp
+		/datum/decl/emote/audible/chirp
 	)
 	inherent_verbs = list(/mob/living/carbon/human/proc/tie_hair)
 
@@ -563,6 +563,8 @@
 	assisted_langs = list(LANGUAGE_VOX)	// Diona are weird, let's just assume they can use basically any language.
 	min_age = 18
 	max_age = 300
+
+	species_component = list(/datum/component/radiation_effects/diona)
 
 	economic_modifier = 10
 
@@ -630,8 +632,8 @@
 	genders = list(MALE, FEMALE, PLURAL, NEUTER)
 
 	default_emotes = list(
-		/decl/emote/audible/chirp,
-		/decl/emote/audible/multichirp
+		/datum/decl/emote/audible/chirp,
+		/datum/decl/emote/audible/multichirp
 	)
 
 /datum/species/diona/can_understand(var/mob/other)
@@ -647,6 +649,7 @@
 
 /datum/species/diona/handle_post_spawn(var/mob/living/carbon/human/H)
 	H.gender = NEUTER
+	ADD_TRAIT(H, UNIQUE_MINDSTRUCTURE, ROUNDSTART_TRAIT)
 	return ..()
 
 /datum/species/diona/handle_death(var/mob/living/carbon/human/H)
@@ -882,7 +885,7 @@
 	name = SPECIES_ZORREN_HIGH
 	name_plural = "Zorren"
 	icobase = 'icons/mob/human_races/r_fox_light_vr.dmi'
-	deform = 'icons/mob/human_races/r_def_fox.dmi'
+	deform = 'icons/mob/human_races/r_fox.dmi'
 	tail = "tail"
 	icobase_tail = 1
 	unarmed_types = list(/datum/unarmed_attack/stomp, /datum/unarmed_attack/kick, /datum/unarmed_attack/claws, /datum/unarmed_attack/bite/sharp)
@@ -896,6 +899,8 @@
 
 	min_age = 20
 	max_age = 80
+
+	species_sounds = "Vulpine"
 
 	blurb = "The fennec-like, blue-blooded Zorren are native to Virgo 4/Menhir and are descendants of a precursor species \
 			that is thought to be responsible for the near-collapse of the biosphere of the planet. \
@@ -959,6 +964,11 @@
 	color_mult = 1
 	inherent_verbs = list(/mob/living/carbon/human/proc/lick_wounds,
 		/mob/living/carbon/human/proc/tie_hair)
+
+	pain_verb_1p = list("yelp", "growl")
+	pain_verb_3p = list("yelps", "growls")
+
+	species_sounds = "Canine"
 
 	wikilink="https://wiki.vore-station.net/Backstory#Vulpkanin"
 
@@ -1030,6 +1040,7 @@
 
 /datum/species/human/vatgrown
 	spawn_flags = SPECIES_IS_RESTRICTED
+
 /datum/species/harpy
 	name = SPECIES_RAPALA
 	name_plural = "Rapala"
@@ -1126,7 +1137,7 @@
 	burn_mod =  1.35
 	mob_size = MOB_MEDIUM
 	pass_flags = PASSTABLE
-	holder_type = /obj/item/holder/human
+	holder_type = /obj/item/holder/micro
 //	short_sighted = 1
 	has_vibration_sense = TRUE
 	blood_volume = 400
@@ -1215,9 +1226,9 @@
 		)
 
 	default_emotes = list(
-		/decl/emote/audible/teshsqueak,
-		/decl/emote/audible/teshchirp,
-		/decl/emote/audible/teshtrill
+		/datum/decl/emote/audible/teshsqueak,
+		/datum/decl/emote/audible/teshchirp,
+		/datum/decl/emote/audible/teshtrill
 	)
 
 	footstep = FOOTSTEP_MOB_TESHARI
@@ -1381,6 +1392,8 @@
 		BP_R_FOOT = list("path" = /obj/item/organ/external/foot/right/crewkin)
 		)
 
+	species_component = list(/datum/component/radiation_effects/besk)
+
 /datum/species/crew_shadekin/get_bodytype()
 	return SPECIES_SHADEKIN
 
@@ -1402,6 +1415,8 @@
 
 	min_age = 18
 	max_age = 80
+
+	species_sounds = "Vulpine"
 
 	//primitive_form = "" //We don't have fennec-monkey sprites.
 	spawn_flags = SPECIES_IS_RESTRICTED
@@ -1461,7 +1476,7 @@
 	name = SPECIES_ALTEVIAN
 	name_plural = "Altevians"
 	icobase = 'icons/mob/human_races/r_altevian.dmi'
-	deform = 'icons/mob/human_races/r_def_altevian.dmi'
+	deform = 'icons/mob/human_races/r_altevian.dmi'
 	unarmed_types = list(/datum/unarmed_attack/stomp, /datum/unarmed_attack/kick, /datum/unarmed_attack/claws, /datum/unarmed_attack/bite/sharp)
 	num_alternate_languages = 3
 	secondary_langs = list(LANGUAGE_TAVAN)
@@ -1472,6 +1487,8 @@
 
 	min_age = 18
 	max_age = 80
+
+	species_sounds = "Mouse"
 
 	blurb = "The Altevian are a species of tall, rodent humanoids that are akin to rats for their features. \
 	The Altevian, unlike most species, do not have a home planet, nor system, adopting a fully nomadic lifestyle \
@@ -1537,7 +1554,7 @@
 	tail = "tail" //Spider tail.
 	icobase_tail = 1
 
-	species_component = /datum/component/weaver
+	species_component = list(/datum/component/weaver)
 
 	inherent_verbs = list(
 	/mob/living/carbon/human/proc/tie_hair)
@@ -1596,7 +1613,7 @@
 	name = SPECIES_WEREBEAST
 	name_plural = "Werebeasts"
 	icobase = 'icons/mob/human_races/r_werebeast.dmi'
-	deform = 'icons/mob/human_races/r_def_werebeast.dmi'
+	deform = 'icons/mob/human_races/r_werebeast.dmi'
 	icon_template = 'icons/mob/human_races/r_werebeast.dmi'
 	tail = "tail"
 	unarmed_types = list(/datum/unarmed_attack/stomp, /datum/unarmed_attack/kick, /datum/unarmed_attack/claws, /datum/unarmed_attack/bite/sharp)
@@ -1730,7 +1747,7 @@
 
 	reagent_tag = IS_CHIMERA
 
-	species_component = /datum/component/xenochimera
+	species_component = list(/datum/component/xenochimera)
 
 /datum/species/xenochimera/handle_environment_special(var/mob/living/carbon/human/H)
 	//Cold/pressure effects when not regenerating

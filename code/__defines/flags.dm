@@ -35,6 +35,9 @@ GLOBAL_LIST_INIT(bitflags, list(1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 204
 #define	NOREACT					(1<<6)	// Reagents don't react inside this container.
 #define OVERLAY_QUEUED			(1<<7)// Atom queued to SSoverlay for COMPILE_OVERLAYS
 #define IS_BUSY					(1<<8)	// Atom has a TASK_TARGET_EXCLUSIVE do_after with it as the target.
+#define REMOTEVIEW_ON_ENTER		(1<<9)	// Object starts a remoteview of itself for any mob that enters it with a client. Items will automatically handle their own remoteview, and ignore this.
+#define WALL_ITEM				(1<<10) // Wall mounted objects
+#define ADMIN_SPAWNED			(1<<22) // Admin Spawned
 #define ATOM_INITIALIZED		(1<<23) // Atom has been initialized. Using a flag instead of a variable saves ~25mb total.
 
 //Flags for items (equipment) - Used in /obj/item/var/item_flags
@@ -46,6 +49,14 @@ GLOBAL_LIST_INIT(bitflags, list(1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 204
 #define ALLOW_SURVIVALFOOD		(1<<5)	// Allows special survival food items to be eaten through it
 #define INFINITE_AIR			(1<<6)	// Provides an infinite air supply.
 #define NOSTRIP					(1<<7)  // Items that should never get stripped
+#define DROPDEL 				(1<<8)  // Items that delete upon being dropped
+/**
+ * for all things that are technically items but don't want to be treated as such, given on a case-by-case basis
+ * examples of use are hand items, omni-toolsets, non-limb limbs (hand eater, mounted chainsaw, many null rods), borg modules, bodyparts, organs, etc.
+ * This is used for general exclusion, such as preventing insertions into other items
+ * Basically, these aren't "real" items. <= wow thanks for the fucking insight sherlock
+*/
+#define ABSTRACT (1<<9)
 
 // Flags for pass_flags. - Used in /atom/var/pass_flags
 #define PASSTABLE				(1<<0)
@@ -53,6 +64,18 @@ GLOBAL_LIST_INIT(bitflags, list(1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 204
 #define PASSGRILLE				(1<<2)
 #define PASSBLOB				(1<<3)
 #define PASSMOB					(1<<4)
+
+// timed_action_flags parameter for `/proc/do_after`
+/// Can do the action even if mob moves location
+#define IGNORE_USER_LOC_CHANGE (1<<0)
+/// Can do the action even if the target moves location
+#define IGNORE_TARGET_LOC_CHANGE (1<<1)
+/// Can do the action even if the item is no longer being held
+#define IGNORE_HELD_ITEM (1<<2)
+/// Can do the action even if the mob is incapacitated (ex. handcuffed)
+#define IGNORE_INCAPACITATED (1<<3)
+/// Used to prevent important slowdowns from being abused by drugs like kronkaine
+#define IGNORE_SLOWDOWNS (1<<4)
 
 // Flags for do_after/do_mob exclusivity.
 #define TASK_TARGET_EXCLUSIVE	(1<<1)

@@ -37,7 +37,7 @@
 		return
 	var/atom/movable/AM = WF.resolve()
 	if(isnull(AM))
-		log_debug("DEBUG: HasProximity called without reference on [src].")
+		log_runtime("DEBUG: HasProximity called without reference on [src].")
 		return
 	if (istype(AM, /obj/effect/beam))
 		return
@@ -45,7 +45,7 @@
 		sense()
 
 /obj/item/assembly/prox_sensor/proc/sense()
-	if((!holder && !secured) || !scanning || !process_cooldown())
+	if((!holder && !secured) || !scanning || !COOLDOWN_FINISHED(src, next_activate))
 		return FALSE
 	var/turf/mainloc = get_turf(src)
 	pulse(0)

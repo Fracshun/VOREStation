@@ -164,6 +164,7 @@
 /datum/robot_sprite/dogborg/security/drake
 	name = "Drake"
 	sprite_icon_state = "drake"
+	has_vore_belly_resting_sprites = TRUE
 	sprite_flags = ROBOT_HAS_TASER_SPRITE | ROBOT_HAS_LASER_SPRITE
 
 // Tall sprites
@@ -254,6 +255,8 @@
 	has_eye_light_sprites = TRUE
 	has_rest_sprites = TRUE
 	has_vore_belly_sprites = TRUE
+	has_vore_belly_resting_sprites = TRUE
+	belly_capacity_list = list("sleeper" = 3)
 	sprite_decals = list("decals")
 	rest_sprite_options = list("Default", "Sit")
 	icon_x = 64

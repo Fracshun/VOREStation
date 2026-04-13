@@ -107,7 +107,7 @@
 			if(message)
 				exonet.send_message(comm.exonet.address, "text", message)
 				im_list += list(list("address" = exonet.address, "to_address" = comm.exonet.address, "im" = message))
-				log_pda("(COMM: [src]) sent \"[message]\" to [exonet.get_atom_from_address(comm.exonet.address)]", usr)
+				usr.client.mob.log_talk("(COMM: [src]) sent \"[message]\" to [exonet.get_atom_from_address(comm.exonet.address)]", LOG_PDA)
 				to_chat(usr, span_notice("[icon2html(src,usr.client)] Sent message to [istype(comm, /obj/item/communicator) ? comm.owner : comm.name], <b>\"[message]\"</b> (<a href='byond://?src=\ref[src];action=Reply;target=\ref[exonet.get_atom_from_address(comm.exonet.address)]'>Reply</a>)"))
 
 // Verb: text_communicator()
@@ -129,7 +129,7 @@
 		return //something is terribly wrong
 
 	for(var/mob/living/L in GLOB.mob_list) //Simple check so you don't have dead people calling.
-		if(src.client.prefs.real_name == L.real_name)
+		if(src.client.prefs.read_preference(/datum/preference/name/real_name) == L.real_name)
 			to_chat(src, span_danger("Your identity is already present in the game world.  Please load in a different character first."))
 			return
 
@@ -140,7 +140,7 @@
 		return
 
 	var/list/choices = list()
-	for(var/obj/item/communicator/comm in all_communicators)
+	for(var/obj/item/communicator/comm in GLOB.all_communicators)
 		if(!comm.network_visibility || !comm.exonet || !comm.exonet.address)
 			continue
 		choices.Add(comm)
@@ -159,7 +159,7 @@
 
 			to_chat(src, span_notice("You have sent '[text_message]' to [chosen_communicator]."))
 			exonet_messages.Add(span_bold("To [chosen_communicator]:") + "<br>[text_message]")
-			log_pda("(DCOMM: [src]) sent \"[text_message]\" to [chosen_communicator]", src)
+			log_talk("(DCOMM: [src]) sent \"[text_message]\" to [chosen_communicator]", LOG_PDA)
 			for(var/mob/M in GLOB.player_list)
 				if(M.stat == DEAD && M.client?.prefs?.read_preference(/datum/preference/toggle/ghost_ears))
 					if(isnewplayer(M) || M.forbid_seeing_deadchat)

@@ -1,6 +1,6 @@
 /obj/machinery/reagent_refinery/vat
 	name = "Industrial Chemical Vat"
-	desc = "A large mixing vat for huge quantities of chemicals. Don't fall in!"
+	desc = "A large storage vat for huge quantities of chemicals. Don't fall in!"
 	icon_state = "vat"
 	density = TRUE
 	anchored = TRUE
@@ -54,39 +54,18 @@
 		if(!(stat & (NOPOWER|BROKEN)))
 			var/image/dot = image(icon, icon_state = "vat_dot_[ amount_per_transfer_from_this > 0 ? "on" : "off" ]")
 			add_overlay(dot)
-		for(var/direction in GLOB.cardinal)
-			var/turf/T = get_step(get_turf(src),direction)
-			var/obj/machinery/other = locate(/obj/machinery/reagent_refinery) in T
-			if(other && other.anchored)
-				// Waste processors do not connect to anything as outgoing
-				if(istype(other,/obj/machinery/reagent_refinery/waste_processor))
-					continue
-				// weird handling for side connections... Otherwise, anything pointing into use gets connected back!
-				if(istype(other,/obj/machinery/reagent_refinery/filter))
-					var/obj/machinery/reagent_refinery/filter/filt = other
-					var/check_dir = 0
-					if(filt.get_filter_side() == 1)
-						check_dir = turn(filt.dir, 270)
-					else
-						check_dir = turn(filt.dir, 90)
-					if(check_dir == GLOB.reverse_dir[direction] && dir != direction)
-						var/image/intake = image(icon, icon_state = "vat_intakes", dir = direction)
-						add_overlay(intake)
-						continue
-				if(other.dir == GLOB.reverse_dir[direction] && dir != direction)
-					var/image/intake = image(icon, icon_state = "vat_intakes", dir = direction)
-					add_overlay(intake)
+		update_input_connection_overlays("vat_intakes")
 
 /obj/machinery/reagent_refinery/vat/examine(mob/user, infix, suffix)
 	. = ..()
 	. += "The meter shows [reagents.total_volume]u / [reagents.maximum_volume]u. It is pumping chemicals at a rate of [amount_per_transfer_from_this]u."
 	tutorial(REFINERY_TUTORIAL_SINGLEOUTPUT, .)
 
-/obj/machinery/reagent_refinery/vat/handle_transfer(var/atom/origin_machine, var/datum/reagents/RT, var/source_forward_dir, var/filter_id = "")
+/obj/machinery/reagent_refinery/vat/handle_transfer(var/atom/origin_machine, var/datum/reagents/RT, var/source_forward_dir, var/transfer_rate, var/filter_id = "")
 	// no back/forth, filters don't use just their forward, they send the side too!
 	if(dir == GLOB.reverse_dir[source_forward_dir])
 		return 0
-	. = ..(origin_machine, RT, source_forward_dir, filter_id)
+	. = ..(origin_machine, RT, source_forward_dir, transfer_rate, filter_id)
 
 /obj/machinery/reagent_refinery/vat/MouseDrop_T(var/atom/movable/C, mob/user as mob)
 	if(user.buckled || user.stat || user.restrained() || !Adjacent(user) || !user.Adjacent(C) || !istype(C) || (user == C && !user.canmove))

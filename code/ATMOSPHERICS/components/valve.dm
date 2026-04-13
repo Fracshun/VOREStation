@@ -29,13 +29,13 @@
 		icon_state = "valve[open]"
 
 /obj/machinery/atmospherics/valve/update_underlays()
-	if(..())
-		underlays.Cut()
-		var/turf/T = get_turf(src)
-		if(!istype(T))
-			return
-		add_underlay(T, node1, get_dir(src, node1))
-		add_underlay(T, node2, get_dir(src, node2))
+	..()
+	underlays.Cut()
+	var/turf/T = get_turf(src)
+	if(!istype(T))
+		return
+	add_underlay(T, node1, get_dir(src, node1))
+	add_underlay(T, node2, get_dir(src, node2))
 
 /obj/machinery/atmospherics/valve/hide(var/i)
 	update_underlays()
@@ -223,7 +223,7 @@
 	icon = 'icons/atmos/digital_valve.dmi'
 	pipe_state = "dvalve"
 
-	var/frequency = 0
+	var/frequency = ZERO_FREQ
 	var/id = null
 	var/datum/radio_frequency/radio_connection
 
@@ -299,12 +299,12 @@
 		return 1
 	playsound(src, W.usesound, 50, 1)
 	to_chat(user, span_notice("You begin to unfasten \the [src]..."))
-	if (do_after(user, 40 * W.toolspeed))
+	if (do_after(user, 40 * W.toolspeed, target = src))
 		user.visible_message( \
 			span_infoplain(span_bold("\The [user]") + " unfastens \the [src]."), \
 			span_notice("You have unfastened \the [src]."), \
 			"You hear a ratchet.")
-		deconstruct()
+		atom_deconstruct()
 
 /obj/machinery/atmospherics/valve/examine(mob/user)
 	. = ..()

@@ -29,6 +29,7 @@
 /mob/living/silicon/robot/syndicate
 	register_alarms = 0
 	silicon_subsystems = list(/mob/living/silicon/proc/subsystem_law_manager)
+	idcard_type = /obj/item/card/id/syndicate
 
 /mob/living/silicon/proc/init_subsystems()
 	alarm_monitor 	= new(src)
@@ -45,6 +46,15 @@
 	for(var/datum/alarm_handler/AH in SSalarm.all_handlers)
 		AH.register_alarm(src, /mob/living/silicon/proc/receive_alarm)
 		queued_alarms[AH] = list()	// Makes sure alarms remain listed in consistent order
+
+/mob/living/silicon/proc/clear_subsystems()
+	QDEL_NULL(alarm_monitor)
+	QDEL_NULL(atmos_control)
+	QDEL_NULL(crew_monitor)
+	QDEL_NULL(crew_manifest)
+	QDEL_NULL(law_manager)
+	QDEL_NULL(power_monitor)
+	QDEL_NULL(rcon)
 
 /********************
 *	Alarm Monitor	*
@@ -108,3 +118,23 @@
 	set name = "RCON"
 
 	rcon.tgui_interact(src)
+
+/mob/living/silicon/robot
+	var/datum/tgui_module/robot_ui_decals/decal_control
+
+/mob/living/silicon/robot/init_subsystems()
+	..()
+	decal_control = new(src)
+
+/mob/living/silicon/robot/clear_subsystems()
+	QDEL_NULL(decal_control)
+	..()
+
+/mob/living/silicon/robot/verb/toggle_robot_decals()
+	set category = "Abilities.Settings"
+	set name = "Control Robot Decals & Animations"
+
+	if(!sprite_datum)
+		return
+
+	decal_control.tgui_interact(src)

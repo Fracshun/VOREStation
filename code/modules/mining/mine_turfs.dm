@@ -1,4 +1,4 @@
-var/list/mining_overlay_cache = list()
+GLOBAL_LIST_EMPTY(mining_overlay_cache)
 
 /**********************Mineral deposits**************************/
 /turf/unsimulated/mineral
@@ -6,6 +6,14 @@ var/list/mining_overlay_cache = list()
 	icon = 'icons/turf/walls.dmi'
 	icon_state = "rock-dark"
 	density = TRUE
+
+//For the tram
+/turf/unsimulated/mineral/moving
+	icon = 'icons/turf/transit_vr.dmi'
+	icon_state = "rock"
+
+/turf/unsimulated/mineral/moving/outdoors
+	outdoors = TRUE
 
 /turf/simulated/mineral //wall piece
 	name = "rock"
@@ -27,7 +35,7 @@ var/list/mining_overlay_cache = list()
 	var/rock_icon_path = 'icons/turf/walls.dmi' // Override this on a subtype turf if you want a custom icon
 	var/random_icon = 0
 
-	var/ore/mineral
+	var/datum/ore/mineral
 	var/sand_dug
 	var/mined_ore = 0
 	var/last_act = 0
@@ -40,7 +48,7 @@ var/list/mining_overlay_cache = list()
 	var/next_rock = 0
 	var/archaeo_overlay = ""
 	var/excav_overlay = ""
-	var/obj/item/last_find
+	var/last_find_name
 	var/datum/artifact_find/artifact_find
 	var/ignore_mapgen
 
@@ -177,7 +185,7 @@ var/list/mining_overlay_cache = list()
 
 /turf/simulated/mineral/proc/get_cached_border(var/cache_id, var/direction, var/icon_file, var/icon_state, var/offset = 32)
 	//Cache miss
-	if(!mining_overlay_cache["[cache_id]_[direction]"])
+	if(!GLOB.mining_overlay_cache["[cache_id]_[direction]"])
 		var/image/new_cached_image = image(icon_state, dir = direction, layer = ABOVE_TURF_LAYER)
 		switch(direction)
 			if(NORTH)
@@ -188,11 +196,11 @@ var/list/mining_overlay_cache = list()
 				new_cached_image.pixel_x = offset
 			if(WEST)
 				new_cached_image.pixel_x = -offset
-		mining_overlay_cache["[cache_id]_[direction]"] = new_cached_image
+		GLOB.mining_overlay_cache["[cache_id]_[direction]"] = new_cached_image
 		return new_cached_image
 
 	//Cache hit
-	return mining_overlay_cache["[cache_id]_[direction]"]
+	return GLOB.mining_overlay_cache["[cache_id]_[direction]"]
 
 /turf/simulated/mineral/Initialize(mapload)
 	. = ..()
@@ -365,6 +373,9 @@ var/list/mining_overlay_cache = list()
 
 		if(istype(W, /obj/item/shovel))
 			var/obj/item/shovel/S = W
+			if(S.grave_mode)
+				shovel_dig_grave(user, S)
+				return
 			valid_tool = 1
 			digspeed = S.digspeed
 
@@ -386,17 +397,10 @@ var/list/mining_overlay_cache = list()
 			to_chat(user, span_notice("You start digging."))
 			playsound(user, 'sound/effects/rustle1.ogg', 50, 1)
 
-			if(!do_after(user,digspeed)) return
+			if(!do_after(user, digspeed, target = src)) return
 
 			to_chat(user, span_notice("You dug a hole."))
 			GetDrilled()
-
-		else if(istype(W,/obj/item/storage/bag/ore))
-			var/obj/item/storage/bag/ore/S = W
-			if(S.collection_mode)
-				for(var/obj/item/ore/O in contents)
-					O.attackby(W,user)
-					return
 
 		else if(istype(W,/obj/item/storage/bag/fossils))
 			var/obj/item/storage/bag/fossils/S = W
@@ -431,7 +435,7 @@ var/list/mining_overlay_cache = list()
 		if (istype(W, /obj/item/measuring_tape))
 			var/obj/item/measuring_tape/P = W
 			user.visible_message(span_infoplain(span_bold("\The [user]") + " extends \a [P] towards \the [src]."),span_notice("You extend \the [P] towards \the [src]."))
-			if(do_after(user, 15))
+			if(do_after(user, 15, target = src))
 				to_chat(user, span_notice("\The [src] has been excavated to a depth of [excavation_level]cm."))
 			return
 
@@ -441,7 +445,7 @@ var/list/mining_overlay_cache = list()
 				C.depth_scanner.scan_atom(user, src)
 			else
 				user.visible_message(span_infoplain(span_bold("\The [user]") + " extends \the [C] over \the [src], a flurry of red beams scanning \the [src]'s surface!"), span_notice("You extend \the [C] over \the [src], a flurry of red beams scanning \the [src]'s surface!"))
-				if(do_after(user, 15))
+				if(do_after(user, 15, target = src))
 					to_chat(user, span_notice("\The [src] has been excavated to a depth of [excavation_level]cm."))
 			return
 
@@ -486,7 +490,7 @@ var/list/mining_overlay_cache = list()
 			next_rock += S.excavation_amount
 			while(next_rock > 50)
 				next_rock -= 50
-				var/obj/item/ore/O = new(src)
+				var/obj/item/ore/archeology_debris/O = new(src)
 				geologic_data.UpdateNearbyArtifactInfo(src)
 				O.geologic_data = geologic_data
 
@@ -509,9 +513,9 @@ var/list/mining_overlay_cache = list()
 				if(newDepth > F.excavation_required) // Digging too deep can break the item. At least you won't summon a Balrog (probably)
 					fail_message = ". <b>[pick("There is a crunching noise","[W] collides with some different rock","Part of the rock face crumbles away","Something breaks under [W]")]</b>"
 					wreckfinds(P.destroy_artefacts)
-			to_chat(user, span_notice("You start [P.drill_verb][fail_message]."))
+			user.balloon_alert(user, "you start [P.drill_verb][fail_message].")
 
-			if(do_after(user,P.digspeed))
+			if(do_after(user, P.digspeed, target = src))
 
 				if(finds && finds.len)
 					var/datum/find/F = finds[1]
@@ -520,7 +524,7 @@ var/list/mining_overlay_cache = list()
 					else if(newDepth > F.excavation_required)
 						excavate_find(prob(10), F) //A 1 in 10 chance to get it out perfectly seems fine if you're not being careful.
 
-				to_chat(user, span_notice("You finish [P.drill_verb] \the [src]."))
+				user.balloon_alert(user, "you finish [P.drill_verb] \the [src].")
 
 				if(newDepth >= 200) // This means the rock is mined out fully
 					if(P.destroy_artefacts)
@@ -536,7 +540,7 @@ var/list/mining_overlay_cache = list()
 				next_rock += P.excavation_amount
 				while(next_rock > 50)
 					next_rock -= 50
-					var/obj/item/ore/O = new(src)
+					var/obj/item/ore/archeology_debris/O = new(src)
 					geologic_data.UpdateNearbyArtifactInfo(src)
 					O.geologic_data = geologic_data
 			return
@@ -655,6 +659,9 @@ var/list/mining_overlay_cache = list()
 			M.make_jittery(50) //SHAKY this used to be 1000(seizure) but I toned it to 50 to be less aggressive.
 		if(prob(25))
 			excavate_find(prob(25), finds[1])
+		if(prob(2))
+			var/anomaly = pick(FLUX_ANOMALY, GRAVITATIONAL_ANOMALY, PYRO_ANOMALY, HALLUCINATION_ANOMALY)
+			generate_anomaly(get_turf(src), anomaly, 1, FALSE)
 	else if(rand(1,500) == 1)
 		visible_message(span_notice("An old dusty crate was buried within!"))
 		new /obj/structure/closet/crate/secure/loot(src)
@@ -678,10 +685,8 @@ var/list/mining_overlay_cache = list()
 	//some find types delete the /obj/item/archaeological_find and replace it with something else, this handles when that happens
 	//yuck
 	var/display_name = "Something"
-	if(!X)
-		X = last_find
-	if(X)
-		display_name = X.name
+	if(last_find_name)
+		display_name = last_find_name
 
 	//This is affected by 'prob_delicate' in finds.dm. As of writing, this has been set to 0 because the suspension field is just one extra piece that makes
 	//Xenoarch that much more confusing, and the intent of this PR is to make it more friendly to get into.

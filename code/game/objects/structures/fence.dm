@@ -195,7 +195,7 @@
 		else
 			to_chat(user, span_notice("You start to [L.pick_verb] the lock on \the [src]..."))
 			playsound(src, keysound,100, 1)
-			if(do_after(user, L.pick_time * lock_difficulty))
+			if(do_after(user, L.pick_time * lock_difficulty, target = src))
 				to_chat(user, span_notice("Success!"))
 				locked = FALSE
 		return
@@ -210,6 +210,9 @@
 	else if(isrobot(user)) //but cyborgs can
 		if(get_dist(user,src) <= 1) //not remotely though
 			return attack_hand(user)
+
+/obj/structure/fence/door/allow_pai_interaction(mob/living/silicon/pai/user, proximity_flag)
+	return proximity_flag
 
 /obj/structure/fence/door/proc/toggle(mob/user)
 	switch(open)

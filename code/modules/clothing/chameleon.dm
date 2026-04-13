@@ -48,7 +48,10 @@
 		var/blocked = list(src.type, /obj/item/clothing/under/gimmick)//Prevent infinite loops and bad jumpsuits.
 		GLOB.chamelion_jumpsuit_choices = generate_chameleon_choices(/obj/item/clothing/under, blocked)
 
-/obj/item/clothing/under/chameleon/emp_act(severity)
+/obj/item/clothing/under/chameleon/emp_act(severity, recursive)
+	. = ..()
+	if (. & EMP_PROTECT_SELF)
+		return
 	name = "psychedelic"
 	desc = "Groovy!"
 	icon_state = "psyche"
@@ -84,7 +87,10 @@
 		var/blocked = list(src.type)//Prevent infinite loops and bad hats.
 		GLOB.chamelion_head_choices = generate_chameleon_choices(/obj/item/clothing/head, blocked)
 
-/obj/item/clothing/head/chameleon/emp_act(severity) //Because we don't have psych for all slots right now but still want a downside to EMP.  In this case your cover's blown.
+/obj/item/clothing/head/chameleon/emp_act(severity, recursive) //Because we don't have psych for all slots right now but still want a downside to EMP.  In this case your cover's blown.
+	. = ..()
+	if (. & EMP_PROTECT_SELF)
+		return
 	name = "grey cap"
 	desc = "It's a baseball hat in a tasteful grey colour."
 	icon_state = "greysoft"
@@ -118,7 +124,10 @@
 		var/blocked = list(src.type, /obj/item/clothing/suit/cyborg_suit, /obj/item/clothing/suit/justice, /obj/item/clothing/suit/greatcoat)
 		GLOB.chamelion_suit_choices = generate_chameleon_choices(/obj/item/clothing/suit, blocked)
 
-/obj/item/clothing/suit/chameleon/emp_act(severity) //Because we don't have psych for all slots right now but still want a downside to EMP.  In this case your cover's blown.
+/obj/item/clothing/suit/chameleon/emp_act(severity, recursive) //Because we don't have psych for all slots right now but still want a downside to EMP.  In this case your cover's blown.
+	. = ..()
+	if (. & EMP_PROTECT_SELF)
+		return
 	name = "armor"
 	desc = "An armored vest that protects against some damage."
 	icon_state = "armor"
@@ -151,7 +160,10 @@
 		var/blocked = list(src.type, /obj/item/clothing/shoes/syndigaloshes, /obj/item/clothing/shoes/cyborg)//prevent infinite loops and bad shoes.
 		GLOB.chamelion_shoe_choices = generate_chameleon_choices(/obj/item/clothing/shoes, blocked)
 
-/obj/item/clothing/shoes/chameleon/emp_act(severity) //Because we don't have psych for all slots right now but still want a downside to EMP.  In this case your cover's blown.
+/obj/item/clothing/shoes/chameleon/emp_act(severity, recursive) //Because we don't have psych for all slots right now but still want a downside to EMP.  In this case your cover's blown.
+	. = ..()
+	if (. & EMP_PROTECT_SELF)
+		return
 	name = "black shoes"
 	desc = "A pair of black shoes."
 	icon_state = "black"
@@ -184,7 +196,10 @@
 		var/blocked = list(src.type, /obj/item/storage/backpack/satchel/withwallet)
 		GLOB.chamelion_back_choices = generate_chameleon_choices(/obj/item/storage/backpack, blocked)
 
-/obj/item/storage/backpack/chameleon/emp_act(severity) //Because we don't have psych for all slots right now but still want a downside to EMP.  In this case your cover's blown.
+/obj/item/storage/backpack/chameleon/emp_act(severity, recursive) //Because we don't have psych for all slots right now but still want a downside to EMP.  In this case your cover's blown.
+	. = ..()
+	if (. & EMP_PROTECT_SELF)
+		return
 	name = "backpack"
 	desc = "You wear this on your back and put items into it."
 	icon_state = "backpack"
@@ -235,7 +250,10 @@
 	if(!GLOB.chamelion_glove_choices)
 		GLOB.chamelion_glove_choices = generate_chameleon_choices(/obj/item/clothing/gloves, list(src.type))
 
-/obj/item/clothing/gloves/chameleon/emp_act(severity) //Because we don't have psych for all slots right now but still want a downside to EMP.  In this case your cover's blown.
+/obj/item/clothing/gloves/chameleon/emp_act(severity, recursive) //Because we don't have psych for all slots right now but still want a downside to EMP.  In this case your cover's blown.
+	. = ..()
+	if (. & EMP_PROTECT_SELF)
+		return
 	name = "black gloves"
 	desc = "It looks like a pair of gloves, but it seems to have a small dial inside."
 	icon_state = "black"
@@ -268,7 +286,10 @@
 	if(!GLOB.chamelion_mask_choices)
 		GLOB.chamelion_mask_choices = generate_chameleon_choices(/obj/item/clothing/mask, list(src.type))
 
-/obj/item/clothing/mask/chameleon/emp_act(severity) //Because we don't have psych for all slots right now but still want a downside to EMP.  In this case your cover's blown.
+/obj/item/clothing/mask/chameleon/emp_act(severity, recursive) //Because we don't have psych for all slots right now but still want a downside to EMP.  In this case your cover's blown.
+	. = ..()
+	if (. & EMP_PROTECT_SELF)
+		return
 	name = "gas mask"
 	desc = "It's a gas mask."
 	icon_state = "gas_old"
@@ -303,7 +324,10 @@
 	if(!clothing_choices)
 		clothing_choices = generate_chameleon_choices(/obj/item/clothing/glasses, list(src.type))
 
-/obj/item/clothing/glasses/chameleon/emp_act(severity) //Because we don't have psych for all slots right now but still want a downside to EMP.  In this case your cover's blown.
+/obj/item/clothing/glasses/chameleon/emp_act(severity, recursive) //Because we don't have psych for all slots right now but still want a downside to EMP.  In this case your cover's blown.
+	. = ..()
+	if (. & EMP_PROTECT_SELF)
+		return
 	name = "Optical Meson Scanner"
 	desc = "It's a set of mesons."
 	icon_state = "meson"
@@ -336,7 +360,10 @@
 	if(!GLOB.chamelion_belt_choices)
 		GLOB.chamelion_belt_choices = generate_chameleon_choices(/obj/item/storage/belt, list(src.type))
 
-/obj/item/storage/belt/chameleon/emp_act(severity) //Because we don't have psych for all slots right now but still want a downside to EMP.  In this case your cover's blown.
+/obj/item/storage/belt/chameleon/emp_act(severity, recursive) //Because we don't have psych for all slots right now but still want a downside to EMP.  In this case your cover's blown.
+	. = ..()
+	if (. & EMP_PROTECT_SELF)
+		return
 	name = "belt"
 	desc = "Can hold various things."
 	icon_state = "utilitybelt"
@@ -376,7 +403,10 @@
 		var/blocked = list(src.type, /obj/item/clothing/accessory/storage)
 		GLOB.chamelion_accessory_choices = generate_chameleon_choices(/obj/item/clothing/accessory, blocked)
 
-/obj/item/clothing/accessory/chameleon/emp_act(severity) //Because we don't have psych for all slots right now but still want a downside to EMP.  In this case your cover's blown.
+/obj/item/clothing/accessory/chameleon/emp_act(severity, recursive) //Because we don't have psych for all slots right now but still want a downside to EMP.  In this case your cover's blown.
+	. = ..()
+	if (. & EMP_PROTECT_SELF)
+		return
 	name = "black tie"
 	desc = "Looks like a black tie, but his one also has a dial inside."
 	icon_state = "blacktie"
@@ -436,7 +466,10 @@
 		P.impact_type = initial(copy_projectile.impact_type)
 	return P
 
-/obj/item/gun/energy/chameleon/emp_act(severity)
+/obj/item/gun/energy/chameleon/emp_act(severity, recursive)
+	. = ..()
+	if (. & EMP_PROTECT_SELF)
+		return
 	name = "desert eagle"
 	desc = "It's a desert eagle."
 	icon_state = "deagle"

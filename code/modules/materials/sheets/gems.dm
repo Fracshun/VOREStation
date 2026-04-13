@@ -6,6 +6,7 @@
 	drop_sound = 'sound/items/drop/glass.ogg'
 	pickup_sound = 'sound/items/pickup/glass.ogg'
 	coin_type = /obj/item/coin/phoron
+	resistance_flags = FLAMMABLE
 
 /obj/item/stack/material/diamond
 	name = MAT_DIAMOND
@@ -73,3 +74,9 @@
 	default_type = MAT_GLAMOUR
 	no_variants = FALSE
 	apply_colour = TRUE
+
+/obj/item/stack/material/weathered_agate
+	name = MAT_EAGATE
+	icon_state = "sheet-agate"
+	singular_name = "weathered agate"
+	default_type = MAT_EAGATE

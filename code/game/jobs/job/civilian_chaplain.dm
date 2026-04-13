@@ -10,10 +10,10 @@
 	pto_type = PTO_CIVILIAN
 	supervisors = "the " + JOB_HEAD_OF_PERSONNEL
 	selection_color = "#515151"
-	access = list(access_morgue, access_chapel_office, access_crematorium, access_maint_tunnels)
-	minimal_access = list(access_chapel_office, access_crematorium)
+	access = list(ACCESS_MORGUE, ACCESS_CHAPEL_OFFICE, ACCESS_CREMATORIUM, ACCESS_MAINT_TUNNELS)
+	minimal_access = list(ACCESS_CHAPEL_OFFICE, ACCESS_CREMATORIUM)
 
-	outfit_type = /decl/hierarchy/outfit/job/chaplain
+	outfit_type = /datum/decl/hierarchy/outfit/job/chaplain
 	job_description = "The " + JOB_CHAPLAIN + " ministers to the spiritual needs of the crew."
 	alt_titles = list(JOB_ALT_MISSIONARY = /datum/alt_title/missionary, JOB_ALT_PREACHER = /datum/alt_title/preacher, JOB_ALT_PRIEST = /datum/alt_title/priest,
 							JOB_ALT_NUN = /datum/alt_title/nun, JOB_ALT_MONK = /datum/alt_title/monk, JOB_ALT_COUNSELOR = /datum/alt_title/counselor,

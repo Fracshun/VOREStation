@@ -23,30 +23,41 @@
 
 	var/list/access_rights
 	var/obj/item/card/id/idcard
-	var/idcard_type = /obj/item/card/id/synthetic
 
 	var/sensor_type = 0 //VOREStation add - silicon omni "is sensor on or nah"
 
 	var/hudmode = null
+	fire_stack_decay_rate = -0.55
+	var/idcard_type = /obj/item/card/id/synthetic
 
 /mob/living/silicon/Initialize(mapload, is_decoy = FALSE)
 	. = ..()
 	GLOB.silicon_mob_list += src
 	if(!is_decoy)
+		init_id(idcard_type)
 		add_language(LANGUAGE_GALCOM)
 		apply_default_language(GLOB.all_languages[LANGUAGE_GALCOM])
-		init_id()
 		init_subsystems()
 
 		AddElement(/datum/element/footstep, FOOTSTEP_MOB_SHOE, 1, -6)
 
 /mob/living/silicon/Destroy()
+	common_radio = null // same ref as radio, deleted by child
 	GLOB.silicon_mob_list -= src
 	for(var/datum/alarm_handler/AH in SSalarm.all_handlers)
 		AH.unregister_alarm(src)
+	if(aiCamera)
+		QDEL_NULL(aiCamera)
+	if(idcard)
+		QDEL_NULL(idcard)
+	if(laws)
+		QDEL_NULL(laws)
+	clear_subsystems()
 	return ..()
 
-/mob/living/silicon/proc/init_id()
+/mob/living/silicon/proc/init_id(idcard_type)
+	if(!idcard_type)
+		return
 	if(idcard)
 		return
 	idcard = new idcard_type(src)
@@ -59,11 +70,12 @@
 /mob/living/silicon/proc/show_laws()
 	return
 
-/mob/living/silicon/drop_item()
+/mob/living/silicon/drop_item(var/atom/Target)
 	return
 
-/mob/living/silicon/emp_act(severity)
-	if(SEND_SIGNAL(src, COMSIG_SILICON_EMP_ACT, severity) & COMPONENT_BLOCK_EMP)
+/mob/living/silicon/emp_act(severity, recursive)
+	. = ..()
+	if (. & EMP_PROTECT_SELF || SEND_SIGNAL(src, COMSIG_SILICON_EMP_ACT, severity) & COMPONENT_BLOCK_EMP)
 		return
 	switch(severity)
 		if(1)
@@ -81,9 +93,8 @@
 	flash_eyes(affect_silicon = 1)
 	to_chat(src, span_bolddanger("*BZZZT*"))
 	to_chat(src, span_danger("Warning: Electromagnetic pulse detected."))
-	..()
 
-/mob/living/silicon/stun_effect_act(var/stun_amount, var/agony_amount)
+/mob/living/silicon/stun_effect_act(var/stun_amount, var/agony_amount, var/def_zone, var/used_weapon=null, var/electric = FALSE)
 	return	//immune
 
 /mob/living/silicon/electrocute_act(var/shock_damage, var/obj/source, var/siemens_coeff = 0.0, var/def_zone = null, var/stun = 1)
@@ -146,8 +157,8 @@
 
 // this function displays the shuttles ETA in the status panel if the shuttle has been called
 /mob/living/silicon/proc/show_emergency_shuttle_eta()
-	if(emergency_shuttle)
-		var/eta_status = emergency_shuttle.get_status_panel_eta()
+	if(SSemergency_shuttle)
+		var/eta_status = SSemergency_shuttle.get_status_panel_eta()
 		if(eta_status)
 			. = "[eta_status]"
 
@@ -310,7 +321,7 @@
 
 /mob/living/silicon/proc/receive_alarm(var/datum/alarm_handler/alarm_handler, var/datum/alarm/alarm, was_raised)
 	if(!next_alarm_notice)
-		next_alarm_notice = world.time + SecondsToTicks(10)
+		next_alarm_notice = world.time + (10 SECONDS)
 	if(alarm.hidden)
 		return
 	if(alarm.origin && !(get_z(alarm.origin) in using_map.get_map_levels(get_z(src), TRUE, om_range = DEFAULT_OVERMAP_RANGE)))
@@ -372,10 +383,10 @@
 
 
 /mob/living/silicon/proc/is_traitor()
-	return mind && (mind in traitors.current_antagonists)
+	return mind && (mind in GLOB.traitors.current_antagonists)
 
 /mob/living/silicon/proc/is_malf()
-	return mind && (mind in malf.current_antagonists)
+	return mind && (mind in GLOB.malf.current_antagonists)
 
 /mob/living/silicon/proc/is_malf_or_traitor()
 	return is_traitor() || is_malf()
@@ -386,12 +397,11 @@
 /mob/living/silicon/setEarDamage()
 	return
 
-/mob/living/silicon/reset_view()
+/mob/living/silicon/reset_perspective(atom/new_eye)
 	. = ..()
-	if(cameraFollow)
-		cameraFollow = null
+	cameraFollow = null
 
-/mob/living/silicon/flash_eyes(intensity = FLASH_PROTECTION_MODERATE, override_blindness_check = FALSE, affect_silicon = FALSE, visual = FALSE, type = /obj/screen/fullscreen/flash)
+/mob/living/silicon/flash_eyes(intensity = FLASH_PROTECTION_MODERATE, override_blindness_check = FALSE, affect_silicon = FALSE, visual = FALSE, type = /atom/movable/screen/fullscreen/flash)
 	if(affect_silicon)
 		return ..()
 
@@ -399,13 +409,13 @@
 	//Handle job slot/tater cleanup.
 	var/job = mind.assigned_role
 
-	job_master.FreeRole(job)
+	SSjob.free_role(job)
 
 	if(mind.objectives.len)
 		qdel(mind.objectives)
 		mind.special_role = null
 
-	clear_antag_roles(mind)
+	SSantag_job.clear_antag_roles(mind)
 
 	ghostize(0)
 	qdel(src)

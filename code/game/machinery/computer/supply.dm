@@ -23,7 +23,7 @@
 	icon_keyboard = "tech_key"
 	icon_screen = "supply"
 	light_color = "#b88b2e"
-	req_access = list(access_cargo)
+	req_access = list(ACCESS_CARGO)
 	circuit = /obj/item/circuitboard/supplycomp/control
 	authorization = SUP_SEND_SHUTTLE | SUP_ACCEPT_ORDERS
 
@@ -36,7 +36,6 @@
 	if(!allowed(user))
 		to_chat(user, span_warning("You don't have the required access to use this console."))
 		return
-	user.set_machine(src)
 	tgui_interact(user)
 	return
 
@@ -256,7 +255,7 @@
 			reqform.info += "RANK: [idrank]<br>"
 			reqform.info += "REASON: [reason]<br>"
 			reqform.info += "SUPPLY CRATE TYPE: [S.name]<br>"
-			reqform.info += "ACCESS RESTRICTION: [get_access_desc(S.access)]<br>"
+			reqform.info += "ACCESS RESTRICTION: [SSaccess.get_access_desc(S.access)]<br>"
 			reqform.info += "AMOUNT: [amount]<br>"
 			reqform.info += "CONTENTS:<br>"
 			reqform.info +=  S.get_html_manifest()
@@ -309,7 +308,7 @@
 			reqform.info += "RANK: [idrank]<br>"
 			reqform.info += "REASON: [reason]<br>"
 			reqform.info += "SUPPLY CRATE TYPE: [S.name]<br>"
-			reqform.info += "ACCESS RESTRICTION: [get_access_desc(S.access)]<br>"
+			reqform.info += "ACCESS RESTRICTION: [SSaccess.get_access_desc(S.access)]<br>"
 			reqform.info += "CONTENTS:<br>"
 			reqform.info +=  S.get_html_manifest()
 			reqform.info += "<hr>"

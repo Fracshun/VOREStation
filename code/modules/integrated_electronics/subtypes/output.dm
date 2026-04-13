@@ -122,7 +122,7 @@
 	desc = "A miniature speaker is attached to this component. It is able to transpose any valid text to speech."
 	extended_desc = "This will emit an audible message to anyone who can hear the assembly."
 	icon_state = "speaker"
-	complexity = 12
+	complexity = 5
 	cooldown_per_use = 4 SECONDS
 	inputs = list("text" = IC_PINTYPE_STRING)
 	outputs = list()
@@ -168,7 +168,7 @@
 	name = "speaker circuit"
 	desc = "A miniature speaker is attached to this component."
 	icon_state = "speaker"
-	complexity = 8
+	complexity = 5
 	cooldown_per_use = 4 SECONDS
 	inputs = list(
 		"sound ID" = IC_PINTYPE_STRING,
@@ -449,11 +449,11 @@
 /obj/item/integrated_circuit/output/holographic_projector/Initialize(mapload)
 	. = ..()
 	AddComponent(/datum/component/recursive_move)
-	RegisterSignal(src, COMSIG_OBSERVER_MOVED, PROC_REF(on_moved))
+	RegisterSignal(src, COMSIG_MOVABLE_ATTEMPTED_MOVE, PROC_REF(on_moved))
 
 /obj/item/integrated_circuit/output/holographic_projector/Destroy()
 	destroy_hologram()
-	UnregisterSignal(src, COMSIG_OBSERVER_MOVED)
+	UnregisterSignal(src, COMSIG_MOVABLE_ATTEMPTED_MOVE)
 	return ..()
 
 /obj/item/integrated_circuit/output/holographic_projector/do_work()

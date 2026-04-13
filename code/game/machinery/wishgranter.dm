@@ -12,8 +12,6 @@
 	var/insistinga = 0
 
 /obj/machinery/wish_granter/attack_hand(var/mob/living/carbon/human/user as mob)
-	user.set_machine(src)
-
 	if(chargesa <= 0)
 		to_chat(user, span_infoplain("The Wish Granter lies silent."))
 		return
@@ -37,8 +35,8 @@
 			if("Power")
 				to_chat(user, span_boldwarning("Your wish is granted, but at a terrible cost..."))
 				to_chat(user, span_warning("The Wish Granter punishes you for your selfishness, claiming your soul."))
-				if (!(LASER in user.mutations))
-					user.mutations.Add(LASER)
+				if (!(LASER_EYES in user.mutations))
+					user.mutations.Add(LASER_EYES)
 					to_chat(user, span_notice("You feel pressure building behind your eyes."))
 				if (!(COLD_RESISTANCE in user.mutations))
 					user.mutations.Add(COLD_RESISTANCE)

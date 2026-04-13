@@ -7,6 +7,7 @@
 	materials = list(MAT_STEEL = 80)
 	build_path = /obj/item/stock_parts/matter_bin
 	category = list(
+		RND_CATEGORY_INITIAL,
 		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_1
 	)
 	lathe_time_factor = 0.2
@@ -76,6 +77,7 @@
 	materials = list(MAT_STEEL = 30)
 	build_path = /obj/item/stock_parts/manipulator
 	category = list(
+		RND_CATEGORY_INITIAL,
 		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_1
 	)
 	lathe_time_factor = 0.2
@@ -145,6 +147,7 @@
 	materials = list(MAT_STEEL = 50, MAT_GLASS = 50)
 	build_path = /obj/item/stock_parts/capacitor
 	category = list(
+		RND_CATEGORY_INITIAL,
 		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_1
 	)
 	lathe_time_factor = 0.2
@@ -214,6 +217,7 @@
 	materials = list(MAT_STEEL = 50, MAT_GLASS = 20)
 	build_path = /obj/item/stock_parts/scanning_module
 	category = list(
+		RND_CATEGORY_INITIAL,
 		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_1
 	)
 	lathe_time_factor = 0.2
@@ -223,7 +227,7 @@
 	name = "Advanced Sensor"
 	desc = "A tier 2 stock part used in the construction of various devices."
 	id = "adv_sensor"
-	build_type = PROTOLATHE | AUTOLATHE
+	build_type = PROTOLATHE
 	materials = list(MAT_STEEL = 50, MAT_GLASS = 20)
 	build_path = /obj/item/stock_parts/scanning_module/adv
 	category = list(
@@ -284,6 +288,7 @@
 	materials = list(MAT_STEEL = 10, MAT_GLASS = 20)
 	build_path = /obj/item/stock_parts/micro_laser
 	category = list(
+		RND_CATEGORY_INITIAL,
 		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_1
 	)
 	lathe_time_factor = 0.2
@@ -353,9 +358,10 @@
 	materials = list(MAT_STEEL = 700, MAT_GLASS = 50)
 	build_path = /obj/item/cell/empty
 	category = list(
+		RND_CATEGORY_INITIAL,
 		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_1
 	)
-	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SCIENCE
+	departmental_flags = ALL
 
 /datum/design_techweb/high
 	name = "High-Capacity Cell"
@@ -367,7 +373,7 @@
 	category = list(
 		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_2
 	)
-	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SCIENCE
+	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SCIENCE | DEPARTMENT_BITFLAG_CARGO
 
 /datum/design_techweb/super
 	name = "Super-Capacity Cell"
@@ -379,7 +385,7 @@
 	category = list(
 		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_3
 	)
-	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SCIENCE
+	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SCIENCE | DEPARTMENT_BITFLAG_CARGO
 
 /datum/design_techweb/hyper
 	name = "Hyper-Capacity Cell"
@@ -392,29 +398,32 @@
 	category = list(
 		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_4
 	)
-	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SCIENCE
+	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SCIENCE | DEPARTMENT_BITFLAG_CARGO
 
 // Special cells
 /datum/design_techweb/device_cell
 	name = "Device Cell"
 	id = "device_cell"
-	build_type = PROTOLATHE
+	build_type = PROTOLATHE | AUTOLATHE
 	materials = list(MAT_STEEL = 350, MAT_GLASS = 25)
 	build_path = /obj/item/cell/device/empty
 	category = list(
+		RND_CATEGORY_INITIAL,
 		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_1
 	)
+	departmental_flags = ALL
 
 /datum/design_techweb/weapon_cell
 	name = "Weapon Cell"
 	id = "weapon_cell"
-	build_type = PROTOLATHE
+	build_type = PROTOLATHE | AUTOLATHE
 	materials = list(MAT_STEEL = 700, MAT_GLASS = 50)
 	build_path = /obj/item/cell/device/weapon/empty
 	category = list(
+		RND_CATEGORY_INITIAL,
 		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_1
 	)
-	departmental_flags = DEPARTMENT_BITFLAG_SECURITY | DEPARTMENT_BITFLAG_SCIENCE
+	departmental_flags = DEPARTMENT_BITFLAG_SECURITY | DEPARTMENT_BITFLAG_SCIENCE | DEPARTMENT_BITFLAG_CARGO
 
 // RPEDs
 /datum/design_techweb/RPED
@@ -470,3 +479,237 @@
 		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_EXCHANGERS
 	)
 	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SCIENCE
+
+/*
+//Big Cells
+*/
+/datum/design_techweb/potato_cell
+	name = "Potato Cell"
+	id = "potato_cell"
+	materials = list(MAT_STEEL = 100, MAT_GLASS = 10)
+	build_path = /obj/item/cell/potato
+	build_type = PROTOLATHE
+	category = list(
+		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_1
+	)
+	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SCIENCE
+
+/datum/design_techweb/giga_cell
+	name = "Giga-Capacity Cell"
+	id = "giga_cell"
+	materials = list(MAT_STEEL = 1000, MAT_GOLD = 300, MAT_SILVER = 300, MAT_GLASS = 100, MAT_PHORON = 1000, MAT_DURASTEEL = 100, MAT_URANIUM = 100)
+	build_path = /obj/item/cell/giga/empty
+	build_type = PROTOLATHE
+	category = list(
+		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_5
+	)
+	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SCIENCE
+
+/*
+//Device Cells
+*/
+
+/datum/design_techweb/cell_device_empproof
+	name = "Device Cell, EMP-Proof"
+	id = "empproof_device"
+	materials = list(MAT_STEEL = 350, MAT_GLASS = 25, MAT_MORPHIUM = 25, MAT_PHORON = 25)
+	build_path = /obj/item/cell/device/empproof
+	build_type = PROTOLATHE
+	category = list(
+		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_3
+	)
+	departmental_flags = DEPARTMENT_BITFLAG_SCIENCE | DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SECURITY
+
+/datum/design_techweb/cell_advance_device_empproof
+	name = "Device Cell, Advanced EMP-Proof"
+	id = "empproof_advanced_device"
+	materials = list(MAT_STEEL = 700, MAT_GLASS = 50, MAT_MORPHIUM = 50, MAT_PHORON = 50)
+	build_path = /obj/item/cell/device/weapon/empproof
+	build_type = PROTOLATHE
+	category = list(
+		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_4
+	)
+	departmental_flags = DEPARTMENT_BITFLAG_SCIENCE | DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SECURITY
+
+/datum/design_techweb/cell_advance_device_recharge
+	name = "Device Cell, Advanced Recharging"
+	id = "recharging_advanced_device"
+	materials = list(MAT_STEEL = 1000, MAT_GLASS = 400, MAT_DURASTEEL = 100, MAT_METALHYDROGEN = 200, MAT_VERDANTIUM = 150, MAT_PHORON = 2000)
+	build_path = /obj/item/cell/device/weapon/recharge
+	build_type = PROTOLATHE
+	category = list(
+		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_5
+	)
+	departmental_flags = DEPARTMENT_BITFLAG_SCIENCE | DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SECURITY
+
+/datum/design_techweb/cell_super_device
+	name = "Device Cell, Super"
+	id = "super_device"
+	materials = list(MAT_STEEL = 700, MAT_GLASS = 70, MAT_GOLD = 50, MAT_SILVER = 20)
+	build_path = /obj/item/cell/device/super/empty
+	build_type = PROTOLATHE
+	category = list(
+		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_3
+	)
+	departmental_flags = DEPARTMENT_BITFLAG_SCIENCE | DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SECURITY
+
+/datum/design_techweb/cell_hype_device
+	name = "Device Cell, Hyper"
+	id = "hyper_device"
+	materials = list(MAT_STEEL = 1400, MAT_GLASS = 1400, MAT_GOLD = 150, MAT_SILVER = 150)
+	build_path = /obj/item/cell/device/hyper/empty
+	build_type = PROTOLATHE
+	category = list(
+		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_4
+	)
+	departmental_flags = DEPARTMENT_BITFLAG_SCIENCE | DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SECURITY
+
+/datum/design_techweb/cell_giga_device
+	name = "Device Cell, Giga"
+	id = "giga_device"
+	materials = list(MAT_STEEL = 2000, MAT_GOLD = 500, MAT_SILVER = 500, MAT_GLASS = 100, MAT_PHORON = 2000, MAT_DURASTEEL = 200, MAT_URANIUM = 200)
+	build_path = /obj/item/cell/device/giga/empty
+	build_type = PROTOLATHE
+	category = list(
+		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_5
+	)
+	departmental_flags = DEPARTMENT_BITFLAG_SCIENCE | DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SECURITY
+
+/datum/design_techweb/cell_omni_device
+	name = "Device Cell, Omni"
+	build_type = PROTOLATHE
+	id = "omni-device"
+	materials = list(MAT_STEEL = 1700, MAT_GLASS = 550, MAT_DURASTEEL = 230, MAT_MORPHIUM = 320, MAT_METALHYDROGEN = 600, MAT_URANIUM = 60, MAT_VERDANTIUM = 150, MAT_PHORON = 900)
+	build_path = /obj/item/cell/device/weapon/recharge/alien/omni
+	build_type = PROTOLATHE
+	category = list(
+		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_5
+	)
+	departmental_flags = DEPARTMENT_BITFLAG_SCIENCE | DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SECURITY
+
+//SMES Coils
+/datum/design_techweb/smes_basic_coil
+	name = "Superconductive Magnetic Coil"
+	build_type = PROTOLATHE
+	id = "smes_magnetic_coil"
+	materials = list(MAT_STEEL = 4000, MAT_GLASS = 4000, MAT_COPPER = 2000)
+	build_path = /obj/item/smes_coil
+	category = list(
+		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_1
+	)
+	departmental_flags = DEPARTMENT_BITFLAG_SCIENCE | DEPARTMENT_BITFLAG_ENGINEERING
+
+/datum/design_techweb/smes_capacity_coil
+	name = "Superconductive Capacity Coil"
+	build_type = PROTOLATHE
+	id = "smes_cap_basic"
+	materials = list(MAT_STEEL = 6000, MAT_GLASS = 6000, MAT_SILVER = 2000)
+	build_path = /obj/item/smes_coil/super_capacity
+	category = list(
+		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_2
+	)
+	departmental_flags = DEPARTMENT_BITFLAG_SCIENCE | DEPARTMENT_BITFLAG_ENGINEERING
+
+/datum/design_techweb/smes_capacity_coil_ultra
+	name = "Ultraconductive Capacity Coil"
+	build_type = PROTOLATHE
+	id = "smes_cap_ultra"
+	materials = list(MAT_STEEL = 10000, MAT_GLASS = 6000, MAT_GOLD = 5000, MAT_SILVER = 5000, MAT_DURASTEEL = 3000,  MAT_METALHYDROGEN = 2000, MAT_VERDANTIUM = 2000)
+	build_path = /obj/item/smes_coil/super_capacity/ultra
+	category = list(
+		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_3
+	)
+	departmental_flags = DEPARTMENT_BITFLAG_SCIENCE | DEPARTMENT_BITFLAG_ENGINEERING
+
+/datum/design_techweb/smes_capacity_coil_hyper
+	name = "Hyperconductive Capacity Coil"
+	build_type = PROTOLATHE
+	id = "smes_cap_hyper"
+	materials = list(MAT_STEEL = 15000, MAT_GLASS = 9000, MAT_GOLD = 7500, MAT_SILVER = 7500, MAT_DURASTEEL = 4500,  MAT_METALHYDROGEN = 3000, MAT_VERDANTIUM = 3000, MAT_MORPHIUM = 2000)
+	build_path = /obj/item/smes_coil/super_capacity/hyper
+	category = list(
+		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_5
+	)
+	departmental_flags = DEPARTMENT_BITFLAG_SCIENCE | DEPARTMENT_BITFLAG_ENGINEERING
+
+/datum/design_techweb/smes_transmission_coil
+	name = "Superconductive Transmission Coil"
+	build_type = PROTOLATHE
+	id = "smes_trans_basic"
+	materials = list(MAT_STEEL = 4000, MAT_GLASS = 4000, MAT_SILVER = 4000)
+	build_path = /obj/item/smes_coil/super_io
+	category = list(
+		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_2
+	)
+	departmental_flags = DEPARTMENT_BITFLAG_SCIENCE | DEPARTMENT_BITFLAG_ENGINEERING
+
+/datum/design_techweb/smes_transmission_coil_ultra
+	name = "Ultraconductive Transmission Coil"
+	build_type = PROTOLATHE
+	id = "smes_trans_ultra"
+	materials = list(MAT_STEEL = 6000, MAT_GLASS = 4000, MAT_GOLD = 6000, MAT_SILVER = 6000, MAT_DURASTEEL = 2000,  MAT_METALHYDROGEN = 2000, MAT_VERDANTIUM = 2000)
+	build_path = /obj/item/smes_coil/super_io/ultra
+	category = list(
+		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_3
+	)
+	departmental_flags = DEPARTMENT_BITFLAG_SCIENCE | DEPARTMENT_BITFLAG_ENGINEERING
+
+/datum/design_techweb/smes_transmission_coil_hyper
+	name = "Hyperconductive Transmission Coil"
+	build_type = PROTOLATHE
+	id = "smes_trans_hyper"
+	materials = list(MAT_STEEL = 9000, MAT_GLASS = 6000, MAT_GOLD = 9000, MAT_SILVER = 9000, MAT_DURASTEEL = 3000,  MAT_METALHYDROGEN = 3000, MAT_VERDANTIUM = 3000, MAT_MORPHIUM = 2000)
+	build_path = /obj/item/smes_coil/super_io/hyper
+	category = list(
+		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_5
+	)
+	departmental_flags = DEPARTMENT_BITFLAG_SCIENCE | DEPARTMENT_BITFLAG_ENGINEERING
+
+//Misc parts
+/datum/design_techweb/console_screen
+	name = "console screen"
+	build_type = PROTOLATHE | AUTOLATHE
+	id = "console_screen"
+	materials = list(MAT_GLASS = 250)
+	build_path = /obj/item/stock_parts/console_screen
+	category = list(
+		RND_CATEGORY_INITIAL,
+		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_1
+	)
+	departmental_flags = DEPARTMENT_BITFLAG_SCIENCE | DEPARTMENT_BITFLAG_ENGINEERING
+
+/datum/design_techweb/motor
+	name = "motor"
+	build_type = PROTOLATHE | AUTOLATHE
+	id = "motor"
+	materials = list(MAT_STEEL = 75, MAT_GLASS = 15)
+	build_path = /obj/item/stock_parts/motor
+	category = list(
+		RND_CATEGORY_INITIAL,
+		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_1
+	)
+	departmental_flags = DEPARTMENT_BITFLAG_SCIENCE | DEPARTMENT_BITFLAG_ENGINEERING
+
+/datum/design_techweb/gear
+	name = "gear"
+	build_type = PROTOLATHE | AUTOLATHE
+	id = "gear"
+	materials = list(MAT_STEEL = 65)
+	build_path = /obj/item/stock_parts/gear
+	category = list(
+		RND_CATEGORY_INITIAL,
+		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_1
+	)
+	departmental_flags = DEPARTMENT_BITFLAG_SCIENCE | DEPARTMENT_BITFLAG_ENGINEERING
+
+/datum/design_techweb/spring
+	name = "spring"
+	build_type = PROTOLATHE | AUTOLATHE
+	id = "spring"
+	materials = list(MAT_STEEL = 50)
+	build_path = /obj/item/stock_parts/spring
+	category = list(
+		RND_CATEGORY_INITIAL,
+		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_1
+	)
+	departmental_flags = DEPARTMENT_BITFLAG_SCIENCE | DEPARTMENT_BITFLAG_ENGINEERING

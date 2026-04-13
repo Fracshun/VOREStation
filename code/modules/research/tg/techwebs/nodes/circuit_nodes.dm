@@ -1,6 +1,5 @@
 /datum/techweb_node/programming
 	id = TECHWEB_NODE_PROGRAMMING
-	starting_node = TRUE
 	display_name = "Programming"
 	description = "Dedicate an entire shift to program a fridge to greet you when opened."
 	prereq_ids = list(TECHWEB_NODE_ROBOTICS)
@@ -14,6 +13,9 @@
 		"assembly-device",
 		"circuit-bug",
 	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_1_POINTS)
+	discount_experiments = list(/datum/experiment/scanning/destruct_circuitboard = TECHWEB_TIER_1_POINTS)
+	announce_channels = list(CHANNEL_SCIENCE)
 
 /datum/techweb_node/circuit_shells
 	id = TECHWEB_NODE_CIRCUIT_SHELLS
@@ -23,8 +25,10 @@
 	design_ids = list(
 		"assembly-implant",
 		"ic_printer_upgrade_adv",
+		"ic_printer_upgrade_clone"
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_1_POINTS)
+	announce_channels = list(CHANNEL_SCIENCE)
 
 /datum/techweb_node/programmed_robot
 	id = TECHWEB_NODE_PROGRAMMED_ROBOT
@@ -35,3 +39,4 @@
 		"assembly-drone",
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_2_POINTS)
+	announce_channels = list(CHANNEL_SCIENCE)

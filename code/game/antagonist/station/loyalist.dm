@@ -1,4 +1,4 @@
-var/datum/antagonist/loyalists/loyalists
+GLOBAL_DATUM(loyalists, /datum/antagonist/loyalists)
 
 /datum/antagonist/loyalists
 	id = MODE_LOYALIST
@@ -15,7 +15,7 @@ var/datum/antagonist/loyalists/loyalists
 	victory_feedback_tag = "win - rev heads killed"
 	loss_feedback_tag = "loss - heads killed"
 	antaghud_indicator = "hudloyalist"
-	flags = 0
+	flags = NONE
 
 	hard_cap = 2
 	hard_cap_round = 4
@@ -33,7 +33,7 @@ var/datum/antagonist/loyalists/loyalists
 
 /datum/antagonist/loyalists/New()
 	..()
-	loyalists = src
+	GLOB.loyalists = src
 
 /datum/antagonist/loyalists/create_global_objectives()
 	if(!..())

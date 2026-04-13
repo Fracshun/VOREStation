@@ -230,9 +230,7 @@
 
 
 /datum/action/innate/mecha/mech_switch_damtype/Activate()
-
-
-	button_icon_state = "mech_damtype_[chassis.damtype]"
+	button_icon_state = "mech_damtype_[chassis.damage_type]"
 	playsound(src, 'sound/mecha/mechmove01.ogg', 50, 1)
 	build_all_button_icons()
 	chassis.query_damtype()
@@ -287,7 +285,7 @@
 	else
 		deflect_chance = initial(deflect_chance)
 		src.occupant_message(span_red("You disable [src] defence mode."))
-	src.log_message("Toggled defence mode.")
+	src.log_message("Toggled defence mode.", LOG_GAME)
 	return
 
 
@@ -316,7 +314,7 @@
 		overload = 1
 		step_energy_drain = step_energy_drain*overload_coeff
 		src.occupant_message(span_red("You enable leg actuators overload."))
-	src.log_message("Toggled leg actuators overload.")
+	src.log_message("Toggled leg actuators overload.", LOG_GAME)
 	playsound(src, 'sound/mecha/mechanical_toggle.ogg', 50, 1)
 	return
 
@@ -365,7 +363,7 @@
 		return
 	if(src.occupant.client)
 		src.zoom = !src.zoom
-		src.log_message("Toggled zoom mode.")
+		src.log_message("Toggled zoom mode.", LOG_GAME)
 		if(src.zoom)
 			src.occupant_message(span_blue("Zoom mode enabled."))
 		else
@@ -392,7 +390,7 @@
 	if(src.occupant)
 		if(get_charge() > 0)
 			thrusters = !thrusters
-			src.log_message("Toggled thrusters.")
+			src.log_message("Toggled thrusters.", LOG_GAME)
 			if(src.thrusters)
 				src.occupant_message(span_blue("Thrusters enabled."))
 			else
@@ -416,15 +414,15 @@
 		return
 	switch(new_damtype)
 		if("Brute")
-			damtype = "brute"
-			src.occupant_message("Your exosuit's hands form into fists.")
+			damage_type = BRUTE
+			occupant_message("Your exosuit's hands form into fists.")
 		if("Fire")
-			damtype = "fire"
-			src.occupant_message("A torch tip extends from your exosuit's hand, glowing red.")
+			damage_type = BURN
+			occupant_message("A torch tip extends from your exosuit's hand, glowing red.")
 		if("Toxic")
-			damtype = "tox"
-			src.occupant_message("A bone-chillingly thick plasteel needle protracts from the exosuit's palm.")
-	src.occupant_message("Melee damage type switched to [new_damtype]")
+			damage_type = TOX
+			occupant_message("A bone-chillingly thick plasteel needle protracts from the exosuit's palm.")
+	occupant_message("Melee damage type switched to [new_damtype]")
 	return
 
 

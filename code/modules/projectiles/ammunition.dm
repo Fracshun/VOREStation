@@ -23,6 +23,10 @@
 		BB = new projectile_type(src)
 	randpixel_xy()
 
+/obj/item/ammo_casing/Destroy()
+	QDEL_NULL(BB)
+	return ..()
+
 //removes the projectile from the ammo casing
 /obj/item/ammo_casing/proc/expend()
 	. = BB
@@ -60,7 +64,7 @@
 			if(box.caliber == bullet.caliber && bullet.BB)
 				if (boolets < 1)
 					to_chat(user, span_notice("You start collecting shells.")) // Say it here so it doesn't get said if we don't find anything useful.
-				if(do_after(user,5,box))
+				if(do_after(user, 5, target = box))
 					if(box.stored_ammo.len >= box.max_ammo) // Double check because these can change during the wait.
 						break
 					if(bullet.loc != floor)
@@ -169,6 +173,9 @@
 
 // This dumps all the bullets right on the floor
 /obj/item/ammo_magazine/attack_self(mob/user)
+	. = ..(user)
+	if(.)
+		return TRUE
 	if(can_remove_ammo)
 		if(!stored_ammo.len)
 			to_chat(user, span_notice("[src] is already empty!"))
@@ -231,7 +238,7 @@ GLOBAL_LIST_EMPTY(magazine_icondata_states)
 /proc/magazine_icondata_cache_add(var/obj/item/ammo_magazine/M)
 	var/list/icon_keys = list()
 	var/list/ammo_states = list()
-	var/list/states = cached_icon_states(M.icon)
+	var/list/states = icon_states_fast(M.icon)
 	for(var/i = 0, i <= M.max_ammo, i++)
 		var/ammo_state = "[M.icon_state]-[i]"
 		if(ammo_state in states)
@@ -261,7 +268,7 @@ GLOBAL_LIST_EMPTY(magazine_icondata_states)
 	drop_sound = 'sound/items/drop/matchbox.ogg'
 	pickup_sound = 'sound/items/pickup/matchbox.ogg'
 
-/obj/item/ammo_magazine/ammo_box/AltClick(mob/user)
+/obj/item/ammo_magazine/ammo_box/click_alt(mob/user)
 	if(can_remove_ammo)
 		if(isliving(user) && Adjacent(user))
 			if(stored_ammo.len)

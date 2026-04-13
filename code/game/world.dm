@@ -87,8 +87,14 @@ GLOBAL_VAR(restart_counter)
 	Profile(PROFILE_RESTART)
 	Profile(PROFILE_RESTART, type = "sendmaps")
 
+	// Write everything to this log file until we get to SetupLogs() later
+	_initialize_log_files("data/logs/config_error.[GUID()].log")
+
 	// Init the debugger first so we can debug Master
 	Debugger = new
+
+	// Create the logger
+	logger = new
 
 	// THAT'S IT, WE'RE DONE, THE. FUCKING. END.
 	Master = new
@@ -122,29 +128,9 @@ GLOBAL_VAR(restart_counter)
 /world/New()
 	log_world("World loaded at [time_stamp()]!")
 
-	world_startup_time = world.timeofday
-	rollover_safety_date = world.realtime - world.timeofday // 00:00 today (ish, since floating point error with world.realtime) of today
-	to_world_log("Map Loading Complete")
-	//logs
-	//VOREStation Edit Start
+	GLOB.world_startup_time = world.timeofday
+	GLOB.rollover_safety_date = world.realtime - world.timeofday // 00:00 today (ish, since floating point error with world.realtime) of today
 
-	var/override_dir = params[OVERRIDE_LOG_DIRECTORY_PARAMETER]
-	if(override_dir)
-		GLOB.log_directory = "data/logs/[override_dir]"
-	else
-		GLOB.log_directory += time2text(world.realtime, "YYYY/MM-Month/DD-Day/round-hh-mm-ss")
-	GLOB.diary = start_log("[GLOB.log_directory].log")
-	GLOB.href_logfile = start_log("[GLOB.log_directory]-hrefs.htm")
-	GLOB.error_log = start_log("[GLOB.log_directory]-error.log")
-	GLOB.sql_error_log = start_log("[GLOB.log_directory]-sql-error.log")
-	GLOB.query_debug_log = start_log("[GLOB.log_directory]-query-debug.log")
-	GLOB.debug_log = start_log("[GLOB.log_directory]-debug.log")
-
-	var/latest_changelog = file("[global.config.directory]/../html/changelogs/archive/" + time2text(world.timeofday, "YYYY-MM") + ".yml")
-	GLOB.changelog_hash = fexists(latest_changelog) ? md5(latest_changelog) : "" //for telling if the changelog has changed recently
-	to_world_log("Changelog Hash: '[GLOB.changelog_hash]' ([latest_changelog])")
-
-	// First possible sleep()
 	InitTgs()
 
 	config.Load(params[OVERRIDE_CONFIG_DIRECTORY_PARAMETER])
@@ -154,7 +140,7 @@ GLOBAL_VAR(restart_counter)
 	if(NO_INIT_PARAMETER in params)
 		return
 
-	makeDatumRefLists()
+	make_datum_reference_lists()
 
 	var servername = CONFIG_GET(string/servername)
 	if(config && servername != null && CONFIG_GET(flag/server_suffix) && world.port > 0)
@@ -169,35 +155,24 @@ GLOBAL_VAR(restart_counter)
 	GLOB.timezoneOffset = get_timezone_offset()
 
 	callHook("startup")
-	//Emergency Fix
-	load_mods()
-	//end-emergency fix
+
+	// This should probably moved somewhere else
+	// Maybe even a comsig?
+	if(CONFIG_GET(flag/usewhitelist))
+		load_whitelist()
+	if(CONFIG_GET(flag/usealienwhitelist))
+		load_alienwhitelist()
+	load_jobwhitelist()
 
 	src.update_status()
 	setup_season()	//VOREStation Addition
 
 #ifdef UNIT_TESTS
-	log_unit_test("Unit Tests Enabled.  This will destroy the world when testing is complete.")
-	log_unit_test("If you did not intend to enable this please check code/__defines/unit_testing.dm")
+	log_test("Unit Tests Enabled. This will destroy the world when testing is complete.")
+	log_test("If you did not intend to enable this please check code/__defines/unit_testing.dm")
 #endif
 
-	// This is kinda important. Set up details of what the hell things are made of.
-	populate_material_list()
-
-	// Create frame types.
-	populate_frame_types()
-
-	// Create floor types.
-	populate_flooring_types()
-
-	// Create robolimbs for chargen.
-	populate_robolimb_list()
-
-	master_controller = new /datum/controller/game_controller()
 	Master.Initialize(10, FALSE, TRUE) // VOREStation Edit
-
-	spawn(1)
-		master_controller.setup()
 
 	RunUnattendedFunctions()
 
@@ -221,14 +196,9 @@ GLOBAL_VAR(restart_counter)
 	// Try to set round ID
 	SSdbcore.InitializeRound()
 
-	load_admins(initial = TRUE)
+	SetupLogs()
 
-	//apply a default value to config.python_path, if needed
-	if (!CONFIG_GET(string/python_path))
-		if(world.system_type == UNIX)
-			CONFIG_SET(string/python_path, "/usr/bin/env python2")
-		else //probably windows, if not this should work anyway
-			CONFIG_SET(string/python_path, "python")
+	load_admins(initial = TRUE)
 
 	if(fexists(RESTART_COUNTER_PATH))
 		GLOB.restart_counter = text2num(trim(file2text(RESTART_COUNTER_PATH)))
@@ -266,8 +236,48 @@ GLOBAL_VAR(restart_counter)
 	data["timestamp"] = rustg_unix_timestamp()
 	return data
 
-var/world_topic_spam_protect_ip = "0.0.0.0"
-var/world_topic_spam_protect_time = world.timeofday
+/world/proc/SetupLogs()
+	var/override_dir = params[OVERRIDE_LOG_DIRECTORY_PARAMETER]
+	if(!override_dir)
+		var/realtime = world.realtime
+		var/texttime = time2text(realtime, "YYYY/MM/DD", TIMEZONE_UTC)
+		GLOB.log_directory = "data/logs/[texttime]/round-"
+		if(GLOB.round_id)
+			GLOB.log_directory += "[GLOB.round_id]"
+			//GLOB.picture_logging_prefix += "R_[GLOB.round_id]_"
+			//GLOB.picture_log_directory += "[GLOB.round_id]"
+		else
+			var/timestamp = replacetext(time_stamp(), ":", ".")
+			GLOB.log_directory += "[timestamp]"
+			//GLOB.picture_log_directory += "[timestamp]"
+			//GLOB.picture_logging_prefix += "T_[timestamp]_"
+	else
+		GLOB.log_directory = "data/logs/[override_dir]"
+		//GLOB.picture_logging_prefix = "O_[override_dir]_"
+		//GLOB.picture_log_directory = "data/picture_logs/[override_dir]"
+
+	logger.init_logging()
+
+	var/latest_changelog = file("[global.config.directory]/../html/changelogs/archive/" + time2text(world.timeofday, "YYYY-MM", TIMEZONE_UTC) + ".yml")
+	GLOB.changelog_hash = fexists(latest_changelog) ? md5(latest_changelog) : 0 //for telling if the changelog has changed recently
+
+	if(GLOB.round_id)
+		log_game("Round ID: [GLOB.round_id]")
+
+	// This was printed early in startup to the world log and config_error.log,
+	// but those are both private, so let's put the commit info in the runtime
+	// log which is ultimately public.
+	log_runtime(GLOB.revdata.get_log_message())
+
+#ifndef USE_CUSTOM_ERROR_HANDLER
+	world.log = file("[GLOB.log_directory]/dd.log")
+#else
+	if (TgsAvailable()) // why
+		world.log = file("[GLOB.log_directory]/dd.log") //not all runtimes trigger world/Error, so this is the only way to ensure we can see all of them.
+#endif
+
+GLOBAL_VAR_INIT(world_topic_spam_protect_ip, "0.0.0.0")
+GLOBAL_VAR_INIT(world_topic_spam_protect_time, world.timeofday)
 
 /world/Topic(T, addr, master, key)
 	TGS_TOPIC
@@ -344,6 +354,9 @@ var/world_topic_spam_protect_time = world.timeofday
 		return list2params(s)
 
 	else if(T == "manifest")
+		if(!SSjob.initialized)
+			return null
+
 		var/list/positions = list()
 		var/list/set_names = list(
 				"heads" = SSjob.get_job_titles_in_department(DEPARTMENT_COMMAND),
@@ -411,61 +424,6 @@ var/world_topic_spam_protect_time = world.timeofday
 		else
 			return "unknown"
 
-	else if(copytext(T,1,9) == "adminmsg")
-		/*
-			We got an adminmsg from IRC bot lets split the input then validate the input.
-			expected output:
-				1. adminmsg = ckey of person the message is to
-				2. msg = contents of message, parems2list requires
-				3. validatationkey = the key the bot has, it should match the gameservers commspassword in it's configuration.
-				4. sender = the ircnick that send the message.
-		*/
-
-
-		var/input[] = params2list(T)
-		var/password = CONFIG_GET(string/comms_password)
-		if(!password || input["key"] != password)
-			if(world_topic_spam_protect_ip == addr && abs(world_topic_spam_protect_time - world.time) < 50)
-
-				spawn(50)
-					world_topic_spam_protect_time = world.time
-					return
-
-			world_topic_spam_protect_time = world.time
-			world_topic_spam_protect_ip = addr
-
-			return "Bad Key"
-
-		var/client/C
-		var/req_ckey = ckey(input["adminmsg"])
-
-		for(var/client/K in GLOB.clients)
-			if(K.ckey == req_ckey)
-				C = K
-				break
-		if(!C)
-			return "No client with that name on server"
-
-		var/rank = input["rank"]
-		if(!rank)
-			rank = "Admin"
-
-		var/message =	span_red("IRC-[rank] PM from <b><a href='byond://?irc_msg=[input["sender"]]'>IRC-[input["sender"]]</a></b>: [input["msg"]]")
-		var/amessage =  span_blue("IRC-[rank] PM from <a href='byond://?irc_msg=[input["sender"]]'>IRC-[input["sender"]]</a> to <b>[key_name(C)]</b> : [input["msg"]]")
-
-		C.received_irc_pm = world.time
-		C.irc_admin = input["sender"]
-
-		C << 'sound/effects/adminhelp.ogg'
-		to_chat(C,message)
-
-
-		for(var/client/A in GLOB.admins)
-			if(A != C)
-				to_chat(A,amessage)
-
-		return "Message Successful"
-
 /// Returns TRUE if the world should do a TGS hard reboot.
 /world/proc/check_hard_reboot()
 	if(!TgsAvailable())
@@ -512,9 +470,10 @@ var/world_topic_spam_protect_time = world.timeofday
 		if (usr)
 			log_admin("[key_name(usr)] Has requested an immediate world restart via client side debugging tools")
 			message_admins("[key_name_admin(usr)] Has requested an immediate world restart via client side debugging tools")
-			to_world(span_boldannounce("[key_name_admin(usr)] has requested an immediate world restart via client side debugging tools"))
+			to_chat(world, span_boldannounce("[key_name_admin(usr)] has requested an immediate world restart via client side debugging tools"))
+
 		else
-			to_world(span_boldannounce("Rebooting world immediately due to host request"))
+			to_chat(world, span_boldannounce("Rebooting world immediately due to host request"))
 	else
 		Master.Shutdown()	//run SS shutdowns
 		for(var/client/C in GLOB.clients)
@@ -527,19 +486,19 @@ var/world_topic_spam_protect_time = world.timeofday
 	#else
 	if(check_hard_reboot())
 		log_world("World hard rebooted at [time_stamp()]")
-		//shutdown_logging() // See comment below.
+		shutdown_logging() // See comment below.
 		//QDEL_NULL(Tracy)
 		//QDEL_NULL(Debugger)
 		TgsEndProcess()
 		return ..()
 
-	TgsReboot()
 	log_world("World rebooted at [time_stamp()]")
 
+	shutdown_logging() // Past this point, no logging procs can be used, at risk of data loss.
 	QDEL_NULL(Tracy)
 	QDEL_NULL(Debugger)
 
-	TgsReboot()
+	TgsReboot() // TGS can decide to kill us right here, so it's important to do it last
 
 	..()
 	#endif
@@ -562,37 +521,12 @@ var/world_topic_spam_protect_time = world.timeofday
 	if(Lines.len)
 		if(Lines[1])
 			GLOB.master_mode = Lines[1]
-			log_misc("Saved mode is '[GLOB.master_mode]'")
+			log_world("## MISC Saved mode is '[GLOB.master_mode]'")
 
 /world/proc/save_mode(var/the_mode)
 	var/F = file("data/mode.txt")
 	fdel(F)
 	F << the_mode
-
-/hook/startup/proc/loadMods()
-	world.load_mods()
-	return 1
-
-/world/proc/load_mods()
-	if(CONFIG_GET(flag/admin_legacy_system))
-		var/text = file2text("config/moderators.txt")
-		if (!text)
-			error("Failed to load config/mods.txt")
-		else
-			var/list/lines = splittext(text, "\n")
-			for(var/line in lines)
-				if (!line)
-					continue
-
-				if (copytext(line, 1, 2) == ";")
-					continue
-
-				var/title = "Moderator"
-				var/rights = GLOB.admin_ranks[title]
-
-				var/ckey = copytext(line, 1, length(line)+1)
-				var/datum/admins/D = new /datum/admins(title, rights, ckey)
-				D.associate(GLOB.directory[ckey])
 
 /world/proc/update_status()
 	var/s = ""
@@ -652,77 +586,6 @@ var/world_topic_spam_protect_time = world.timeofday
 	if (src.status != s)
 		src.status = s
 
-#define FAILED_DB_CONNECTION_CUTOFF 5
-var/failed_db_connections = 0
-var/failed_old_db_connections = 0
-
-/hook/startup/proc/connectDB()
-	if(!CONFIG_GET(flag/sql_enabled))
-		to_world_log("SQL connection disabled in config.")
-	else if(!setup_database_connection())
-		to_world_log("Your server failed to establish a connection with the feedback database.")
-	else
-		to_world_log("Feedback database connection established.")
-	return 1
-
-/proc/setup_database_connection()
-	if(!CONFIG_GET(flag/sql_enabled))
-		return 0
-	if(failed_db_connections > FAILED_DB_CONNECTION_CUTOFF)	//If it failed to establish a connection more than 5 times in a row, don't bother attempting to conenct anymore.
-		return 0
-
-	if(!SSdbcore)
-		SSdbcore = new()
-
-	var/user = CONFIG_GET(string/feedback_login)
-	var/pass = CONFIG_GET(string/feedback_password)
-	var/db = CONFIG_GET(string/feedback_database)
-	var/address = CONFIG_GET(string/address)
-	var/port = CONFIG_GET(number/port)
-
-	SSdbcore.Connect("dbi:mysql:[db]:[address]:[port]","[user]","[pass]")
-	. = SSdbcore.IsConnected()
-	if ( . )
-		failed_db_connections = 0	//If this connection succeeded, reset the failed connections counter.
-	else
-		failed_db_connections++		//If it failed, increase the failed connections counter.
-		to_world_log(SSdbcore.ErrorMsg())
-
-	return .
-
-//This proc ensures that the connection to the feedback database (global variable dbcon) is established
-/proc/establish_db_connection()
-	if(failed_db_connections > FAILED_DB_CONNECTION_CUTOFF)
-		return 0
-
-	if(!SSdbcore || !SSdbcore.IsConnected())
-		return setup_database_connection()
-	else
-		return 1
-
-// Cleans up DB connections and recreates them
-/proc/reset_database_connections()
-	var/list/results = list("-- Resetting DB connections --")
-	failed_db_connections = 0
-
-	if(SSdbcore?.IsConnected())
-		SSdbcore.Disconnect()
-		results += "SSdbcore was connected and asked to disconnect"
-	else
-		results += "SSdbcore was not connected"
-
-	if(!CONFIG_GET(flag/sql_enabled))
-		results += "stopping because config.sql_enabled = false"
-	else
-		. = setup_database_connection()
-		if(.)
-			results += "SUCCESS: set up a connection successfully with setup_database_connection()"
-		else
-			results += "FAIL: failed to connect to the database with setup_database_connection()"
-
-	results += "-- DB Reset End --"
-	to_world_log(results.Join("\n"))
-
 // Things to do when a new z-level was just made.
 /world/proc/max_z_changed()
 	if(!istype(GLOB.players_by_zlevel, /list))
@@ -735,6 +598,44 @@ var/failed_old_db_connections = 0
 
 		GLOB.living_players_by_zlevel.len++
 		GLOB.living_players_by_zlevel[GLOB.living_players_by_zlevel.len] = list()
+
+/**
+ * Handles increasing the world's maxx var and initializing the new turfs and assigning them to the global area.
+ * If map_load_z_cutoff is passed in, it will only load turfs up to that z level, inclusive.
+ * This is because maploading will handle the turfs it loads itself.
+ */
+/world/proc/increase_max_x(new_maxx, map_load_z_cutoff = maxz)
+	if(new_maxx <= maxx)
+		return
+	// var/old_max = world.maxx
+	maxx = new_maxx
+	// if(!map_load_z_cutoff)
+	// 	return
+	// var/area/global_area = GLOB.areas_by_type[world.area] // We're guaranteed to be touching the global area, so we'll just do this
+	// LISTASSERTLEN(global_area.turfs_by_zlevel, map_load_z_cutoff, list())
+	// for (var/zlevel in 1 to map_load_z_cutoff)
+	// 	var/list/to_add = block(
+	// 		old_max + 1, 1, zlevel,
+	// 		maxx, maxy, zlevel
+	// 	)
+
+	// 	global_area.turfs_by_zlevel[zlevel] += to_add
+
+/world/proc/increase_max_y(new_maxy, map_load_z_cutoff = maxz)
+	if(new_maxy <= maxy)
+		return
+	// var/old_maxy = maxy
+	maxy = new_maxy
+	// if(!map_load_z_cutoff)
+	// 	return
+	// var/area/global_area = GLOB.areas_by_type[world.area] // We're guaranteed to be touching the global area, so we'll just do this
+	// LISTASSERTLEN(global_area.turfs_by_zlevel, map_load_z_cutoff, list())
+	// for (var/zlevel in 1 to map_load_z_cutoff)
+	// 	var/list/to_add = block(
+	// 		1, old_maxy + 1, 1,
+	// 		maxx, maxy, map_load_z_cutoff
+	// 	)
+	// 	global_area.turfs_by_zlevel[zlevel] += to_add
 
 // Call this to make a new blank z-level, don't modify maxz directly.
 /world/proc/increment_max_z()
@@ -754,17 +655,6 @@ var/failed_old_db_connections = 0
 // Called whenver world.tick_lag or world.fps are changed.
 /world/proc/on_tickrate_change()
 	SStimer?.reset_buckets()
-
-#undef FAILED_DB_CONNECTION_CUTOFF
-
-/proc/get_world_url()
-	. = "byond://"
-	if(CONFIG_GET(string/serverurl))
-		. += CONFIG_GET(string/serverurl)
-	else if(CONFIG_GET(string/server))
-		. += CONFIG_GET(string/server)
-	else
-		. += "[world.address]:[world.port]"
 
 /proc/auxtools_stack_trace(msg)
 	CRASH(msg)

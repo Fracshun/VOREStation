@@ -31,7 +31,7 @@
 	if(ext_blind)
 		eye_blind = 5
 		client.screen.Remove(GLOB.global_hud.whitense)
-		overlay_fullscreen("blind", /obj/screen/fullscreen/blind)
+		overlay_fullscreen("blind", /atom/movable/screen/fullscreen/blind)
 	else
 		eye_blind = 0
 		clear_fullscreen("blind")
@@ -190,7 +190,7 @@
 
 	QDEL_NULL(eyeobj)
 	gem.notify_holder("[src] ended SR projection.")
-	gem.show_vore_fx(src, TRUE)
+	gem.show_vore_fx(src)
 
 /mob/living/carbon/brain/caught_soul/vore/nsay_brain()
 	set name = "NSay"

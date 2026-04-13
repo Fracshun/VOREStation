@@ -33,6 +33,9 @@
 		tgui_interact(user)
 		playsound(src, "keyboard", 40) // into console
 
+/obj/machinery/librarywikicomp/allow_pai_interaction()
+	return TRUE
+
 /obj/machinery/librarywikicomp/tgui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
@@ -167,7 +170,7 @@
 		if("crash")
 			// intentional TGUI crash, amazingly awful
 			if(issilicon(ui.user) && ui.user.client)
-				ui.user.client.create_fake_ad_popup_multiple(/obj/screen/popup/default, rand(4,10))
+				ui.user.client.create_fake_ad_popup_multiple(/atom/movable/screen/popup/default, rand(4,10))
 			if(!crash)
 				crash = TRUE
 				// crashes till it fixes itself

@@ -51,7 +51,9 @@
 	data["can_submit_feedback"] = SSsqlite.can_submit_feedback(client)
 	data["show_station_news"] = GLOB.news_data.station_newspaper
 	data["new_station_news"] = client.prefs.lastlorenews != GLOB.news_data.newsindex
-	data["new_changelog"] = read_preference(/datum/preference/text/lastchangelog) == GLOB.changelog_hash
+	data["new_changelog"] = read_preference(/datum/preference/text/lastchangelog) != GLOB.changelog_hash
+	data["can_start_now"] = client.is_localhost() && check_rights_for(client, R_SERVER)
+	data["immediate_start"] = SSticker.start_immediately || SSticker.current_state > GAME_STATE_PREGAME
 
 	return data
 
@@ -126,8 +128,8 @@
 				announce_ghost_joinleave(src)
 
 				if(client.prefs.read_preference(/datum/preference/toggle/human/name_is_always_random))
-					client.prefs.real_name = random_name(client.prefs.identifying_gender)
-				observer.real_name = client.prefs.real_name
+					client.prefs.update_preference_by_type(/datum/preference/name/real_name, random_name(client.prefs.read_preference(/datum/preference/choiced/gender/identifying)))
+				observer.real_name = client.prefs.read_preference(/datum/preference/name/real_name)
 				observer.name = observer.real_name
 				if(!check_rights_for(client, R_HOLDER) && !CONFIG_GET(flag/antag_hud_allowed))           // For new ghosts we remove the verb from even showing up if it's not allowed.
 					remove_verb(observer, /mob/observer/dead/verb/toggle_antagHUD)        // Poor guys, don't know what they are missing!
@@ -139,12 +141,17 @@
 				QDEL_NULL(mind)
 				qdel(src)
 
+				// pAI notify if we have be pAI invite on
+				SSpai.clear_pai_block_delay(REF(observer)) // Reset invite cooldown if we cancelled all invites for the round
+				if(SSpai.invite_valid(observer))
+					observer.pai_card_ping()
+
 			return TRUE
 		if("shownews")
 			handle_server_news()
 			return TRUE
 		if("give_feedback")
-			if(!SSsqlite.can_submit_feedback(GLOB.directory[persistent_ckey]))
+			if(!SSsqlite.can_submit_feedback(persistent_client.client))
 				return
 
 			if(client.feedback_form)
@@ -165,3 +172,10 @@
 
 			playsound_local(ui.user, get_sfx("keyboard"), vol = 20)
 			return TRUE
+		if("start_immediately")
+			if(!ui.user.client.is_localhost() || !check_rights_for(ui.user.client, R_SERVER))
+				return FALSE
+
+			SSticker.start_immediately = TRUE
+			if(SSticker.current_state == GAME_STATE_STARTUP)
+				to_chat(usr, span_admin("The server is still setting up, but the round will be started as soon as possible."))
