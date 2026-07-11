@@ -4,13 +4,12 @@
 	icon = 'icons/obj/assemblies/new_assemblies.dmi'
 	icon_state = ""
 	w_class = ITEMSIZE_SMALL
-	matter = list(MAT_STEEL = 100)
+	matter = list(MAT_STEEL = MATERIAL_COST(0.05))
 	throwforce = 2
 	throw_speed = 3
 	throw_range = 10
 	drop_sound = 'sound/items/drop/component.ogg'
 	pickup_sound =  'sound/items/pickup/component.ogg'
-	origin_tech = list(TECH_MAGNET = 1)
 
 	var/secured = 1
 	var/list/attached_overlays = null
@@ -33,14 +32,14 @@
 /obj/item/assembly/proc/holder_movement()
 	return
 
-/obj/item/assembly/proc/pulsed(var/radio = 0)
+/obj/item/assembly/proc/pulsed(radio = 0)
 	if(holder && (wires_type & WIRE_RECEIVE))
 		activate()
 	if(radio && (wires_type & WIRE_RADIO_RECEIVE))
 		activate()
 	return 1
 
-/obj/item/assembly/proc/pulse(var/radio = 0)
+/obj/item/assembly/proc/pulse(radio = 0)
 	if(holder && (wires_type & WIRE_PULSE))
 		holder.process_activation(src, 1, 0)
 	if(holder && (wires_type & WIRE_PULSE_SPECIAL))
@@ -58,7 +57,7 @@
 	update_icon()
 	return secured
 
-/obj/item/assembly/proc/attach_assembly(var/obj/item/assembly/A, var/mob/user)
+/obj/item/assembly/proc/attach_assembly(obj/item/assembly/A, mob/user)
 	holder = new/obj/item/assembly_holder(get_turf(src))
 	if(holder.attach(A,src,user))
 		to_chat(user, span_notice("You attach \the [A] to \the [src]!"))

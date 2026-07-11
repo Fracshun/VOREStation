@@ -7,8 +7,7 @@
 	slot_flags = SLOT_BELT
 	w_class = ITEMSIZE_NORMAL
 	force = 5
-	origin_tech = list(TECH_COMBAT = 3, TECH_MAGNET = 2)
-	matter = list(MAT_STEEL = 1000)
+	matter = list(MAT_STEEL = MATERIAL_COST(0.5))
 	projectile_type = /obj/item/projectile/beam/meeplaser
 	charge_cost = 400
 
@@ -20,8 +19,7 @@
 	slot_flags = SLOT_BELT
 	w_class = ITEMSIZE_LARGE
 	force = 10
-	origin_tech = list(TECH_COMBAT = 3, TECH_MAGNET = 4)
-	matter = list(MAT_STEEL = 2000)
+	matter = list(MAT_STEEL = MATERIAL_COST(1))
 	projectile_type = /obj/item/projectile/beam/meeplaser/strong
 	charge_cost = 200
 
@@ -70,8 +68,7 @@
 	slot_flags = SLOT_BACK
 	w_class = ITEMSIZE_HUGE
 	force = 10
-	origin_tech = list(TECH_COMBAT = 2, TECH_MAGNET = 4)
-	matter = list(MAT_STEEL = 2000)
+	matter = list(MAT_STEEL = MATERIAL_COST(1))
 	projectile_type = /obj/item/projectile/scatter/ratminer
 	charge_cost = 400
 	fire_sound = 'sound/weapons/laser3.ogg'
@@ -111,7 +108,7 @@
 	. = ..()
 	strike_thing(A)
 
-/obj/item/projectile/beam/ratminer/proc/strike_thing(var/atom/A)
+/obj/item/projectile/beam/ratminer/proc/strike_thing(atom/A)
 	var/turf/target_turf = get_turf(A)
 	if(!target_turf)
 		target_turf = get_turf(src)

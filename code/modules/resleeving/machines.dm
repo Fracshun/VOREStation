@@ -15,7 +15,7 @@
 	for(var/i = 1 to container_limit)
 		containers += new /obj/item/reagent_containers/glass/bottle/biomass(src)
 
-/obj/machinery/clonepod/transhuman/growclone(var/datum/transhuman/body_record/current_project)
+/obj/machinery/clonepod/transhuman/growclone(datum/transhuman/body_record/current_project)
 	//Manage machine-specific stuff.
 	if(mess || attempting)
 		return 0
@@ -132,7 +132,7 @@
 	density = TRUE
 	anchored = TRUE
 
-	var/list/stored_material =  list(MAT_STEEL = 30000, MAT_GLASS = 30000)
+	var/list/stored_material =  list(MAT_STEEL = MATERIAL_COST(15), MAT_GLASS = MATERIAL_COST(15))
 	var/connected      //What console it's done up with
 	var/busy = 0       //Busy cloning
 	var/body_cost = 15000  //Cost of a cloned body (metal and glass ea.)
@@ -153,6 +153,10 @@
 	component_parts += new /obj/item/stack/cable_coil(src, 2)
 	RefreshParts()
 	update_icon()
+
+/obj/machinery/transhuman/synthprinter/Destroy()
+	current_br = null
+	. = ..()
 
 /obj/machinery/transhuman/synthprinter/RefreshParts()
 
@@ -190,7 +194,7 @@
 
 	return
 
-/obj/machinery/transhuman/synthprinter/proc/print(var/datum/weakref/BR)
+/obj/machinery/transhuman/synthprinter/proc/print(datum/weakref/BR)
 	if(!BR?.resolve() || busy)
 		return 0
 
@@ -315,7 +319,11 @@
 	RefreshParts()
 	update_icon()
 
-/obj/machinery/transhuman/resleever/proc/set_occupant(var/mob/living/carbon/human/H)
+/obj/machinery/transhuman/resleever/Destroy()
+	. = ..()
+
+
+/obj/machinery/transhuman/resleever/proc/set_occupant(mob/living/carbon/human/H)
 	SHOULD_NOT_OVERRIDE(TRUE)
 	if(!H)
 		weakref_occupant = null
@@ -420,7 +428,7 @@
 
 	add_fingerprint(user)
 
-/obj/machinery/transhuman/resleever/proc/putmind(var/datum/transhuman/mind_record/MR, mode = 1, var/mob/living/carbon/human/override = null, var/db_key)
+/obj/machinery/transhuman/resleever/proc/putmind(datum/transhuman/mind_record/MR, mode = 1, mob/living/carbon/human/override = null, db_key)
 	var/mob/living/carbon/human/occupant = get_occupant()
 	if((!occupant || !istype(occupant) || occupant.stat >= DEAD) && mode == 1)
 		return 0
@@ -506,13 +514,16 @@
 		if(occupant.mind.antag_holder)
 			occupant.mind.antag_holder.apply_antags(occupant)
 
+		if(occupant.changeling_locked || occupant.mind.antag_holder.changeling)
+			occupant.make_changeling()
+
 	if(original_occupant)
 		occupant = original_occupant
 
 	playsound(src, 'sound/machines/medbayscanner1.ogg', 100, 1) // Play our sound at the end of the mind injection!
 	return 1
 
-/obj/machinery/transhuman/resleever/proc/go_out(var/mob/M)
+/obj/machinery/transhuman/resleever/proc/go_out()
 	var/mob/living/carbon/human/occupant = get_occupant()
 	if(!occupant)
 		return
@@ -541,7 +552,7 @@
 	set src in oview(1)
 	if(usr.stat != 0)
 		return
-	src.go_out(usr)
+	go_out()
 	add_fingerprint(usr)
 	return
 

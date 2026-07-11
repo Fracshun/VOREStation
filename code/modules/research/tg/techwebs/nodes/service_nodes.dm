@@ -28,6 +28,7 @@
 		// "earmuffs",
 		"taperecorder",
 		"recordingcassette",
+		"cargo_scanner",
 		// "toy_balloon",
 		// "pet_carrier",
 		// "chisel",
@@ -64,6 +65,7 @@
 		"beartrap",
 		"barbedwire",
 		"snarewire",
+		"springtrap",
 		// "buffer",
 		"washing"
 	)

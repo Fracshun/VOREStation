@@ -45,6 +45,9 @@
 	else if(istype(W, /obj/item/multitool) || W.has_tool_quality(TOOL_WIRECUTTER))
 		attack_hand(user)
 
+/obj/machinery/power/grid_checker/attack_robot(mob/living/user)
+	interact(user)
+
 /obj/machinery/power/grid_checker/attack_hand(mob/user)
 	if(!user)
 		return
@@ -60,13 +63,13 @@
 
 	return tgui_interact(user)
 
-/obj/machinery/power/grid_checker/proc/power_failure(var/announce = TRUE)
+/obj/machinery/power/grid_checker/proc/power_failure(announce = TRUE)
 	if(announce)
 		GLOB.command_announcement.Announce("Abnormal activity detected in [station_name()]'s powernet. As a precautionary measure, \
 		the colony's power will be shut off for an indeterminate duration while the powernet monitor restarts automatically, or \
 		when Engineering can manually resolve the issue.",
 		"Critical Power Failure",
-		new_sound = 'sound/AI/poweroff.ogg')
+		new_sound = ANNOUNCER_MSG_POWER_OFF)
 	power_failing = TRUE
 	if(powernet)
 		for(var/obj/machinery/power/terminal/T in powernet.nodes) // APCs that are "downstream" of the powernet.
@@ -86,11 +89,11 @@
 		if(power_failing) // Check to see if engineering didn't beat us to it.
 			end_power_failure(TRUE)
 
-/obj/machinery/power/grid_checker/proc/end_power_failure(var/announce = TRUE)
+/obj/machinery/power/grid_checker/proc/end_power_failure(announce = TRUE)
 	if(announce)
 		GLOB.command_announcement.Announce("Power has been restored to [station_name()]. We apologize for the inconvenience.",
 		"Power Systems Nominal",
-		new_sound = 'sound/AI/poweron.ogg')
+		new_sound = ANNOUNCER_MSG_POWER_ON)
 	power_failing = FALSE
 	update_icon()
 
